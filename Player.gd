@@ -5,7 +5,7 @@ export var acceleration = 0.1
 export var friction = 0.05
 var velocity = Vector2.ZERO
 
-func _physics_process(delta):
+func _physics_process(_delta):
 	var input_velocity = Vector2.ZERO
 	input_velocity.x += float(Input.is_action_pressed("ui_right"))
 	input_velocity.x -= float(Input.is_action_pressed("ui_left"))

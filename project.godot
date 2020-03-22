@@ -73,6 +73,10 @@ ui_down={
  ]
 }
 
+[physics]
+
+common/physics_jitter_fix=1.0
+
 [rendering]
 
 environment/default_environment="res://default_env.tres"
