@@ -1,30 +1,23 @@
-extends Area2D
+extends KinematicBody2D
 
 export var moveSpeed = 400
-export var rotateSpeed = 8
-var rotateType = 0
+export var acceleration = 0.1
+export var friction = 0.05
+var velocity = Vector2.ZERO
 
 func _physics_process(delta):
-	var velocity = Vector2()
-	if Input.is_action_pressed("move_up"):
-		velocity.y -= 1
-	if Input.is_action_pressed("move_down"):
-		velocity.y += 1
-	if Input.is_action_pressed("move_left"):
-		velocity.x -= 1
-	if Input.is_action_pressed("move_right"):
-		velocity.x += 1
-	velocity = velocity.normalized() * moveSpeed
-	position += velocity * delta
+	var input_velocity = Vector2.ZERO
+	input_velocity.x += float(Input.is_action_pressed("ui_right"))
+	input_velocity.x -= float(Input.is_action_pressed("ui_left"))
+	input_velocity.y += float(Input.is_action_pressed("ui_down"))
+	input_velocity.y -= float(Input.is_action_pressed("ui_up"))
+	input_velocity = input_velocity.normalized() * moveSpeed
 	
-	if rotateType == 0:
-		var lookVector = get_global_mouse_position() - global_position
-		global_rotation = atan2(lookVector.y, lookVector.x)
-	elif rotateType == 1:
-		if Input.is_action_pressed("ui_left"):
-			global_rotation_degrees -= rotateSpeed
-		if Input.is_action_pressed("ui_right"):
-			global_rotation_degrees += rotateSpeed
+	if input_velocity.length() > 0:
+		velocity = velocity.linear_interpolate(input_velocity, acceleration)
+	else:
+		velocity = velocity.linear_interpolate(Vector2.ZERO, friction)
 
-func _on_Options_rotateType(id):
-	rotateType = id
+	velocity = move_and_slide(velocity)
+	
+	rotation += get_local_mouse_position().angle() * 0.1
