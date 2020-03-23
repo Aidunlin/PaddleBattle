@@ -2,7 +2,7 @@
 
 [ext_resource path="res://Player.tscn" type="PackedScene" id=1]
 [ext_resource path="res://Ball.tscn" type="PackedScene" id=2]
-[ext_resource path="res://TestMap.tscn" type="PackedScene" id=3]
+[ext_resource path="res://maps/TestMap.tscn" type="PackedScene" id=3]
 [ext_resource path="res://Main.gd" type="Script" id=4]
 
 [node name="Main" type="Node2D"]
