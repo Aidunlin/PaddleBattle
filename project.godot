@@ -17,7 +17,6 @@ _global_script_class_icons={
 
 config/name="pong-game"
 run/main_scene="res://Main.tscn"
-config/icon="res://icon.png"
 
 [display]
 
@@ -89,7 +88,10 @@ ui_middle_click={
  ]
 }
 
+[physics]
+
+common/physics_fps=120
+
 [rendering]
 
 quality/2d/use_pixel_snap=true
-environment/default_environment="res://default_env.tres"

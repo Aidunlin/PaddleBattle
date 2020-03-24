@@ -1,9 +1,9 @@
 extends KinematicBody2D
 
-export var moveSpeed = 400
-export var sprintSpeed = 700
-export var acceleration = 0.1
-export var friction = 0.05
+export var move_speed = 250
+export var sprint_speed = 350
+export var acceleration = 0.05
+export var friction = 0.01
 var velocity = Vector2.ZERO
 
 func _ready():
@@ -18,9 +18,9 @@ func _physics_process(delta):
 	input_velocity.y -= float(Input.is_action_pressed("ui_up"))
 	
 	if Input.is_action_pressed("ui_select"):
-		input_velocity = input_velocity.normalized() * sprintSpeed
+		input_velocity = input_velocity.normalized() * sprint_speed
 	else:
-		input_velocity = input_velocity.normalized() * moveSpeed
+		input_velocity = input_velocity.normalized() * move_speed
 	
 	if input_velocity.length() > 0:
 		velocity = velocity.linear_interpolate(input_velocity, acceleration)
@@ -28,5 +28,9 @@ func _physics_process(delta):
 		velocity = velocity.linear_interpolate(Vector2.ZERO, friction)
 	
 	velocity = move_and_slide(velocity)
+	
+	var coll_info = move_and_collide(velocity * delta)
+	if coll_info:
+		velocity = velocity.bounce(coll_info.normal)
 	
 	rotation += get_local_mouse_position().angle() * 0.1
