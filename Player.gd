@@ -17,7 +17,7 @@ func _physics_process(delta):
 	input_velocity.y += float(Input.is_action_pressed("ui_down"))
 	input_velocity.y -= float(Input.is_action_pressed("ui_up"))
 	
-	if Input.is_action_pressed("ui_select"):
+	if Input.is_action_pressed("ui_shift"):
 		input_velocity = input_velocity.normalized() * sprint_speed
 	else:
 		input_velocity = input_velocity.normalized() * move_speed
