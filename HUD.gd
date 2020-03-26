@@ -1,14 +1,22 @@
 extends MarginContainer
 
-onready var hpbit = $HPBar/Bits/HPBit
-onready var hpbit2 = $HPBar/Bits/HPBit2
-onready var hpbit3 = $HPBar/Bits/HPBit3
-onready var hpbit4 = $HPBar/Bits/HPBit4
-onready var hpbit5 = $HPBar/Bits/HPBit5
-onready var hpbits = [hpbit, hpbit2, hpbit3, hpbit4, hpbit5]
+onready var p1_bits = $Bars/HPBar/P1HP/Bits.get_children()
+onready var p2_bits = $Bars/HPBar/P2HP/Bits.get_children()
 
-func _on_player_health(health, _dir):
-	for i in range(hpbits.size()):
-		hpbits[i].show()
-		if not health > i:
-			hpbits[i].hide()
+func _on_player_health(health, player, _dir):
+	if player == 1:
+		for i in range(p1_bits.size()):
+			p1_bits[i].show()
+			if not health > i:
+				p1_bits[i].hide()
+	if player == 2:
+		for i in range(p2_bits.size()):
+			p2_bits[i].show()
+			if not health > i:
+				p2_bits[i].hide()
+
+func _on_player_death(deaths, player):
+	if player == 1:
+		$Bars/DeathBar/P1D/Deaths.text = str(deaths)
+	if player == 2:
+		$Bars/DeathBar/P2D/Deaths.text = str(deaths)
