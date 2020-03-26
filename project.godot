@@ -15,7 +15,8 @@ _global_script_class_icons={
 
 [application]
 
-config/name="pong-game"
+config/name="Paddle Battle"
+config/description="A party game with pong-like mechanics"
 run/main_scene="res://Main.tscn"
 
 [input]
