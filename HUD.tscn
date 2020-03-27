@@ -1,7 +1,6 @@
-[gd_scene load_steps=4 format=2]
+[gd_scene load_steps=3 format=2]
 
 [ext_resource path="res://img/hp.png" type="Texture" id=1]
-[ext_resource path="res://img/hp-bit.png" type="Texture" id=2]
 [ext_resource path="res://HUD.gd" type="Script" id=3]
 
 [node name="HUD" type="MarginContainer"]
@@ -40,43 +39,9 @@ stretch_mode = 4
 
 [node name="Bits" type="HBoxContainer" parent="Bars/HPBar/P1HP"]
 margin_left = 68.0
-margin_right = 236.0
+margin_right = 68.0
 margin_bottom = 64.0
 custom_constants/separation = -18
-
-[node name="HPBit" type="TextureRect" parent="Bars/HPBar/P1HP/Bits"]
-margin_right = 48.0
-margin_bottom = 64.0
-texture = ExtResource( 2 )
-stretch_mode = 4
-
-[node name="HPBit2" type="TextureRect" parent="Bars/HPBar/P1HP/Bits"]
-margin_left = 30.0
-margin_right = 78.0
-margin_bottom = 64.0
-texture = ExtResource( 2 )
-stretch_mode = 4
-
-[node name="HPBit3" type="TextureRect" parent="Bars/HPBar/P1HP/Bits"]
-margin_left = 60.0
-margin_right = 108.0
-margin_bottom = 64.0
-texture = ExtResource( 2 )
-stretch_mode = 4
-
-[node name="HPBit4" type="TextureRect" parent="Bars/HPBar/P1HP/Bits"]
-margin_left = 90.0
-margin_right = 138.0
-margin_bottom = 64.0
-texture = ExtResource( 2 )
-stretch_mode = 4
-
-[node name="HPBit5" type="TextureRect" parent="Bars/HPBar/P1HP/Bits"]
-margin_left = 120.0
-margin_right = 168.0
-margin_bottom = 64.0
-texture = ExtResource( 2 )
-stretch_mode = 4
 
 [node name="P2HP" type="HBoxContainer" parent="Bars/HPBar"]
 margin_left = 494.0
@@ -85,52 +50,18 @@ margin_bottom = 64.0
 size_flags_horizontal = 3
 alignment = 2
 
-[node name="Bits" type="HBoxContainer" parent="Bars/HPBar/P2HP"]
-margin_left = 254.0
-margin_right = 422.0
-margin_bottom = 64.0
-custom_constants/separation = -18
-
-[node name="HPBit5" type="TextureRect" parent="Bars/HPBar/P2HP/Bits"]
-margin_right = 48.0
-margin_bottom = 64.0
-texture = ExtResource( 2 )
-stretch_mode = 4
-
-[node name="HPBit4" type="TextureRect" parent="Bars/HPBar/P2HP/Bits"]
-margin_left = 30.0
-margin_right = 78.0
-margin_bottom = 64.0
-texture = ExtResource( 2 )
-stretch_mode = 4
-
-[node name="HPBit3" type="TextureRect" parent="Bars/HPBar/P2HP/Bits"]
-margin_left = 60.0
-margin_right = 108.0
-margin_bottom = 64.0
-texture = ExtResource( 2 )
-stretch_mode = 4
-
-[node name="HPBit2" type="TextureRect" parent="Bars/HPBar/P2HP/Bits"]
-margin_left = 90.0
-margin_right = 138.0
-margin_bottom = 64.0
-texture = ExtResource( 2 )
-stretch_mode = 4
-
-[node name="HPBit" type="TextureRect" parent="Bars/HPBar/P2HP/Bits"]
-margin_left = 120.0
-margin_right = 168.0
-margin_bottom = 64.0
-texture = ExtResource( 2 )
-stretch_mode = 4
-
 [node name="HP" type="TextureRect" parent="Bars/HPBar/P2HP"]
-margin_left = 426.0
-margin_right = 490.0
+margin_left = 422.0
+margin_right = 486.0
 margin_bottom = 64.0
 texture = ExtResource( 1 )
 stretch_mode = 4
+
+[node name="Bits" type="HBoxContainer" parent="Bars/HPBar/P2HP"]
+margin_left = 490.0
+margin_right = 490.0
+margin_bottom = 64.0
+custom_constants/separation = -18
 
 [node name="DeathBar" type="HBoxContainer" parent="Bars"]
 margin_top = 68.0

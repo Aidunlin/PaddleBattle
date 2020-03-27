@@ -1,5 +1,8 @@
 extends Node2D
 
+export (PackedScene) var Ball
+export var balls = 10
+
 func _ready():
 	randomize()
 	var p1_color = Color.from_hsv(randf(), 1, 1)
@@ -20,6 +23,14 @@ func _ready():
 		randomize()
 		map_color = Color.from_hsv(randf(), 1, 1)
 	$TestMap.modulate = map_color
+	
+	for _x in range(10):
+		var ball = Ball.instance()
+		add_child(ball)
+
+func _input(event):
+	if event.is_action_released("ui_cancel"):
+		get_tree().reload_current_scene()
 
 func _process(_delta):
 	$Camera2D.position.x = ($Player.position.x - $Player2.position.x) / 2 + $Player2.position.x

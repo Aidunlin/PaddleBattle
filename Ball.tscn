@@ -16,10 +16,11 @@ radius = 16.0
 radius = 16.0
 
 [node name="Ball" type="RigidBody2D"]
+mass = 100.0
 physics_material_override = SubResource( 1 )
 gravity_scale = 0.0
 continuous_cd = 2
-contacts_reported = 1
+contacts_reported = 2
 contact_monitor = true
 script = ExtResource( 2 )
 
@@ -38,7 +39,7 @@ physics_material_override = SubResource( 3 )
 shape = SubResource( 4 )
 disabled = true
 
-[node name="WallCollide" type="Timer" parent="."]
+[node name="CollideTimer" type="Timer" parent="."]
 one_shot = true
 [connection signal="body_entered" from="." to="." method="_on_body_entered"]
-[connection signal="timeout" from="WallCollide" to="." method="_on_WallCollide_timeout"]
+[connection signal="timeout" from="CollideTimer" to="." method="_on_collide_timeout"]

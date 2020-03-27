@@ -8,6 +8,7 @@
 
 [node name="Main" type="Node2D"]
 script = ExtResource( 6 )
+Ball = ExtResource( 2 )
 
 [node name="TestMap" parent="." instance=ExtResource( 3 )]
 position = Vector2( -512, -320 )
@@ -20,8 +21,6 @@ position = Vector2( 256, 0 )
 rotation = 3.14159
 player_number = 2
 
-[node name="Ball" parent="." instance=ExtResource( 2 )]
-
 [node name="Camera2D" type="Camera2D" parent="."]
 current = true
 zoom = Vector2( 1.5, 1.5 )
@@ -32,5 +31,7 @@ smoothing_enabled = true
 [node name="HUD" parent="CanvasLayer" instance=ExtResource( 4 )]
 [connection signal="death" from="Player" to="CanvasLayer/HUD" method="_on_player_death"]
 [connection signal="health" from="Player" to="CanvasLayer/HUD" method="_on_player_health"]
+[connection signal="total_health" from="Player" to="CanvasLayer/HUD" method="_on_player_total_health"]
 [connection signal="death" from="Player2" to="CanvasLayer/HUD" method="_on_player_death"]
 [connection signal="health" from="Player2" to="CanvasLayer/HUD" method="_on_player_health"]
+[connection signal="total_health" from="Player2" to="CanvasLayer/HUD" method="_on_player_total_health"]
