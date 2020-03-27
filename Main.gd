@@ -1,7 +1,7 @@
 extends Node2D
 
 export (PackedScene) var Ball
-export var balls = 10
+export var balls = 5
 
 func _ready():
 	randomize()
@@ -24,7 +24,7 @@ func _ready():
 		map_color = Color.from_hsv(randf(), 1, 1)
 	$TestMap.modulate = map_color
 	
-	for _x in range(10):
+	for _x in range(balls):
 		var ball = Ball.instance()
 		add_child(ball)
 

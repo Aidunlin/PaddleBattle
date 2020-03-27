@@ -54,8 +54,13 @@ func _physics_process(delta):
 		velocity = velocity.linear_interpolate(Vector2.ZERO, deceleration)
 	
 	# Bounce off of things
-	var collision = move_and_collide(velocity * delta)
+	var collision = move_and_collide(velocity * delta, false)
 	if collision:
+		if collision.collider.is_in_group("balls"):
+			if velocity.length() > 0:
+				collision.collider.apply_central_impulse(-collision.normal * abs(velocity.length()))
+			else:
+				collision.collider.apply_central_impulse(-collision.normal * 100)
 		velocity = velocity.bounce(collision.normal)
 
 # Decrease health if not invincible or cause game over
