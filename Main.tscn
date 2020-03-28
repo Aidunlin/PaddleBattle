@@ -14,12 +14,21 @@ Ball = ExtResource( 2 )
 position = Vector2( -512, -320 )
 
 [node name="Player" parent="." instance=ExtResource( 1 )]
-position = Vector2( -256, 0 )
+position = Vector2( -368, -144 )
 
 [node name="Player2" parent="." instance=ExtResource( 1 )]
-position = Vector2( 256, 0 )
+position = Vector2( 368, -144 )
 rotation = 3.14159
+player_number = 1
+
+[node name="Player3" parent="." instance=ExtResource( 1 )]
+position = Vector2( -368, 144 )
 player_number = 2
+
+[node name="Player4" parent="." instance=ExtResource( 1 )]
+position = Vector2( 368, 144 )
+rotation = 3.14159
+player_number = 3
 
 [node name="Camera2D" type="Camera2D" parent="."]
 current = true
@@ -35,3 +44,9 @@ smoothing_enabled = true
 [connection signal="death" from="Player2" to="CanvasLayer/HUD" method="_on_player_death"]
 [connection signal="health" from="Player2" to="CanvasLayer/HUD" method="_on_player_health"]
 [connection signal="total_health" from="Player2" to="CanvasLayer/HUD" method="_on_player_total_health"]
+[connection signal="death" from="Player3" to="CanvasLayer/HUD" method="_on_player_death"]
+[connection signal="health" from="Player3" to="CanvasLayer/HUD" method="_on_player_health"]
+[connection signal="total_health" from="Player3" to="CanvasLayer/HUD" method="_on_player_total_health"]
+[connection signal="death" from="Player4" to="CanvasLayer/HUD" method="_on_player_death"]
+[connection signal="health" from="Player4" to="CanvasLayer/HUD" method="_on_player_health"]
+[connection signal="total_health" from="Player4" to="CanvasLayer/HUD" method="_on_player_total_health"]

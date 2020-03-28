@@ -5,7 +5,7 @@
 
 [node name="HUD" type="MarginContainer"]
 anchor_right = 1.0
-margin_bottom = 122.0
+anchor_bottom = 1.0
 custom_constants/margin_right = 20
 custom_constants/margin_top = 20
 custom_constants/margin_left = 20
@@ -19,87 +19,182 @@ __meta__ = {
 margin_left = 20.0
 margin_top = 20.0
 margin_right = 1004.0
-margin_bottom = 102.0
+margin_bottom = 580.0
 
-[node name="HPBar" type="HBoxContainer" parent="Bars"]
+[node name="TopBar" type="VBoxContainer" parent="Bars"]
 margin_right = 984.0
-margin_bottom = 64.0
+margin_bottom = 278.0
+size_flags_vertical = 3
+
+[node name="HPBar" type="HBoxContainer" parent="Bars/TopBar"]
+margin_right = 984.0
+margin_bottom = 36.0
 alignment = 1
 
-[node name="P1HP" type="HBoxContainer" parent="Bars/HPBar"]
+[node name="P1HP" type="HBoxContainer" parent="Bars/TopBar/HPBar"]
 margin_right = 490.0
-margin_bottom = 64.0
+margin_bottom = 36.0
 size_flags_horizontal = 3
 
-[node name="HP" type="TextureRect" parent="Bars/HPBar/P1HP"]
+[node name="HP" type="TextureRect" parent="Bars/TopBar/HPBar/P1HP"]
 margin_right = 64.0
-margin_bottom = 64.0
+margin_bottom = 36.0
 texture = ExtResource( 1 )
-stretch_mode = 4
 
-[node name="Bits" type="HBoxContainer" parent="Bars/HPBar/P1HP"]
+[node name="Bits" type="HBoxContainer" parent="Bars/TopBar/HPBar/P1HP"]
 margin_left = 68.0
 margin_right = 68.0
-margin_bottom = 64.0
+margin_bottom = 36.0
 custom_constants/separation = -18
 
-[node name="P2HP" type="HBoxContainer" parent="Bars/HPBar"]
+[node name="P2HP" type="HBoxContainer" parent="Bars/TopBar/HPBar"]
 margin_left = 494.0
 margin_right = 984.0
-margin_bottom = 64.0
+margin_bottom = 36.0
 size_flags_horizontal = 3
 alignment = 2
 
-[node name="HP" type="TextureRect" parent="Bars/HPBar/P2HP"]
+[node name="HP" type="TextureRect" parent="Bars/TopBar/HPBar/P2HP"]
 margin_left = 422.0
 margin_right = 486.0
-margin_bottom = 64.0
+margin_bottom = 36.0
 texture = ExtResource( 1 )
-stretch_mode = 4
 
-[node name="Bits" type="HBoxContainer" parent="Bars/HPBar/P2HP"]
+[node name="Bits" type="HBoxContainer" parent="Bars/TopBar/HPBar/P2HP"]
 margin_left = 490.0
 margin_right = 490.0
-margin_bottom = 64.0
+margin_bottom = 36.0
 custom_constants/separation = -18
 
-[node name="DeathBar" type="HBoxContainer" parent="Bars"]
-margin_top = 68.0
+[node name="DeathBar" type="HBoxContainer" parent="Bars/TopBar"]
+margin_top = 40.0
 margin_right = 984.0
-margin_bottom = 82.0
+margin_bottom = 54.0
 alignment = 1
 
-[node name="P1D" type="HBoxContainer" parent="Bars/DeathBar"]
+[node name="P1D" type="HBoxContainer" parent="Bars/TopBar/DeathBar"]
 margin_right = 490.0
 margin_bottom = 14.0
 size_flags_horizontal = 3
 
-[node name="Died" type="Label" parent="Bars/DeathBar/P1D"]
+[node name="Died" type="Label" parent="Bars/TopBar/DeathBar/P1D"]
 margin_right = 77.0
 margin_bottom = 14.0
 text = "Times Died:"
 
-[node name="Deaths" type="Label" parent="Bars/DeathBar/P1D"]
+[node name="Deaths" type="Label" parent="Bars/TopBar/DeathBar/P1D"]
 margin_left = 81.0
 margin_right = 89.0
 margin_bottom = 14.0
 text = "0"
 
-[node name="P2D" type="HBoxContainer" parent="Bars/DeathBar"]
+[node name="P2D" type="HBoxContainer" parent="Bars/TopBar/DeathBar"]
 margin_left = 494.0
 margin_right = 984.0
 margin_bottom = 14.0
 size_flags_horizontal = 3
 alignment = 2
 
-[node name="Died" type="Label" parent="Bars/DeathBar/P2D"]
+[node name="Died" type="Label" parent="Bars/TopBar/DeathBar/P2D"]
 margin_left = 401.0
 margin_right = 478.0
 margin_bottom = 14.0
 text = "Times Died:"
 
-[node name="Deaths" type="Label" parent="Bars/DeathBar/P2D"]
+[node name="Deaths" type="Label" parent="Bars/TopBar/DeathBar/P2D"]
 margin_left = 482.0
 margin_right = 490.0
 margin_bottom = 14.0
 text = "0"
+
+[node name="BottomBar" type="VBoxContainer" parent="Bars"]
+margin_top = 282.0
+margin_right = 984.0
+margin_bottom = 560.0
+size_flags_vertical = 3
+alignment = 2
+
+[node name="DeathBar" type="HBoxContainer" parent="Bars/BottomBar"]
+margin_top = 224.0
+margin_right = 984.0
+margin_bottom = 238.0
+alignment = 1
+
+[node name="P3D" type="HBoxContainer" parent="Bars/BottomBar/DeathBar"]
+margin_right = 490.0
+margin_bottom = 14.0
+size_flags_horizontal = 3
+
+[node name="Died" type="Label" parent="Bars/BottomBar/DeathBar/P3D"]
+margin_right = 77.0
+margin_bottom = 14.0
+text = "Times Died:"
+
+[node name="Deaths" type="Label" parent="Bars/BottomBar/DeathBar/P3D"]
+margin_left = 81.0
+margin_right = 89.0
+margin_bottom = 14.0
+text = "0"
+
+[node name="P4D" type="HBoxContainer" parent="Bars/BottomBar/DeathBar"]
+margin_left = 494.0
+margin_right = 984.0
+margin_bottom = 14.0
+size_flags_horizontal = 3
+alignment = 2
+
+[node name="Died" type="Label" parent="Bars/BottomBar/DeathBar/P4D"]
+margin_left = 401.0
+margin_right = 478.0
+margin_bottom = 14.0
+text = "Times Died:"
+
+[node name="Deaths" type="Label" parent="Bars/BottomBar/DeathBar/P4D"]
+margin_left = 482.0
+margin_right = 490.0
+margin_bottom = 14.0
+text = "0"
+
+[node name="HPBar" type="HBoxContainer" parent="Bars/BottomBar"]
+margin_top = 242.0
+margin_right = 984.0
+margin_bottom = 278.0
+alignment = 1
+
+[node name="P3HP" type="HBoxContainer" parent="Bars/BottomBar/HPBar"]
+margin_right = 490.0
+margin_bottom = 36.0
+size_flags_horizontal = 3
+
+[node name="HP" type="TextureRect" parent="Bars/BottomBar/HPBar/P3HP"]
+margin_right = 64.0
+margin_bottom = 36.0
+texture = ExtResource( 1 )
+
+[node name="Bits" type="HBoxContainer" parent="Bars/BottomBar/HPBar/P3HP"]
+margin_left = 68.0
+margin_right = 68.0
+margin_bottom = 36.0
+custom_constants/separation = -18
+
+[node name="P4HP" type="HBoxContainer" parent="Bars/BottomBar/HPBar"]
+margin_left = 494.0
+margin_right = 984.0
+margin_bottom = 36.0
+size_flags_horizontal = 3
+alignment = 2
+
+[node name="HP" type="TextureRect" parent="Bars/BottomBar/HPBar/P4HP"]
+margin_left = 422.0
+margin_right = 486.0
+margin_bottom = 36.0
+texture = ExtResource( 1 )
+
+[node name="Bits" type="HBoxContainer" parent="Bars/BottomBar/HPBar/P4HP"]
+margin_left = 490.0
+margin_right = 490.0
+margin_bottom = 36.0
+custom_constants/separation = -18
+__meta__ = {
+"_edit_use_anchors_": false
+}
