@@ -1,9 +1,9 @@
 extends KinematicBody2D
 
 signal health(health, player)
-signal total_health(total_health, player)
-signal death(deaths, player)
 export var player_number = 0
+export var pad_id = 0
+export var spawn_position = Vector2(0, 0)
 var velocity = Vector2.ZERO
 var invincible = false
 export var acceleration = 0.06
@@ -17,22 +17,21 @@ var health = total_health
 var deaths = 0
 
 func _ready():
-	emit_signal("total_health", total_health, player_number)
+	add_to_group("players")
+	$Invincibility.start(4)
+	invincible = true
 
 func _physics_process(delta):
 	var input_vel = Vector2.ZERO
 	var input_rot = 0
 	
-	var ljoy_xaxis = Input.get_joy_axis(player_number, JOY_AXIS_0)
-	var ljoy_yaxis = Input.get_joy_axis(player_number, JOY_AXIS_1)
+	var ljoy_xaxis = Input.get_joy_axis(pad_id, JOY_AXIS_0)
+	var ljoy_yaxis = Input.get_joy_axis(pad_id, JOY_AXIS_1)
 	if abs(ljoy_xaxis) > stick_dz || abs(ljoy_yaxis) > stick_dz:
 		input_vel = Vector2(ljoy_xaxis, ljoy_yaxis)
-	input_rot = Input.get_joy_axis(player_number, JOY_AXIS_7) - Input.get_joy_axis(player_number, JOY_AXIS_6)
+	input_rot = Input.get_joy_axis(pad_id, JOY_AXIS_7) - Input.get_joy_axis(pad_id, JOY_AXIS_6)
 	rotation += deg2rad(input_rot * rotate_speed)
-	if Input.is_joy_button_pressed(player_number, 1):
-		input_vel *= sprint_speed
-	else:
-		input_vel *= move_speed
+	input_vel *= sprint_speed if Input.is_joy_button_pressed(pad_id, 1) else move_speed
 	
 	if input_vel.length() > 0:
 		velocity = velocity.linear_interpolate(input_vel, acceleration)
@@ -49,6 +48,7 @@ func _physics_process(delta):
 			velocity = velocity.bounce(collision.normal).normalized()
 		else:
 			velocity = velocity.bounce(collision.normal)
+		Input.start_joy_vibration(pad_id, 0.2, 0.2, 0.1)
 
 func _on_back_entered(body):
 	if body.is_in_group("balls") and not invincible:
@@ -56,13 +56,12 @@ func _on_back_entered(body):
 		emit_signal("health", health, player_number)
 		if health < 1:
 			velocity = Vector2.ZERO
-			position = Vector2.ZERO
+			position = spawn_position
 			health = total_health
 			deaths += 1
-			emit_signal("health", health, player_number)
-			emit_signal("death", deaths, player_number)
+			emit_signal("health", total_health, player_number)
 			invincible = true
-			$Invincibility.start(5)
+			$Invincibility.start(4)
 			return
 		$Invincibility.start(2)
 		invincible = true

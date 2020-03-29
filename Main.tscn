@@ -8,27 +8,11 @@
 
 [node name="Main" type="Node2D"]
 script = ExtResource( 6 )
+Player = ExtResource( 1 )
 Ball = ExtResource( 2 )
 
 [node name="TestMap" parent="." instance=ExtResource( 3 )]
 position = Vector2( -512, -320 )
-
-[node name="Player" parent="." instance=ExtResource( 1 )]
-position = Vector2( -368, -144 )
-
-[node name="Player2" parent="." instance=ExtResource( 1 )]
-position = Vector2( 368, -144 )
-rotation = 3.14159
-player_number = 1
-
-[node name="Player3" parent="." instance=ExtResource( 1 )]
-position = Vector2( -368, 144 )
-player_number = 2
-
-[node name="Player4" parent="." instance=ExtResource( 1 )]
-position = Vector2( 368, 144 )
-rotation = 3.14159
-player_number = 3
 
 [node name="Camera2D" type="Camera2D" parent="."]
 current = true
@@ -38,15 +22,4 @@ smoothing_enabled = true
 [node name="CanvasLayer" type="CanvasLayer" parent="."]
 
 [node name="HUD" parent="CanvasLayer" instance=ExtResource( 4 )]
-[connection signal="death" from="Player" to="CanvasLayer/HUD" method="_on_player_death"]
-[connection signal="health" from="Player" to="CanvasLayer/HUD" method="_on_player_health"]
-[connection signal="total_health" from="Player" to="CanvasLayer/HUD" method="_on_player_total_health"]
-[connection signal="death" from="Player2" to="CanvasLayer/HUD" method="_on_player_death"]
-[connection signal="health" from="Player2" to="CanvasLayer/HUD" method="_on_player_health"]
-[connection signal="total_health" from="Player2" to="CanvasLayer/HUD" method="_on_player_total_health"]
-[connection signal="death" from="Player3" to="CanvasLayer/HUD" method="_on_player_death"]
-[connection signal="health" from="Player3" to="CanvasLayer/HUD" method="_on_player_health"]
-[connection signal="total_health" from="Player3" to="CanvasLayer/HUD" method="_on_player_total_health"]
-[connection signal="death" from="Player4" to="CanvasLayer/HUD" method="_on_player_death"]
-[connection signal="health" from="Player4" to="CanvasLayer/HUD" method="_on_player_health"]
-[connection signal="total_health" from="Player4" to="CanvasLayer/HUD" method="_on_player_total_health"]
+[connection signal="new_player" from="." to="CanvasLayer/HUD" method="_on_new_player"]
