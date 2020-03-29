@@ -1,5 +1,6 @@
 extends KinematicBody2D
 
+signal give_point(player)
 signal health(health, player)
 export var player_number = 0
 export var pad_id = 0
@@ -41,6 +42,7 @@ func _physics_process(delta):
 	var collision = move_and_collide(velocity * delta, false)
 	if collision:
 		if collision.collider.is_in_group("balls"):
+			collision.collider.new_sender(player_number)
 			if velocity.length() > 0:
 				collision.collider.apply_central_impulse(-collision.normal * abs(velocity.length()))
 			else:
@@ -59,9 +61,13 @@ func _on_back_entered(body):
 			position = spawn_position
 			health = total_health
 			deaths += 1
+			if body.recent_senders[0] == player_number and body.recent_senders.size() > 1:
+				emit_signal("give_point", body.recent_senders[1])
+			elif body.recent_senders[0] != player_number:
+				emit_signal("give_point", body.recent_senders[0])
 			emit_signal("health", total_health, player_number)
-			invincible = true
 			$Invincibility.start(4)
+			invincible = true
 			return
 		$Invincibility.start(2)
 		invincible = true

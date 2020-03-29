@@ -5,7 +5,7 @@ export (PackedScene) var Player
 export (PackedScene) var Ball
 export var balls = 8
 export var total_health = 4
-var pads_to_players = {} # pad id: player num
+var pads_to_players = {}
 var used_colors = []
 
 func _ready():
@@ -33,8 +33,11 @@ func _process(_delta):
 			new_player.modulate = new_color
 			emit_signal("new_player", total_health, new_color)
 			new_player.pad_id = c
+			new_player.connect("give_point", $CanvasLayer/HUD, "_on_give_point")
 			new_player.connect("health", $CanvasLayer/HUD, "_on_player_health")
 			add_child(new_player)
-	
-	if Input.is_key_pressed(KEY_ESCAPE):
-		get_tree().reload_current_scene()
+
+func _input(event):
+	if event is InputEventKey:
+		if event.pressed and event.scancode == KEY_ESCAPE:
+			return get_tree().reload_current_scene()
