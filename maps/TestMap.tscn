@@ -52,3 +52,55 @@ shape = SubResource( 4 )
 [node name="RightWall" type="CollisionShape2D" parent="Walls"]
 position = Vector2( 992, 320 )
 shape = SubResource( 5 )
+
+[node name="PlayerSpawns" type="Node2D" parent="."]
+
+[node name="PlayerSpawn" type="Node2D" parent="PlayerSpawns"]
+position = Vector2( 128, 128 )
+
+[node name="PlayerSpawn2" type="Node2D" parent="PlayerSpawns"]
+position = Vector2( 384, 128 )
+
+[node name="PlayerSpawn3" type="Node2D" parent="PlayerSpawns"]
+position = Vector2( 640, 128 )
+
+[node name="PlayerSpawn4" type="Node2D" parent="PlayerSpawns"]
+position = Vector2( 896, 128 )
+
+[node name="PlayerSpawn5" type="Node2D" parent="PlayerSpawns"]
+position = Vector2( 128, 512 )
+
+[node name="PlayerSpawn6" type="Node2D" parent="PlayerSpawns"]
+position = Vector2( 384, 512 )
+
+[node name="PlayerSpawn7" type="Node2D" parent="PlayerSpawns"]
+position = Vector2( 640, 512 )
+
+[node name="PlayerSpawn8" type="Node2D" parent="PlayerSpawns"]
+position = Vector2( 896, 512 )
+
+[node name="BallSpawns" type="Node2D" parent="."]
+
+[node name="BallSpawn" type="Node2D" parent="BallSpawns"]
+position = Vector2( 128, 256 )
+
+[node name="BallSpawn2" type="Node2D" parent="BallSpawns"]
+position = Vector2( 384, 256 )
+
+[node name="BallSpawn3" type="Node2D" parent="BallSpawns"]
+position = Vector2( 640, 256 )
+
+[node name="BallSpawn4" type="Node2D" parent="BallSpawns"]
+position = Vector2( 896, 256 )
+
+[node name="BallSpawn5" type="Node2D" parent="BallSpawns"]
+position = Vector2( 128, 384 )
+
+[node name="BallSpawn6" type="Node2D" parent="BallSpawns"]
+position = Vector2( 384, 384 )
+
+[node name="BallSpawn7" type="Node2D" parent="BallSpawns"]
+position = Vector2( 640, 384 )
+
+[node name="BallSpawn8" type="Node2D" parent="BallSpawns"]
+position = Vector2( 896, 384 )

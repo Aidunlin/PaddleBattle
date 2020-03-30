@@ -22,6 +22,7 @@ texture = ExtResource( 1 )
 shape = SubResource( 1 )
 
 [node name="Back" type="Area2D" parent="."]
+collision_layer = 0
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="Back"]
 position = Vector2( -8.37782, 0 )

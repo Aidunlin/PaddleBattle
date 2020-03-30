@@ -3,19 +3,23 @@ extends Node2D
 signal new_player(health, color)
 export (PackedScene) var Player
 export (PackedScene) var Ball
-export var balls = 8
 export var total_health = 4
 var pads_to_players = {}
 var used_colors = []
+var player_spawns = []
+var ball_spawns = []
 
 func _ready():
-	for _x in range(balls):
+	ball_spawns = $TestMap/BallSpawns.get_children()
+	for spawn in ball_spawns:
 		var ball = Ball.instance()
+		ball.position = spawn.position
 		add_child(ball)
 	randomize()
 	var map_color = Color.from_hsv((randi() % 18 * 20.0) / 360.0, 1, 1)
 	$TestMap.modulate = map_color
 	used_colors.append(map_color)
+	player_spawns = $TestMap/PlayerSpawns.get_children()
 
 func _process(_delta):
 	for c in Input.get_connected_joypads():
@@ -32,6 +36,8 @@ func _process(_delta):
 			used_colors.append(new_color)
 			new_player.modulate = new_color
 			emit_signal("new_player", total_health, new_color)
+			new_player.spawn_position = player_spawns[pads_to_players[c]].position
+			new_player.position = new_player.spawn_position
 			new_player.pad_id = c
 			new_player.connect("give_point", $CanvasLayer/HUD, "_on_give_point")
 			new_player.connect("health", $CanvasLayer/HUD, "_on_player_health")

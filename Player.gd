@@ -56,6 +56,7 @@ func _on_back_entered(body):
 	if body.is_in_group("balls") and not invincible:
 		health -= 1
 		emit_signal("health", health, player_number)
+		invincible = true
 		if health < 1:
 			velocity = Vector2.ZERO
 			position = spawn_position
@@ -66,11 +67,10 @@ func _on_back_entered(body):
 			elif body.recent_senders[0] != player_number:
 				emit_signal("give_point", body.recent_senders[0])
 			emit_signal("health", total_health, player_number)
+			Input.start_joy_vibration(pad_id, 0.2, 0.2, 0.3)
 			$Invincibility.start(4)
-			invincible = true
-			return
-		$Invincibility.start(2)
-		invincible = true
+		else:
+			$Invincibility.start(2)
 
 func _on_Invincibility_timeout():
 	$Invincibility.stop()
