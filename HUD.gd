@@ -17,6 +17,7 @@ func _on_new_player(health, color):
 	new_bar.size_flags_horizontal = SIZE_EXPAND_FILL
 	new_bar.modulate = color
 	var hp_bar = HBoxContainer.new()
+	hp_bar.alignment = BoxContainer.ALIGN_CENTER
 	var hp_texture = TextureRect.new()
 	hp_texture.texture = load("res://img/hp.png")
 	hp_bar.add_child(hp_texture)
@@ -29,6 +30,7 @@ func _on_new_player(health, color):
 	hp_bar.add_child(hp_bits)
 	new_bar.add_child(hp_bar)
 	var pts_bar = HBoxContainer.new()
+	pts_bar.alignment = BoxContainer.ALIGN_CENTER
 	var pts_texture = TextureRect.new()
 	pts_texture.texture = load("res://img/points.png")
 	pts_bar.add_child(pts_texture)

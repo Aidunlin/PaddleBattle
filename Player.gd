@@ -25,15 +25,27 @@ func _ready():
 func _physics_process(delta):
 	var input_vel = Vector2.ZERO
 	var input_rot = 0
+	if pad_id == -1:
+		input_vel.y = -float(Input.is_key_pressed(KEY_W)) + float(Input.is_key_pressed(KEY_S))
+		input_vel.x = -float(Input.is_key_pressed(KEY_A)) + float(Input.is_key_pressed(KEY_D))
+		input_rot = float(Input.is_key_pressed(KEY_H)) - float(Input.is_key_pressed(KEY_G))
+		input_vel = input_vel.normalized()
+		input_vel *= sprint_speed if Input.is_key_pressed(KEY_SHIFT) else move_speed
+	elif pad_id == -2:
+		input_vel.y = -float(Input.is_key_pressed(KEY_UP)) + float(Input.is_key_pressed(KEY_DOWN))
+		input_vel.x = -float(Input.is_key_pressed(KEY_LEFT)) + float(Input.is_key_pressed(KEY_RIGHT))
+		input_rot = float(Input.is_key_pressed(KEY_KP_3)) - float(Input.is_key_pressed(KEY_KP_2))
+		input_vel = input_vel.normalized()
+		input_vel *= sprint_speed if Input.is_key_pressed(KEY_KP_1) else move_speed
+	else:
+		var ljoy_xaxis = Input.get_joy_axis(pad_id, JOY_AXIS_0)
+		var ljoy_yaxis = Input.get_joy_axis(pad_id, JOY_AXIS_1)
+		if abs(ljoy_xaxis) > stick_dz || abs(ljoy_yaxis) > stick_dz:
+			input_vel = Vector2(ljoy_xaxis, ljoy_yaxis)
+		input_rot = Input.get_joy_axis(pad_id, JOY_AXIS_7) - Input.get_joy_axis(pad_id, JOY_AXIS_6)
+		input_vel *= sprint_speed if Input.is_joy_button_pressed(pad_id, 1) else move_speed
 	
-	var ljoy_xaxis = Input.get_joy_axis(pad_id, JOY_AXIS_0)
-	var ljoy_yaxis = Input.get_joy_axis(pad_id, JOY_AXIS_1)
-	if abs(ljoy_xaxis) > stick_dz || abs(ljoy_yaxis) > stick_dz:
-		input_vel = Vector2(ljoy_xaxis, ljoy_yaxis)
-	input_rot = Input.get_joy_axis(pad_id, JOY_AXIS_7) - Input.get_joy_axis(pad_id, JOY_AXIS_6)
 	rotation += deg2rad(input_rot * rotate_speed)
-	input_vel *= sprint_speed if Input.is_joy_button_pressed(pad_id, 1) else move_speed
-	
 	if input_vel.length() > 0:
 		velocity = velocity.linear_interpolate(input_vel, acceleration)
 	else:
@@ -50,7 +62,8 @@ func _physics_process(delta):
 			velocity = velocity.bounce(collision.normal).normalized()
 		else:
 			velocity = velocity.bounce(collision.normal)
-		Input.start_joy_vibration(pad_id, 0.2, 0.2, 0.1)
+		if pad_id < 0:
+			Input.start_joy_vibration(pad_id, 0.2, 0.2, 0.1)
 
 func _on_back_entered(body):
 	if body.is_in_group("balls") and not invincible:
@@ -67,7 +80,8 @@ func _on_back_entered(body):
 			elif body.recent_senders[0] != player_number:
 				emit_signal("give_point", body.recent_senders[0])
 			emit_signal("health", total_health, player_number)
-			Input.start_joy_vibration(pad_id, 0.2, 0.2, 0.3)
+			if pad_id < 0:
+				Input.start_joy_vibration(pad_id, 0.2, 0.2, 0.3)
 			$Invincibility.start(4)
 		else:
 			$Invincibility.start(2)
