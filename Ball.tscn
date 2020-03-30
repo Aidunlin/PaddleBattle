@@ -8,7 +8,7 @@ friction = 0.1
 bounce = 0.9
 
 [sub_resource type="CircleShape2D" id=2]
-radius = 16.0
+radius = 21.2969
 
 [node name="Ball" type="RigidBody2D" groups=[
 "balls",

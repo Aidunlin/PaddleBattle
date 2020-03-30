@@ -84,3 +84,7 @@ ui_end={
 [physics]
 
 common/physics_fps=120
+
+[rendering]
+
+environment/default_clear_color=Color( 0.0627451, 0.0627451, 0.0627451, 1 )

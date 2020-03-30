@@ -43,14 +43,15 @@ func new_player(id):
 	add_child(new_player)
 
 func _process(_delta):
-	if Input.is_key_pressed(KEY_ENTER) and not pads_to_players.has(-1) and pads_to_players.size() < max_players:
-		new_player(-1)
-	elif Input.is_key_pressed(KEY_KP_ENTER) and not pads_to_players.has(-2) and pads_to_players.size() < max_players:
-		new_player(-2)
-	else:
-		for c in Input.get_connected_joypads():
-			if Input.is_joy_button_pressed(c, 11) and not pads_to_players.has(c) and pads_to_players.size() < max_players:
-				new_player(c)
+	if pads_to_players.size() < max_players:
+		if Input.is_key_pressed(KEY_ENTER) and not pads_to_players.has(-1):
+			new_player(-1)
+		elif Input.is_key_pressed(KEY_KP_ENTER) and not pads_to_players.has(-2):
+			new_player(-2)
+		else:
+			for c in Input.get_connected_joypads():
+				if Input.is_joy_button_pressed(c, 11) and not pads_to_players.has(c):
+					new_player(c)
 
 func _input(event):
 	if event is InputEventKey:

@@ -4,11 +4,11 @@
 [ext_resource path="res://Player.gd" type="Script" id=2]
 
 [sub_resource type="CapsuleShape2D" id=1]
-radius = 16.0
-height = 64.0
+radius = 15.0892
+height = 65.8216
 
 [sub_resource type="RectangleShape2D" id=2]
-extents = Vector2( 40, 8.00014 )
+extents = Vector2( 5.19019, 36.8657 )
 
 [node name="Player" type="KinematicBody2D" groups=[
 "players",
@@ -25,8 +25,7 @@ shape = SubResource( 1 )
 collision_layer = 0
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="Back"]
-position = Vector2( -8.37782, 0 )
-rotation = 1.5708
+position = Vector2( -10.4356, 0 )
 shape = SubResource( 2 )
 
 [node name="Invincibility" type="Timer" parent="."]

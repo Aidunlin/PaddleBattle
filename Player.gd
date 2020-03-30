@@ -62,7 +62,7 @@ func _physics_process(delta):
 			velocity = velocity.bounce(collision.normal).normalized()
 		else:
 			velocity = velocity.bounce(collision.normal)
-		if pad_id < 0:
+		if pad_id >= 0:
 			Input.start_joy_vibration(pad_id, 0.2, 0.2, 0.1)
 
 func _on_back_entered(body):
@@ -80,7 +80,7 @@ func _on_back_entered(body):
 			elif body.recent_senders[0] != player_number:
 				emit_signal("give_point", body.recent_senders[0])
 			emit_signal("health", total_health, player_number)
-			if pad_id < 0:
+			if pad_id >= 0:
 				Input.start_joy_vibration(pad_id, 0.2, 0.2, 0.3)
 			$Invincibility.start(4)
 		else:
