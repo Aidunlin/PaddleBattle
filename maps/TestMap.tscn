@@ -104,3 +104,6 @@ position = Vector2( 640, 384 )
 
 [node name="BallSpawn8" type="Node2D" parent="BallSpawns"]
 position = Vector2( 896, 384 )
+
+[node name="DefCamPos" type="Node2D" parent="."]
+position = Vector2( 512, 320 )

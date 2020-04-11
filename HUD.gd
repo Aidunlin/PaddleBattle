@@ -1,7 +1,10 @@
 extends MarginContainer
 
+var player_hp_bits = []
+var player_pt_bits = []
+
 func _on_player_health(health, player):
-	var hp_bits = $Bars.get_children()[player].get_children()[0].get_children()[1].get_children()
+	var hp_bits = player_hp_bits[player].get_children()
 	for i in range(hp_bits.size()):
 		hp_bits[i].modulate = Color(0.2,0.2,0.2,0.2)
 		if health > i:
@@ -10,12 +13,14 @@ func _on_player_health(health, player):
 func _on_give_point(player):
 	var pt_bit = TextureRect.new()
 	pt_bit.texture = load("res://img/point.png")
-	$Bars.get_children()[player].get_children()[1].get_children()[1].add_child(pt_bit)
+	player_pt_bits[player].add_child(pt_bit)
 
 func _on_new_player(health, color):
-	var new_bar = VBoxContainer.new()
+	var new_bar = HBoxContainer.new()
 	new_bar.size_flags_horizontal = SIZE_EXPAND_FILL
 	new_bar.modulate = color
+	new_bar.alignment = BoxContainer.ALIGN_CENTER
+	var bars_wrap = VBoxContainer.new()
 	var hp_bar = HBoxContainer.new()
 	var hp_texture = TextureRect.new()
 	hp_texture.texture = load("res://img/hp.png")
@@ -27,13 +32,17 @@ func _on_new_player(health, color):
 		hp_bit.texture = load("res://img/hp-bit.png")
 		hp_bits.add_child(hp_bit)
 	hp_bar.add_child(hp_bits)
-	new_bar.add_child(hp_bar)
-	var pts_bar = HBoxContainer.new()
-	var pts_texture = TextureRect.new()
-	pts_texture.texture = load("res://img/points.png")
-	pts_bar.add_child(pts_texture)
-	var pts = HBoxContainer.new()
-	pts.set("custom_constants/separation", -16)
-	pts_bar.add_child(pts)
-	new_bar.add_child(pts_bar)
+	bars_wrap.add_child(hp_bar)
+	var pt_bar = HBoxContainer.new()
+	var pt_texture = TextureRect.new()
+	pt_texture.texture = load("res://img/points.png")
+	pt_bar.add_child(pt_texture)
+	var pt_bits = HBoxContainer.new()
+	pt_bits.set("custom_constants/separation", -16)
+	pt_bar.add_child(pt_bits)
+	bars_wrap.add_child(pt_bar)
+	new_bar.add_child(bars_wrap)
 	$Bars.add_child(new_bar)
+	$Bars.columns = $Bars.get_children().size() if $Bars.get_children().size() < 5 else 4
+	player_hp_bits.append(hp_bits)
+	player_pt_bits.append(pt_bits)

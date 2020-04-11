@@ -9,9 +9,9 @@ var velocity = Vector2.ZERO
 var invincible = false
 export var acceleration = 0.06
 export var deceleration = 0.02
-export var move_speed = 450
-export var sprint_speed = 600
-export var rotate_speed = 3.5
+export var move_speed = 400
+export var sprint_speed = 550
+export var rotate_speed = 3.3
 export var total_health = 4
 var stick_dz = 0.2
 var health = total_health
@@ -41,8 +41,10 @@ func _physics_process(delta):
 		var ljoy_xaxis = Input.get_joy_axis(pad_id, JOY_AXIS_0)
 		var ljoy_yaxis = Input.get_joy_axis(pad_id, JOY_AXIS_1)
 		if abs(ljoy_xaxis) > stick_dz || abs(ljoy_yaxis) > stick_dz:
-			input_vel = Vector2(ljoy_xaxis, ljoy_yaxis)
-		input_rot = Input.get_joy_axis(pad_id, JOY_AXIS_7) - Input.get_joy_axis(pad_id, JOY_AXIS_6)
+			var x_mult = 1 if ljoy_xaxis > 0 else -1
+			var y_mult = 1 if ljoy_yaxis > 0 else -1
+			input_vel = Vector2(x_mult * pow(ljoy_xaxis, 2), y_mult * pow(ljoy_yaxis, 2))
+		input_rot = pow(Input.get_joy_axis(pad_id, JOY_AXIS_7), 2) - pow(Input.get_joy_axis(pad_id, JOY_AXIS_6), 2)
 		input_vel *= sprint_speed if Input.is_joy_button_pressed(pad_id, 1) else move_speed
 	
 	rotation += deg2rad(input_rot * rotate_speed)

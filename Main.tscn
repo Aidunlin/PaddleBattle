@@ -14,8 +14,8 @@ Ball = ExtResource( 2 )
 [node name="TestMap" parent="." instance=ExtResource( 3 )]
 
 [node name="Camera2D" type="Camera2D" parent="."]
-position = Vector2( 512, 320 )
 current = true
+smoothing_enabled = true
 
 [node name="CanvasLayer" type="CanvasLayer" parent="."]
 
