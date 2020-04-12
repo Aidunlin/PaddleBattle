@@ -25,29 +25,35 @@ func _ready():
 func _physics_process(delta):
 	var input_vel = Vector2.ZERO
 	var input_rot = 0
+	
 	if pad_id == -1:
 		input_vel.y = -float(Input.is_key_pressed(KEY_W)) + float(Input.is_key_pressed(KEY_S))
 		input_vel.x = -float(Input.is_key_pressed(KEY_A)) + float(Input.is_key_pressed(KEY_D))
 		input_rot = float(Input.is_key_pressed(KEY_H)) - float(Input.is_key_pressed(KEY_G))
 		input_vel = input_vel.normalized()
 		input_vel *= sprint_speed if Input.is_key_pressed(KEY_SHIFT) else move_speed
+		rotation += deg2rad(input_rot * rotate_speed)
+	
 	elif pad_id == -2:
 		input_vel.y = -float(Input.is_key_pressed(KEY_UP)) + float(Input.is_key_pressed(KEY_DOWN))
 		input_vel.x = -float(Input.is_key_pressed(KEY_LEFT)) + float(Input.is_key_pressed(KEY_RIGHT))
 		input_rot = float(Input.is_key_pressed(KEY_KP_3)) - float(Input.is_key_pressed(KEY_KP_2))
 		input_vel = input_vel.normalized()
 		input_vel *= sprint_speed if Input.is_key_pressed(KEY_KP_1) else move_speed
-	else:
-		var ljoy_xaxis = Input.get_joy_axis(pad_id, JOY_AXIS_0)
-		var ljoy_yaxis = Input.get_joy_axis(pad_id, JOY_AXIS_1)
-		if abs(ljoy_xaxis) > stick_dz || abs(ljoy_yaxis) > stick_dz:
-			var x_mult = 1 if ljoy_xaxis > 0 else -1
-			var y_mult = 1 if ljoy_yaxis > 0 else -1
-			input_vel = Vector2(x_mult * pow(ljoy_xaxis, 2), y_mult * pow(ljoy_yaxis, 2))
-		input_rot = pow(Input.get_joy_axis(pad_id, JOY_AXIS_7), 2) - pow(Input.get_joy_axis(pad_id, JOY_AXIS_6), 2)
-		input_vel *= sprint_speed if Input.is_joy_button_pressed(pad_id, 1) else move_speed
+		rotation += deg2rad(input_rot * rotate_speed)
 	
-	rotation += deg2rad(input_rot * rotate_speed)
+	else:
+		var left_x = Input.get_joy_axis(pad_id, JOY_AXIS_0)
+		var left_y = Input.get_joy_axis(pad_id, JOY_AXIS_1)
+		if abs(left_x) > stick_dz or abs(left_y) > stick_dz:
+			var x_mult = 1 if left_x > 0 else -1
+			var y_mult = 1 if left_y > 0 else -1
+			input_vel = Vector2(x_mult * pow(left_x, 2), y_mult * pow(left_y, 2))
+		input_vel *= sprint_speed if Input.is_joy_button_pressed(pad_id, 6) else move_speed
+		var right_stick = Vector2(Input.get_joy_axis(pad_id, JOY_AXIS_2), Input.get_joy_axis(pad_id, JOY_AXIS_3))
+		if right_stick.length() > 0.7:
+			rotation += get_angle_to(position + right_stick) * 0.1
+	
 	if input_vel.length() > 0:
 		velocity = velocity.linear_interpolate(input_vel, acceleration)
 	else:
