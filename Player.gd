@@ -5,6 +5,7 @@ signal health(health, player)
 export var player_number = 0
 export var pad_id = 0
 export var spawn_position = Vector2(0, 0)
+export var spawn_rotation = 0
 var velocity = Vector2.ZERO
 var invincible = false
 export var acceleration = 0.06
@@ -21,6 +22,8 @@ func _ready():
 	add_to_group("players")
 	$Invincibility.start(4)
 	invincible = true
+	position = spawn_position
+	rotation = spawn_rotation
 
 func _physics_process(delta):
 	var input_vel = Vector2.ZERO

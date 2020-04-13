@@ -40,7 +40,7 @@ func new_player(id):
 	new_player.modulate = new_color
 	emit_signal("new_player", total_health, new_color)
 	new_player.spawn_position = player_spawns[pads_to_players[id]].position
-	new_player.position = new_player.spawn_position
+	new_player.spawn_rotation = player_spawns[pads_to_players[id]].rotation
 	new_player.pad_id = id
 	new_player.connect("give_point", $CanvasLayer/HUD, "_on_give_point")
 	new_player.connect("health", $CanvasLayer/HUD, "_on_player_health")
