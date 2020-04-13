@@ -2,6 +2,7 @@ extends RigidBody2D
 
 var recent_senders = []
 
+# Keep track of which players collided with this ball
 func new_sender(number):
 	if recent_senders.has(number):
 		recent_senders.remove(recent_senders.find(number))

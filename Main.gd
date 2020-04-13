@@ -1,8 +1,6 @@
 extends Node2D
 
 signal new_player(health, color)
-export (PackedScene) var Player
-export (PackedScene) var Ball
 export var total_health = 4
 export var max_players = 8
 var players = []
@@ -19,17 +17,18 @@ func _ready():
 	ball_spawns = $TestMap/BallSpawns.get_children()
 	$Camera2D.position = $TestMap/DefCamPos.position
 	for spawn in ball_spawns:
-		var ball = Ball.instance()
+		var ball = load("res://Ball.tscn").instance()
 		ball.position = spawn.position
-		add_child(ball)
+		$Balls.add_child(ball)
 	randomize()
 	var map_color = Color.from_hsv((randi() % 18 * 20.0) / 360.0, 1, 1)
 	$TestMap.modulate = map_color
 	used_colors.append(map_color)
 
+# Create new player, connect to input ID
 func new_player(id):
 	pads_to_players[id] = pads_to_players.size()
-	var new_player = Player.instance()
+	var new_player = load("res://Player.tscn").instance()
 	new_player.player_number = pads_to_players[id]
 	new_player.total_health = total_health
 	randomize()
@@ -46,9 +45,11 @@ func new_player(id):
 	new_player.connect("give_point", $CanvasLayer/HUD, "_on_give_point")
 	new_player.connect("health", $CanvasLayer/HUD, "_on_player_health")
 	players.append(new_player)
-	add_child(new_player)
+	$Players.add_child(new_player)
+	$Players.move_child(new_player, 0)
 
 func _process(_delta):
+	# Create player, set player's pad based on which was used (with keyboard alternatives)
 	if pads_to_players.size() < max_players:
 		if Input.is_key_pressed(KEY_ENTER) and not pads_to_players.has(-1):
 			new_player(-1)
@@ -59,6 +60,7 @@ func _process(_delta):
 				if Input.is_joy_button_pressed(c, 11) and not pads_to_players.has(c):
 					new_player(c)
 
+	# Center camera to average player position
 	if players.size() > 0:
 		var avg_x = 0
 		var avg_y = 0
@@ -69,6 +71,7 @@ func _process(_delta):
 		avg_y /= players.size()
 		$Camera2D.position = Vector2(avg_x, avg_y)
 	
+	# Zoom camera to always view all players
 	if players.size() > 1:
 		var max_x = players[0].position.x
 		var min_x = players[0].position.x

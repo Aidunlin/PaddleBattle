@@ -79,6 +79,12 @@ ui_end={
 "events": [  ]
 }
 
+[layer_names]
+
+2d_physics/layer_1="players"
+2d_physics/layer_2="balls"
+2d_physics/layer_3="walls"
+
 [physics]
 
 common/physics_fps=120

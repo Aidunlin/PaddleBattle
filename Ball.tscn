@@ -13,6 +13,8 @@ radius = 21.2969
 [node name="Ball" type="RigidBody2D" groups=[
 "balls",
 ]]
+collision_layer = 2
+collision_mask = 7
 mass = 0.5
 physics_material_override = SubResource( 1 )
 gravity_scale = 0.0

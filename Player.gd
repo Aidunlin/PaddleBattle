@@ -26,6 +26,7 @@ func _physics_process(delta):
 	var input_vel = Vector2.ZERO
 	var input_rot = 0
 	
+	# Manage inputs (-1 and -2 are keyboard controls)
 	if pad_id == -1:
 		input_vel.y = -float(Input.is_key_pressed(KEY_W)) + float(Input.is_key_pressed(KEY_S))
 		input_vel.x = -float(Input.is_key_pressed(KEY_A)) + float(Input.is_key_pressed(KEY_D))
@@ -33,7 +34,6 @@ func _physics_process(delta):
 		input_vel = input_vel.normalized()
 		input_vel *= sprint_speed if Input.is_key_pressed(KEY_SHIFT) else move_speed
 		rotation += deg2rad(input_rot * rotate_speed)
-	
 	elif pad_id == -2:
 		input_vel.y = -float(Input.is_key_pressed(KEY_UP)) + float(Input.is_key_pressed(KEY_DOWN))
 		input_vel.x = -float(Input.is_key_pressed(KEY_LEFT)) + float(Input.is_key_pressed(KEY_RIGHT))
@@ -41,7 +41,6 @@ func _physics_process(delta):
 		input_vel = input_vel.normalized()
 		input_vel *= sprint_speed if Input.is_key_pressed(KEY_KP_1) else move_speed
 		rotation += deg2rad(input_rot * rotate_speed)
-	
 	else:
 		var left_x = Input.get_joy_axis(pad_id, JOY_AXIS_0)
 		var left_y = Input.get_joy_axis(pad_id, JOY_AXIS_1)
@@ -54,11 +53,13 @@ func _physics_process(delta):
 		if right_stick.length() > 0.7:
 			rotation += get_angle_to(position + right_stick) * 0.1
 	
+	# Smoothify movement
 	if input_vel.length() > 0:
 		velocity = velocity.linear_interpolate(input_vel, acceleration)
 	else:
 		velocity = velocity.linear_interpolate(Vector2.ZERO, deceleration)
 	
+	# Manage collisions with balls
 	var collision = move_and_collide(velocity * delta, false)
 	if collision:
 		if collision.collider.is_in_group("balls"):
@@ -73,6 +74,7 @@ func _physics_process(delta):
 		if pad_id >= 0:
 			Input.start_joy_vibration(pad_id, 0.2, 0.2, 0.1)
 
+# Manage player damage, invincibiility, and resetting
 func _on_back_entered(body):
 	if body.is_in_group("balls") and not invincible:
 		health -= 1

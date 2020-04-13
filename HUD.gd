@@ -3,6 +3,7 @@ extends MarginContainer
 var player_hp_bits = []
 var player_pt_bits = []
 
+# Change specified player's health bar
 func _on_player_health(health, player):
 	var hp_bits = player_hp_bits[player].get_children()
 	for i in range(hp_bits.size()):
@@ -10,11 +11,13 @@ func _on_player_health(health, player):
 		if health > i:
 			hp_bits[i].modulate = Color(1,1,1,1)
 
+# Increment player's points bar
 func _on_give_point(player):
 	var pt_bit = TextureRect.new()
 	pt_bit.texture = load("res://img/point.png")
 	player_pt_bits[player].add_child(pt_bit)
 
+# Create new UI (health/point bars) for player
 func _on_new_player(health, color):
 	var new_bar = HBoxContainer.new()
 	new_bar.size_flags_horizontal = SIZE_EXPAND_FILL
