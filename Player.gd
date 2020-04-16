@@ -4,9 +4,9 @@ signal give_point(player)
 signal health(health, player)
 export var player_number = 0
 export var pad_id = 0
-export var spawn_position = Vector2(0, 0)
+export var spawn_position = Vector2()
 export var spawn_rotation = 0
-var velocity = Vector2.ZERO
+var velocity = Vector2()
 var invincible = false
 export var acceleration = 0.06
 export var deceleration = 0.02
@@ -19,14 +19,13 @@ var health = total_health
 var deaths = 0
 
 func _ready():
-	add_to_group("players")
 	$Invincibility.start(4)
 	invincible = true
 	position = spawn_position
 	rotation = spawn_rotation
 
 func _physics_process(delta):
-	var input_vel = Vector2.ZERO
+	var input_vel = Vector2()
 	var input_rot = 0
 	
 	# Manage inputs (-1 and -2 are keyboard controls)
@@ -60,7 +59,7 @@ func _physics_process(delta):
 	if input_vel.length() > 0:
 		velocity = velocity.linear_interpolate(input_vel, acceleration)
 	else:
-		velocity = velocity.linear_interpolate(Vector2.ZERO, deceleration)
+		velocity = velocity.linear_interpolate(Vector2(), deceleration)
 	
 	# Manage collisions with balls
 	var collision = move_and_collide(velocity * delta, false)
@@ -84,7 +83,7 @@ func _on_back_entered(body):
 		emit_signal("health", health, player_number)
 		invincible = true
 		if health < 1:
-			velocity = Vector2.ZERO
+			velocity = Vector2()
 			position = spawn_position
 			health = total_health
 			deaths += 1
