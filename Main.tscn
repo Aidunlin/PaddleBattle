@@ -1,5 +1,6 @@
-[gd_scene load_steps=2 format=2]
+[gd_scene load_steps=3 format=2]
 
+[ext_resource path="res://TestMap.tscn" type="PackedScene" id=2]
 [ext_resource path="res://Main.gd" type="Script" id=6]
 
 [node name="Main" type="Node"]
@@ -13,92 +14,49 @@ __meta__ = {
 }
 
 [node name="Main" type="VBoxContainer" parent="Menu"]
-margin_left = 565.0
-margin_top = 280.0
-margin_right = 715.0
-margin_bottom = 440.0
-rect_min_size = Vector2( 150, 0 )
-
-[node name="Label" type="Label" parent="Menu/Main"]
-margin_right = 150.0
-margin_bottom = 14.0
-text = "Paddle Battle"
-align = 1
-
-[node name="Name" type="LineEdit" parent="Menu/Main"]
-margin_top = 18.0
-margin_right = 150.0
-margin_bottom = 42.0
-text = "Player"
-align = 1
+margin_left = 412.0
+margin_top = 260.0
+margin_right = 612.0
+margin_bottom = 340.0
+rect_min_size = Vector2( 200, 0 )
+custom_constants/separation = 8
+__meta__ = {
+"_edit_use_anchors_": false
+}
 
 [node name="HostButton" type="Button" parent="Menu/Main"]
-margin_top = 46.0
-margin_right = 150.0
-margin_bottom = 66.0
+margin_right = 200.0
+margin_bottom = 20.0
 text = "Host"
 
 [node name="Address" type="LineEdit" parent="Menu/Main"]
-margin_top = 70.0
-margin_right = 150.0
-margin_bottom = 94.0
+margin_top = 28.0
+margin_right = 200.0
+margin_bottom = 52.0
+size_flags_horizontal = 3
 text = "127.0.0.1"
 align = 1
+max_length = 15
+context_menu_enabled = false
 __meta__ = {
 "_edit_use_anchors_": false
 }
 
 [node name="JoinButton" type="Button" parent="Menu/Main"]
-margin_top = 98.0
-margin_right = 150.0
-margin_bottom = 118.0
+margin_top = 60.0
+margin_right = 200.0
+margin_bottom = 80.0
 text = "Join"
 
-[node name="ExitButton" type="Button" parent="Menu/Main"]
-margin_top = 122.0
-margin_right = 150.0
-margin_bottom = 142.0
-text = "Exit"
-
-[node name="Message" type="Label" parent="Menu/Main"]
-margin_top = 146.0
-margin_right = 150.0
-margin_bottom = 160.0
-align = 1
-
-[node name="Lobby" type="VBoxContainer" parent="Menu"]
+[node name="Game" type="Node2D" parent="."]
 visible = false
-margin_left = 565.0
-margin_top = 237.0
-margin_right = 715.0
-margin_bottom = 483.0
-rect_min_size = Vector2( 150, 0 )
 
-[node name="Label" type="Label" parent="Menu/Lobby"]
-margin_right = 150.0
-margin_bottom = 14.0
-text = "Players"
-align = 1
+[node name="TestMap" parent="Game" instance=ExtResource( 2 )]
 
-[node name="Players" type="ItemList" parent="Menu/Lobby"]
-margin_top = 18.0
-margin_right = 150.0
-margin_bottom = 198.0
-rect_min_size = Vector2( 0, 180 )
+[node name="Camera2D" type="Camera2D" parent="Game"]
+position = Vector2( 1056, 608 )
+smoothing_enabled = true
 
-[node name="StartButton" type="Button" parent="Menu/Lobby"]
-margin_top = 22.0
-margin_right = 46.0
-margin_bottom = 42.0
-text = "Start"
-
-[node name="QuitButton" type="Button" parent="Menu/Lobby"]
-margin_top = 202.0
-margin_right = 150.0
-margin_bottom = 222.0
-text = "Quit"
+[node name="Players" type="Node2D" parent="Game"]
 [connection signal="pressed" from="Menu/Main/HostButton" to="." method="_on_HostButton_pressed"]
 [connection signal="pressed" from="Menu/Main/JoinButton" to="." method="_on_JoinButton_pressed"]
-[connection signal="pressed" from="Menu/Main/ExitButton" to="." method="_on_ExitButton_pressed"]
-[connection signal="pressed" from="Menu/Lobby/StartButton" to="." method="_on_StartButton_pressed"]
-[connection signal="pressed" from="Menu/Lobby/QuitButton" to="." method="_on_QuitButton_pressed"]

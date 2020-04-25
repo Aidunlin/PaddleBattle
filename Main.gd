@@ -1,132 +1,85 @@
 extends Node
 
-const PORT = 8910
-onready var name_text = get_node("Menu/Main/Name")
+onready var menu = get_node("Menu")
 onready var host_button = get_node("Menu/Main/HostButton")
-onready var address_text = get_node("Menu/Main/Address")
+onready var address_input = get_node("Menu/Main/Address")
 onready var join_button = get_node("Menu/Main/JoinButton")
-onready var message = get_node("Menu/Main/Message")
-onready var lobby = get_node("Menu/Lobby")
-onready var start_button = get_node("Menu/Lobby/StartButton")
-onready var player_list = get_node("Menu/Lobby/Players")
+onready var game = get_node("Game")
+onready var player_spawn = get_node("Game/TestMap/SpawnPosition").position
+onready var camera = get_node("Game/Camera2D")
+onready var players = get_node("Game/Players")
 
-var players = {}
+var player_data = {}
+onready var self_data = {position = player_spawn, rotation = 0}
 
 func _ready():
-	get_tree().connect("network_peer_connected", self, "_network_peer_connected")
-	get_tree().connect("network_peer_disconnected", self,"_network_peer_disconnected")
-	get_tree().connect("connected_to_server", self, "_connected_to_server")
-	get_tree().connect("connection_failed", self, "_connection_failed")
-	get_tree().connect("server_disconnected", self, "_server_disconnected")
+	get_tree().connect("network_peer_connected", self, "network_peer_connected")
+	get_tree().connect("network_peer_disconnected", self, "network_peer_disconnected")
+	get_tree().connect("connection_failed", self, "connection_failed")
+	get_tree().connect("server_disconnected", self, "server_disconnected")
 
-
-
-### SceneTree callbacks
-
-func _network_peer_connected(id): # Server/Client
-	rpc_id(id, "new_player", name_text.get_text())
-
-func _network_peer_disconnected(id): # Server/Client
-	if has_node("Game"):
-		if get_tree().is_network_server():
-			message.set_text(players[id] + " disconnected")
-			end_game()
-	else:
-		remove_player(id)
-
-func _connected_to_server(): # Client
-	message.set_text("")
-	host_button.set_disabled(false)
-	join_button.set_disabled(false)
-	lobby.show()
-
-func _connection_failed(): # Client
-	get_tree().set_network_peer(null)
-	message.set_text("Connection failed")
-	host_button.set_disabled(false)
-	host_button.set_disabled(false)
-	lobby.hide()
-
-func _server_disconnected(): # Client
-	message.set_text("Server disconnected")
-	end_game()
-
-### Lobby management
-
-remote func new_player(name):
-	var id = get_tree().get_rpc_sender_id()
-	print(id)
-	players[id] = name
-	update_player_list()
-
-func remove_player(id):
-	players.erase(id)
-	update_player_list()
-
-func update_player_list():
-	players.values().sort()
-	player_list.clear()
-	player_list.add_item(name_text.get_text() + " (you)")
-	for p in players.values():
-		if get_tree().is_network_server():
-			player_list.add_item(p)
-		else:
-			if p == players[1]:
-				player_list.add_item(p + " (host)")
-			else:
-				player_list.add_item(p)
+func network_peer_connected(id):
 	if not get_tree().is_network_server():
-		start_button.hide()
+		rpc_id(1, "request_data", get_tree().get_network_unique_id(), id)
 
-func end_game():
-	if has_node("Game"):
-		get_node("Game").queue_free()
-	players.clear()
-	$Menu.show()
-	lobby.hide()
-	host_button.set_disabled(false)
-	join_button.set_disabled(false)
-	get_tree().set_network_peer(null)
+func network_peer_disconnected(id):
+	if players.has_node(str(id)):
+		players.get_node(str(id)).queue_free()
+	player_data.erase(id)
 
-### Button press management
+func connected_to_server():
+	player_data[get_tree().get_network_unique_id()] = self_data
+	rpc("send_data", get_tree().get_network_unique_id(), self_data)
+
+func connection_failed():
+	get_tree().reload_current_scene()
+
+func server_disconnected():
+	get_tree().reload_current_scene()
+
+remote func request_data(from_id, peer_id):
+	if get_tree().is_network_server():
+		rpc_id(from_id, "send_data", peer_id, player_data[peer_id])
+
+remote func send_data(id, data):
+	player_data[id] = data
+	init_player(id, data)
 
 func _on_HostButton_pressed():
-	if name_text.get_text() == "":
-		message.set_text("Invalid name")
-		return
-	message.set_text("")
-	var host = NetworkedMultiplayerENet.new()
-	host.create_server(PORT, 7)
-	get_tree().set_network_peer(host)
-	start_button.show()
-	lobby.show()
-	update_player_list()
+	var peer = NetworkedMultiplayerENet.new()
+	peer.create_server(8910, 4)
+	get_tree().set_network_peer(peer)
+	player_data[1] = self_data
+	load_game()
 
 func _on_JoinButton_pressed():
-	if name_text.get_text() == "":
-		message.set_text("Invalid name")
+	if not address_input.get_text().is_valid_ip_address():
 		return
-	var address = address_text.get_text()
-	if not address.is_valid_ip_address():
-		message.set_text("Invalid address")
-		return
-	message.set_text("Connecting")
-	host_button.set_disabled(true)
-	join_button.set_disabled(true)
+	get_tree().connect("connected_to_server", self, "connected_to_server")
 	var peer = NetworkedMultiplayerENet.new()
-	peer.create_client(address, PORT)
+	peer.create_client(address_input.get_text(), 8910)
 	get_tree().set_network_peer(peer)
+	load_game()
 
-func _on_StartButton_pressed():
-	assert(get_tree().is_network_server())
-	pass
+func load_game():
+	menu.hide()
+	game.show()
+	camera.current = true
+	init_player(get_tree().get_network_unique_id(), self_data)
 
-func _on_QuitButton_pressed():
-	get_tree().set_network_peer(null)
-	host_button.set_disabled(false)
-	join_button.set_disabled(false)
-	start_button.hide()
-	lobby.hide()
+func init_player(id, data):
+	var new_player = load("res://Player.tscn").instance()
+	new_player.name = str(id)
+	new_player.set_network_master(id)
+	new_player.connect("update", self, "update_player")
+	players.add_child(new_player)
+	new_player.position = data.position
+	new_player.rotation = data.rotation
 
-func _on_ExitButton_pressed():
-	get_tree().quit()
+func update_player(id, position, rotation):
+	player_data[id].position = position
+	player_data[id].rotation = rotation
+
+func _process(_delta):
+	if player_data.size() > 0:
+		camera.position = players.get_node(str(get_tree().get_network_unique_id())).position

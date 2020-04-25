@@ -15,25 +15,12 @@ _global_script_class_icons={
 
 [application]
 
-config/name="Paddle Battle (online)"
-config/description="A multiplayer action game with pong-like mechanics (online version)"
+config/name="Paddle Battle"
+config/description="A multiplayer action game with pong-like mechanics"
 run/main_scene="res://Main.tscn"
-
-[display]
-
-window/size/width=1280
-window/size/height=720
 
 [layer_names]
 
 2d_physics/layer_1="players"
 2d_physics/layer_2="balls"
 2d_physics/layer_3="walls"
-
-[physics]
-
-common/physics_fps=120
-
-[rendering]
-
-environment/default_clear_color=Color( 0.0627451, 0.0627451, 0.0627451, 1 )
