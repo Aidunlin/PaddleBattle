@@ -1,15 +1,17 @@
 extends Node
 
-onready var menu = get_node("Menu")
-onready var host_button = get_node("Menu/Main/HostButton")
-onready var address_input = get_node("Menu/Main/Address")
-onready var join_button = get_node("Menu/Main/JoinButton")
+onready var menu = get_node("MenuLayer/Menu")
+onready var host_button = get_node("MenuLayer/Menu/Main/HostButton")
+onready var address_input = get_node("MenuLayer/Menu/Main/Address")
+onready var join_button = get_node("MenuLayer/Menu/Main/JoinButton")
+onready var message = get_node("MenuLayer/Menu/Main/Message")
 onready var game = get_node("Game")
 onready var player_spawn = get_node("Game/TestMap/SpawnPosition").position
 onready var camera = get_node("Game/Camera2D")
 onready var players = get_node("Game/Players")
 
 var player_data = {}
+var playing = false
 onready var self_data = {position = player_spawn, rotation = 0}
 
 func _ready():
@@ -17,6 +19,8 @@ func _ready():
 	get_tree().connect("network_peer_disconnected", self, "network_peer_disconnected")
 	get_tree().connect("connection_failed", self, "connection_failed")
 	get_tree().connect("server_disconnected", self, "server_disconnected")
+	randomize()
+	self_data.color = Color.from_hsv(randf(), 1, 1)
 
 func network_peer_connected(id):
 	if not get_tree().is_network_server():
@@ -28,14 +32,15 @@ func network_peer_disconnected(id):
 	player_data.erase(id)
 
 func connected_to_server():
+	load_game()
 	player_data[get_tree().get_network_unique_id()] = self_data
 	rpc("send_data", get_tree().get_network_unique_id(), self_data)
 
 func connection_failed():
-	get_tree().reload_current_scene()
+	reset("Connection failed")
 
 func server_disconnected():
-	get_tree().reload_current_scene()
+	reset("Server disconnected")
 
 remote func request_data(from_id, peer_id):
 	if get_tree().is_network_server():
@@ -53,24 +58,36 @@ func _on_HostButton_pressed():
 	load_game()
 
 func _on_JoinButton_pressed():
+	message.text = "Connecting"
 	if not address_input.get_text().is_valid_ip_address():
 		return
 	get_tree().connect("connected_to_server", self, "connected_to_server")
 	var peer = NetworkedMultiplayerENet.new()
 	peer.create_client(address_input.get_text(), 8910)
 	get_tree().set_network_peer(peer)
-	load_game()
 
 func load_game():
+	message.text = ""
 	menu.hide()
 	game.show()
-	camera.current = true
 	init_player(get_tree().get_network_unique_id(), self_data)
+	playing = true
+
+func reset(msg):
+	playing = false
+	message.text = msg
+	for p in players.get_children():
+		p.queue_free()
+	player_data.empty()
+	menu.show()
+	game.hide()
+	get_tree().set_deferred("network_peer", null)
 
 func init_player(id, data):
 	var new_player = load("res://Player.tscn").instance()
 	new_player.name = str(id)
 	new_player.set_network_master(id)
+	new_player.modulate = data.color
 	new_player.connect("update", self, "update_player")
 	players.add_child(new_player)
 	new_player.position = data.position
@@ -81,5 +98,7 @@ func update_player(id, position, rotation):
 	player_data[id].rotation = rotation
 
 func _process(_delta):
-	if player_data.size() > 0:
+	if playing and player_data.size() > 0:
 		camera.position = players.get_node(str(get_tree().get_network_unique_id())).position
+	if Input.is_key_pressed(KEY_SHIFT) and Input.is_key_pressed(KEY_ESCAPE):
+		reset("")

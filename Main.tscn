@@ -6,30 +6,32 @@
 [node name="Main" type="Node"]
 script = ExtResource( 6 )
 
-[node name="Menu" type="CenterContainer" parent="."]
+[node name="MenuLayer" type="CanvasLayer" parent="."]
+
+[node name="Menu" type="CenterContainer" parent="MenuLayer"]
 anchor_right = 1.0
 anchor_bottom = 1.0
 __meta__ = {
 "_edit_use_anchors_": false
 }
 
-[node name="Main" type="VBoxContainer" parent="Menu"]
+[node name="Main" type="VBoxContainer" parent="MenuLayer/Menu"]
 margin_left = 412.0
-margin_top = 260.0
+margin_top = 249.0
 margin_right = 612.0
-margin_bottom = 340.0
+margin_bottom = 351.0
 rect_min_size = Vector2( 200, 0 )
 custom_constants/separation = 8
 __meta__ = {
 "_edit_use_anchors_": false
 }
 
-[node name="HostButton" type="Button" parent="Menu/Main"]
+[node name="HostButton" type="Button" parent="MenuLayer/Menu/Main"]
 margin_right = 200.0
 margin_bottom = 20.0
 text = "Host"
 
-[node name="Address" type="LineEdit" parent="Menu/Main"]
+[node name="Address" type="LineEdit" parent="MenuLayer/Menu/Main"]
 margin_top = 28.0
 margin_right = 200.0
 margin_bottom = 52.0
@@ -42,11 +44,17 @@ __meta__ = {
 "_edit_use_anchors_": false
 }
 
-[node name="JoinButton" type="Button" parent="Menu/Main"]
+[node name="JoinButton" type="Button" parent="MenuLayer/Menu/Main"]
 margin_top = 60.0
 margin_right = 200.0
 margin_bottom = 80.0
 text = "Join"
+
+[node name="Message" type="Label" parent="MenuLayer/Menu/Main"]
+margin_top = 88.0
+margin_right = 200.0
+margin_bottom = 102.0
+align = 1
 
 [node name="Game" type="Node2D" parent="."]
 visible = false
@@ -55,8 +63,9 @@ visible = false
 
 [node name="Camera2D" type="Camera2D" parent="Game"]
 position = Vector2( 1056, 608 )
+current = true
 smoothing_enabled = true
 
 [node name="Players" type="Node2D" parent="Game"]
-[connection signal="pressed" from="Menu/Main/HostButton" to="." method="_on_HostButton_pressed"]
-[connection signal="pressed" from="Menu/Main/JoinButton" to="." method="_on_JoinButton_pressed"]
+[connection signal="pressed" from="MenuLayer/Menu/Main/HostButton" to="." method="_on_HostButton_pressed"]
+[connection signal="pressed" from="MenuLayer/Menu/Main/JoinButton" to="." method="_on_JoinButton_pressed"]
