@@ -1,27 +1,28 @@
 extends KinematicBody2D
 
-signal give_point(player)
-signal health(health, player)
+signal hit(p)
+onready var safe_timer = get_node("SafeTimer")
+var safe = false
+
 export var player_number = 0
 export var pad_id = 0
+var stick_dz = 0.2
+
+var velocity = Vector2.ZERO
 export var spawn_position = Vector2(0, 0)
 export var spawn_rotation = 0
-var velocity = Vector2.ZERO
-var invincible = false
 export var acceleration = 0.06
 export var deceleration = 0.02
 export var move_speed = 400
 export var sprint_speed = 550
 export var rotate_speed = 3.3
+
 export var total_health = 4
-var stick_dz = 0.2
 var health = total_health
-var deaths = 0
 
 func _ready():
-	add_to_group("players")
-	$Invincibility.start(4)
-	invincible = true
+	safe_timer.start(4)
+	safe = true
 	position = spawn_position
 	rotation = spawn_rotation
 
@@ -66,11 +67,10 @@ func _physics_process(delta):
 	var collision = move_and_collide(velocity * delta, false)
 	if collision:
 		if collision.collider.is_in_group("balls"):
-			collision.collider.new_sender(player_number)
 			if velocity.length() > 0:
-				collision.collider.apply_central_impulse(-collision.normal * abs(velocity.length()))
+				collision.collider.apply_central_impulse(-collision.normal * velocity.length())
 			else:
-				collision.collider.apply_central_impulse(-collision.normal * 100)
+				collision.collider.apply_central_impulse(-collision.normal)
 			velocity = velocity.bounce(collision.normal).normalized()
 		else:
 			velocity = velocity.bounce(collision.normal)
@@ -79,26 +79,25 @@ func _physics_process(delta):
 
 # Manage player damage, invincibiility, and resetting
 func _on_back_entered(body):
-	if body.is_in_group("balls") and not invincible:
-		health -= 1
-		emit_signal("health", health, player_number)
-		invincible = true
-		if health < 1:
-			velocity = Vector2.ZERO
-			position = spawn_position
-			health = total_health
-			deaths += 1
-			if body.recent_senders[0] == player_number and body.recent_senders.size() > 1:
-				emit_signal("give_point", body.recent_senders[1])
-			elif body.recent_senders[0] != player_number:
-				emit_signal("give_point", body.recent_senders[0])
-			emit_signal("health", total_health, player_number)
-			if pad_id >= 0:
-				Input.start_joy_vibration(pad_id, 0.2, 0.2, 0.3)
-			$Invincibility.start(4)
-		else:
-			$Invincibility.start(2)
+	if body.is_in_group("balls") and not safe:
+		emit_signal("hit", player_number)
 
-func _on_Invincibility_timeout():
-	$Invincibility.stop()
-	invincible = false
+# Reset player to defaults
+func reset():
+	velocity = Vector2.ZERO
+	position = spawn_position
+	health = total_health
+	if pad_id >= 0:
+		Input.start_joy_vibration(pad_id, 0.2, 0.2, 0.3)
+	safe = true
+	safe_timer.start(4)
+
+# Damage player
+func damage():
+	health -= 1
+	safe = true
+	safe_timer.start(2)
+
+func _on_SafeTimer_timeout():
+	safe_timer.stop()
+	safe = false
