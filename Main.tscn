@@ -1,26 +1,42 @@
-[gd_scene load_steps=3 format=2]
+[gd_scene load_steps=5 format=2]
 
+[ext_resource path="res://theme.tres" type="Theme" id=1]
+[ext_resource path="res://Menu.tscn" type="PackedScene" id=2]
 [ext_resource path="res://maps/TestMap.tscn" type="PackedScene" id=3]
 [ext_resource path="res://Main.gd" type="Script" id=6]
 
 [node name="Main" type="Node2D"]
 script = ExtResource( 6 )
 
-[node name="TestMap" parent="." instance=ExtResource( 3 )]
+[node name="Game" type="Node2D" parent="."]
+visible = false
 
-[node name="Camera2D" type="Camera2D" parent="."]
+[node name="TestMap" parent="Game" instance=ExtResource( 3 )]
+
+[node name="Camera2D" type="Camera2D" parent="Game"]
 current = true
 smoothing_enabled = true
 
-[node name="Players" type="Node2D" parent="."]
+[node name="Players" type="Node2D" parent="Game"]
 
-[node name="Balls" type="Node2D" parent="."]
+[node name="Balls" type="Node2D" parent="Game"]
+
+[node name="ResetTimer" type="Timer" parent="Game"]
 
 [node name="UILayer" type="CanvasLayer" parent="."]
+
+[node name="Message" type="Label" parent="UILayer"]
+margin_right = 40.0
+margin_bottom = 14.0
+theme = ExtResource( 1 )
+__meta__ = {
+"_edit_use_anchors_": false
+}
 
 [node name="HUD" type="MarginContainer" parent="UILayer"]
 anchor_right = 1.0
 anchor_bottom = 1.0
+theme = ExtResource( 1 )
 custom_constants/margin_right = 40
 custom_constants/margin_top = 40
 custom_constants/margin_left = 40
@@ -35,3 +51,11 @@ margin_top = 40.0
 margin_right = 1240.0
 margin_bottom = 680.0
 custom_constants/vseparation = 18
+
+[node name="Menu" parent="UILayer" instance=ExtResource( 2 )]
+anchor_right = 0.0
+anchor_bottom = 0.0
+margin_left = 40.0
+margin_top = 40.0
+margin_right = 1240.0
+margin_bottom = 680.0
