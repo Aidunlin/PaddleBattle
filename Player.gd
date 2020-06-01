@@ -69,13 +69,8 @@ func _physics_process(delta):
 	var coll = move_and_collide(vel * delta, false)
 	if coll and started:
 		if coll.collider.is_in_group("balls"):
-			if vel.length() > 0:
-				coll.collider.apply_central_impulse(-coll.normal * vel.length())
-			else:
-				coll.collider.apply_central_impulse(-coll.normal)
-			vel = vel.bounce(coll.normal).normalized()
-		else:
-			vel = vel.bounce(coll.normal)
+			coll.collider.apply_central_impulse(coll.normal * -vel.length())
+		vel = vel.bounce(coll.normal)
 		if pad >= 0:
 			Input.start_joy_vibration(pad, 0.2, 0.2, 0.1)
 

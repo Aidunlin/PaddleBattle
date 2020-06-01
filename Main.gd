@@ -18,7 +18,6 @@ var zoom_margin = 500
 var zoom_accel = 0.05
 
 func _ready():
-	OS.min_window_size = Vector2(1280, 720)
 	get_node(main_menu + "Play").connect("pressed", self, "load_game")
 	get_node(main_menu + "Quit").connect("pressed", get_tree(), "quit")
 	get_node(main_menu + "Health/Inc").connect("pressed", self, "crement_health", [1])
@@ -61,7 +60,7 @@ func load_game():
 	save_data.close()
 	
 	playing = true
-	message.text = "Waiting for players to join..."
+	message.text = "Waiting for " + str(max_players) + " players to join..."
 	get_node("Game").show()
 	get_node("UILayer/Menu").hide()
 	get_node("Game/Camera2D").position = get_node("Game/TestMap/DefCamPos").position
@@ -110,35 +109,27 @@ func new_player(id):
 		new_color = Color.from_hsv((randi() % 18 * 20.0) / 360.0, 1, 1)
 	used_colors.append(new_color)
 	new_player.modulate = new_color
-	var hud = add_player_to_hud(total_hp, new_color)
-	new_player.spawn_pos = player_spawns.get_child(p_num).position
-	new_player.spawn_rot = player_spawns.get_child(p_num).rotation
-	new_player.connect("hit", self, "on_player_hit")
-	player_db.append({pad = id, hp = total_hp, color = new_color, hud = hud, node = new_player})
-	players.add_child(new_player)
-	players.move_child(new_player, 0)
-
-# Add player HUD
-func add_player_to_hud(hp, col):
+	
 	var new_bar = HBoxContainer.new()
 	new_bar.size_flags_horizontal = HBoxContainer.SIZE_EXPAND_FILL
-	new_bar.modulate = col
+	new_bar.modulate = new_color
 	new_bar.alignment = BoxContainer.ALIGN_CENTER
 	var hp_bar = HBoxContainer.new()
-	var hp_texture = TextureRect.new()
-	hp_texture.texture = load("res://img/hp-label.png")
-	hp_bar.add_child(hp_texture)
-	var hp_bits = HBoxContainer.new()
-	hp_bits.set("custom_constants/separation", -18)
-	for _x in range(hp):
+	hp_bar.set("custom_constants/separation", -18)
+	for _x in range(total_hp):
 		var hp_bit = TextureRect.new()
-		hp_bit.texture = load("res://img/hp-bit.png")
-		hp_bits.add_child(hp_bit)
-	hp_bar.add_child(hp_bits)
+		hp_bit.texture = load("res://img/hp.png")
+		hp_bar.add_child(hp_bit)
 	new_bar.add_child(hp_bar)
 	bars.add_child(new_bar)
 	bars.columns = clamp(bars.get_children().size(), 1, 4)
-	return hp_bar
+	
+	new_player.spawn_pos = player_spawns.get_child(p_num).position
+	new_player.spawn_rot = player_spawns.get_child(p_num).rotation
+	new_player.connect("hit", self, "on_player_hit")
+	player_db.append({pad = id, hp = total_hp, color = new_color, hud = hp_bar, node = new_player})
+	players.add_child(new_player)
+	players.move_child(new_player, 0)
 
 # Manage player health
 func on_player_hit(p_num):
@@ -148,8 +139,7 @@ func on_player_hit(p_num):
 		player_db[p_num]["node"].queue_free()
 		if player_db[p_num]["pad"] >= 0:
 			Input.start_joy_vibration(player_db[p_num]["pad"], .2, .2, .3)
-		player_db[p_num]["hud"].get_child(0).modulate = Color(.3, .3, .3, .3)
-	var hp_bits = player_db[p_num]["hud"].get_child(1).get_children()
+	var hp_bits = player_db[p_num]["hud"].get_children()
 	for i in range(hp_bits.size()):
 		hp_bits[i].modulate = Color(.3, .3, .3, .3)
 		if player_db[p_num]["hp"] > i:

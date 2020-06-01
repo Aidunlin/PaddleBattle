@@ -24,11 +24,6 @@ boot_splash/image="res://img/icon.png"
 boot_splash/use_filter=false
 config/icon="res://img/icon.png"
 
-[display]
-
-window/size/width=1280
-window/size/height=720
-
 [input]
 
 ui_accept={
@@ -96,4 +91,5 @@ common/physics_fps=120
 
 [rendering]
 
+quality/2d/use_pixel_snap=true
 environment/default_clear_color=Color( 0.0627451, 0.0627451, 0.0627451, 1 )
