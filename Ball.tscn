@@ -14,12 +14,8 @@ radius = 21.2969
 ]]
 collision_layer = 2
 collision_mask = 7
-mass = 0.5
 physics_material_override = SubResource( 1 )
 gravity_scale = 0.0
-continuous_cd = 2
-contacts_reported = 2
-contact_monitor = true
 
 [node name="Sprite" type="Sprite" parent="."]
 texture = ExtResource( 1 )

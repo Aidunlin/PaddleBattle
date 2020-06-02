@@ -15,7 +15,7 @@ var spawn_pos = Vector2(0, 0)
 var spawn_rot = 0
 var accel = 0.06
 var decel = 0.02
-var speed = {move = 400, sprint = 550, rot = 3.3}
+var speed = {move = 400, sprint = 550, rot = 6}
 
 func _ready():
 	safe_timer.start(4)
@@ -69,10 +69,10 @@ func _physics_process(delta):
 	var coll = move_and_collide(vel * delta, false)
 	if coll and started:
 		if coll.collider.is_in_group("balls"):
-			coll.collider.apply_central_impulse(coll.normal * -vel.length())
-		vel = vel.bounce(coll.normal)
-		if pad >= 0:
-			Input.start_joy_vibration(pad, 0.2, 0.2, 0.1)
+			coll.collider.apply_central_impulse(-coll.normal * vel.length())
+		else:
+			vel = vel.bounce(coll.normal)
+		Input.start_joy_vibration(pad, 0.1, 0, 0.1)
 
 # Manage player damage, invincibiility, and resetting
 func back_entered(body):

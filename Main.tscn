@@ -19,7 +19,6 @@ glow_bloom = 1.0
 script = ExtResource( 6 )
 
 [node name="Game" type="Node2D" parent="."]
-visible = false
 
 [node name="TestMap" parent="Game" instance=ExtResource( 3 )]
 
