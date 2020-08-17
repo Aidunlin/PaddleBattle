@@ -1,7 +1,8 @@
 extends Node2D
 
-onready var main_menu = "UILayer/Menu/Main/"
-onready var message = get_node("UILayer/Panel/Message")
+onready var main_menu = "UILayer/Menu/Panel/Main/"
+onready var message = get_node("UILayer/Msg/Panel/Message")
+onready var defCamPos = get_node("Game/TestMap/DefCamPos").position
 onready var camera = get_node("Game/Camera2D")
 onready var players = get_node("Game/Players")
 onready var bars = get_node("UILayer/HUD/Bars")
@@ -18,6 +19,8 @@ var zoom_margin = 500
 var zoom_accel = 0.05
 
 func _ready():
+	get_node(main_menu + "Color").connect("pressed", self, "new_color")
+	get_node(main_menu + "CRT").connect("pressed", self, "toggle_crt")
 	get_node(main_menu + "Play").connect("pressed", self, "load_game")
 	get_node(main_menu + "Quit").connect("pressed", get_tree(), "quit")
 	get_node(main_menu + "Health/Inc").connect("pressed", self, "crement", ["hp", 1])
@@ -25,25 +28,32 @@ func _ready():
 	get_node(main_menu + "Balls/Inc").connect("pressed", self, "crement", ["balls", 1])
 	get_node(main_menu + "Balls/Dec").connect("pressed", self, "crement", ["balls", -1])
 	get_node("ResetTimer").connect("timeout", self, "unload_game")
-	
-	var save_data = File.new()
-	if save_data.file_exists("user://save.txt"):
-		save_data.open("user://save.txt", File.READ)
-		max_hp = int(save_data.get_line())
-		max_balls = int(save_data.get_line())
-		save_data.close()
 	update_option_nodes()
-	
+	new_color()
+	update_balls()
+	camera.position = defCamPos
+
+# New random map color
+func new_color():
+	used_colors = []
 	randomize()
 	var map_color = Color.from_hsv((randi() % 18 * 20.0) / 360.0, 1, 1)
 	used_colors.append(map_color)
 	get_node("Game/TestMap").modulate = map_color
-	camera.position = get_node("Game/TestMap/DefCamPos").position
-	update_balls()
 
+# Toggle CRT filter shader
+func toggle_crt():
+	get_node("UILayer/Shader").visible = !get_node("UILayer/Shader").visible
+
+# Update UI when changing settings
 func update_option_nodes():
 	get_node(main_menu + "Health/HealthNum").text = str(max_hp)
 	get_node(main_menu + "Balls/BallNum").text = str(max_balls)
+
+# Set message text and visibility
+func set_msg(msg, show):
+	message.text = msg
+	message.get_parent().get_parent().visible = show
 
 # Increment/decrement values of options
 func crement(item, x):
@@ -54,6 +64,7 @@ func crement(item, x):
 		update_balls()
 	update_option_nodes()
 
+# Reset all the balls
 func update_balls():
 	for ball in get_node("Game/Balls").get_children():
 		ball.queue_free()
@@ -64,22 +75,15 @@ func update_balls():
 
 # Set up game, wait for players
 func load_game():
-	var save_data = File.new()
-	save_data.open("user://save.txt", File.WRITE)
-	save_data.store_line(str(max_hp))
-	save_data.store_line(str(max_balls))
-	save_data.close()
-	
 	current_state = state.starting
-	message.text = "Waiting for players to join..."
-	message.get_parent().show()
+	set_msg("Waiting for players to join...", true)
 	get_node("UILayer/Menu").hide()
-	camera.position = get_node("Game/TestMap/DefCamPos").position
+	get_node("Game").modulate = Color(1, 1, 1)
+	camera.position = defCamPos
 
 # Signal player nodes to begin
 func start_game():
-	message.text = ""
-	message.get_parent().hide()
+	set_msg("", false)
 	for p in player_db:
 		p.node.game_began()
 	current_state = state.playing
@@ -88,10 +92,9 @@ func start_game():
 func unload_game():
 	current_state = state.idle
 	get_node("ResetTimer").stop()
-	camera.position = get_node("Game/TestMap/DefCamPos").position
-	camera.zoom = Vector2(1, 1)
-	message.text = ""
-	message.get_parent().hide()
+	camera.position = defCamPos
+	camera.zoom = Vector2(2, 2)
+	set_msg("", false)
 	player_db.clear()
 	for p in players.get_children():
 		p.queue_free()
@@ -100,9 +103,11 @@ func unload_game():
 		b.queue_free()
 	bars.columns = 1
 	get_node("UILayer/Menu").show()
+	get_node("Game").modulate = Color(1, 1, 1, 0.5)
 
 # Create new player
 func new_player(id):
+	# Create player node and color
 	var p_num = player_db.size()
 	var new_player = load("res://Player.tscn").instance()
 	new_player.name = str(p_num)
@@ -114,6 +119,7 @@ func new_player(id):
 	used_colors.append(new_color)
 	new_player.modulate = new_color
 	
+	# Add new HP bar for player
 	var new_bar = HBoxContainer.new()
 	new_bar.size_flags_horizontal = HBoxContainer.SIZE_EXPAND_FILL
 	new_bar.modulate = new_color
@@ -128,15 +134,15 @@ func new_player(id):
 	bars.add_child(new_bar)
 	bars.columns = clamp(bars.get_children().size(), 1, 4)
 	
+	# Add player node and data
 	new_player.spawn_pos = player_spawns.get_child(p_num).position
 	new_player.spawn_rot = player_spawns.get_child(p_num).rotation
 	new_player.connect("hit", self, "on_player_hit")
 	player_db.append({pad = id, hp = max_hp, color = new_color, hud = hp_bar, node = new_player})
 	players.add_child(new_player)
 	players.move_child(new_player, 0)
-	
-	if player_db.size() > 1:
-		message.text += " P1 press enter/start to start the game"
+	if player_db.size() == 2:
+		message.text += "\nP1, press enter/start when ready"
 
 # Manage player health
 func on_player_hit(p_num):
@@ -150,8 +156,7 @@ func on_player_hit(p_num):
 			Input.start_joy_vibration(player_db[p_num].pad, .2, .2, .3)
 		if players.get_child_count() == 2:
 			current_state = state.ending
-			message.text = "Game ended!"
-			message.get_parent().show()
+			set_msg("Game ended!", true)
 			get_node("ResetTimer").start(3)
 	var hp_bits = player_db[p_num].hud.get_children()
 	for i in range(hp_bits.size()):
@@ -159,7 +164,7 @@ func on_player_hit(p_num):
 		if player_db[p_num].hp > i:
 			hp_bits[i].modulate = Color(1, 1, 1, 1)
 
-# Checks if a pad is already used
+# Check if a pad is already used
 func is_new_pad(id):
 	for p in player_db:
 		if p.pad == id:
@@ -167,7 +172,7 @@ func is_new_pad(id):
 	return true
 
 func _process(_delta):
-	# Create player if sensed input, start game when players join
+	# Create player if sensed input
 	if player_db.size() < max_players and current_state == state.starting:
 		if Input.is_key_pressed(KEY_ENTER) and is_new_pad(-1):
 			new_player(-1)
@@ -177,6 +182,8 @@ func _process(_delta):
 			for c in Input.get_connected_joypads():
 				if Input.is_joy_button_pressed(c, JOY_START) and is_new_pad(c):
 					new_player(c)
+	
+	# Start game when player one presses start/enter
 	if current_state == state.starting and player_db.size() > 1:
 		if player_db[0].pad == -1 and Input.is_key_pressed(KEY_ENTER):
 			start_game()

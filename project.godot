@@ -24,6 +24,10 @@ boot_splash/image="res://img/icon.png"
 boot_splash/use_filter=false
 config/icon="res://img/icon.png"
 
+[debug]
+
+gdscript/warnings/return_value_discarded=false
+
 [input]
 
 ui_accept={
