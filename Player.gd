@@ -38,15 +38,15 @@ func _physics_process(delta):
 		input_vel.x = -float(Input.is_key_pressed(KEY_A)) + float(Input.is_key_pressed(KEY_D))
 		input_rot = float(Input.is_key_pressed(KEY_H)) - float(Input.is_key_pressed(KEY_G))
 		input_vel = input_vel.normalized()
-		input_vel *= speed["sprint"] if Input.is_key_pressed(KEY_SHIFT) else speed["move"]
-		rotation += deg2rad(input_rot * speed["rot"])
+		input_vel *= speed.sprint if Input.is_key_pressed(KEY_SHIFT) else speed.move
+		rotation_degrees += input_rot * speed.rot
 	elif pad == -2:
 		input_vel.y = -float(Input.is_key_pressed(KEY_UP)) + float(Input.is_key_pressed(KEY_DOWN))
 		input_vel.x = -float(Input.is_key_pressed(KEY_LEFT)) + float(Input.is_key_pressed(KEY_RIGHT))
 		input_rot = float(Input.is_key_pressed(KEY_KP_3)) - float(Input.is_key_pressed(KEY_KP_2))
 		input_vel = input_vel.normalized()
-		input_vel *= speed["sprint"] if Input.is_key_pressed(KEY_KP_1) else speed["move"]
-		rotation += deg2rad(input_rot * speed["rot"])
+		input_vel *= speed.sprint if Input.is_key_pressed(KEY_KP_1) else speed.move
+		rotation_degrees += input_rot * speed.rot
 	else:
 		var left_x = Input.get_joy_axis(pad, JOY_AXIS_0)
 		var left_y = Input.get_joy_axis(pad, JOY_AXIS_1)
@@ -54,7 +54,7 @@ func _physics_process(delta):
 			var x_mult = 1 if left_x > 0 else -1
 			var y_mult = 1 if left_y > 0 else -1
 			input_vel = Vector2(x_mult * pow(left_x, 2), y_mult * pow(left_y, 2))
-		input_vel *= speed["sprint"] if Input.is_joy_button_pressed(pad, 6) else speed["move"]
+		input_vel *= speed.sprint if Input.is_joy_button_pressed(pad, 6) else speed.move
 		var right_stick = Vector2(Input.get_joy_axis(pad, JOY_AXIS_2), Input.get_joy_axis(pad, JOY_AXIS_3))
 		if right_stick.length() > 0.7:
 			rotation += get_angle_to(position + right_stick) * 0.1

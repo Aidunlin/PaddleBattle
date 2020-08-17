@@ -1,16 +1,16 @@
 extends Node2D
 
 onready var main_menu = "UILayer/Menu/Main/"
-onready var message = get_node("UILayer/Message")
+onready var message = get_node("UILayer/Panel/Message")
 onready var camera = get_node("Game/Camera2D")
 onready var players = get_node("Game/Players")
 onready var bars = get_node("UILayer/HUD/Bars")
 onready var player_spawns = get_node("Game/TestMap/PlayerSpawns")
 
-var playing = false
-var started = false
+var state = {"idle": 0, "starting": 1, "playing": 2, "ending": 3}
+var current_state = state.idle
+var max_players = 8
 var max_hp = 3
-var max_players = 4
 var max_balls = 10
 var player_db = []
 var used_colors = []
@@ -22,17 +22,14 @@ func _ready():
 	get_node(main_menu + "Quit").connect("pressed", get_tree(), "quit")
 	get_node(main_menu + "Health/Inc").connect("pressed", self, "crement", ["hp", 1])
 	get_node(main_menu + "Health/Dec").connect("pressed", self, "crement", ["hp", -1])
-	get_node(main_menu + "Players/Inc").connect("pressed", self, "crement", ["players", 1])
-	get_node(main_menu + "Players/Dec").connect("pressed", self, "crement", ["players", -1])
 	get_node(main_menu + "Balls/Inc").connect("pressed", self, "crement", ["balls", 1])
 	get_node(main_menu + "Balls/Dec").connect("pressed", self, "crement", ["balls", -1])
-	get_node("Game/ResetTimer").connect("timeout", self, "unload_game")
+	get_node("ResetTimer").connect("timeout", self, "unload_game")
 	
 	var save_data = File.new()
 	if save_data.file_exists("user://save.txt"):
 		save_data.open("user://save.txt", File.READ)
 		max_hp = int(save_data.get_line())
-		max_players = int(save_data.get_line())
 		max_balls = int(save_data.get_line())
 		save_data.close()
 	update_option_nodes()
@@ -46,15 +43,12 @@ func _ready():
 
 func update_option_nodes():
 	get_node(main_menu + "Health/HealthNum").text = str(max_hp)
-	get_node(main_menu + "Players/PlayerNum").text = str(max_players)
 	get_node(main_menu + "Balls/BallNum").text = str(max_balls)
 
 # Increment/decrement values of options
 func crement(item, x):
 	if item == "hp":
 		max_hp = clamp(max_hp + x, 1, 5)
-	if item == "players":
-		max_players = clamp(max_players + x, 2, 8)
 	if item == "balls":
 		max_balls = clamp(max_balls + x, 1, 10)
 		update_balls()
@@ -73,33 +67,34 @@ func load_game():
 	var save_data = File.new()
 	save_data.open("user://save.txt", File.WRITE)
 	save_data.store_line(str(max_hp))
-	save_data.store_line(str(max_players))
 	save_data.store_line(str(max_balls))
 	save_data.close()
 	
-	playing = true
-	message.text = "Waiting for " + str(max_players) + " players to join..."
+	current_state = state.starting
+	message.text = "Waiting for players to join..."
+	message.get_parent().show()
 	get_node("UILayer/Menu").hide()
 	camera.position = get_node("Game/TestMap/DefCamPos").position
 
 # Signal player nodes to begin
 func start_game():
 	message.text = ""
+	message.get_parent().hide()
 	for p in player_db:
-		p["node"].game_began()
-	started = true
+		p.node.game_began()
+	current_state = state.playing
 
 # Reset and clear players/balls
 func unload_game():
-	playing = false
-	get_node("Game/ResetTimer").stop()
+	current_state = state.idle
+	get_node("ResetTimer").stop()
 	camera.position = get_node("Game/TestMap/DefCamPos").position
 	camera.zoom = Vector2(1, 1)
 	message.text = ""
+	message.get_parent().hide()
 	player_db.clear()
 	for p in players.get_children():
 		p.queue_free()
-	started = false
 	update_balls()
 	for b in bars.get_children():
 		b.queue_free()
@@ -139,33 +134,41 @@ func new_player(id):
 	player_db.append({pad = id, hp = max_hp, color = new_color, hud = hp_bar, node = new_player})
 	players.add_child(new_player)
 	players.move_child(new_player, 0)
+	
+	if player_db.size() > 1:
+		message.text += " P1 press enter/start to start the game"
 
 # Manage player health
 func on_player_hit(p_num):
-	if not (started and playing):
+	if current_state != state.playing:
 		return
-	player_db[p_num]["node"].damage()
-	player_db[p_num]["hp"] -= 1
-	if player_db[p_num]["hp"] == 0:
-		player_db[p_num]["node"].queue_free()
-		if player_db[p_num]["pad"] >= 0:
-			Input.start_joy_vibration(player_db[p_num]["pad"], .2, .2, .3)
-	var hp_bits = player_db[p_num]["hud"].get_children()
+	player_db[p_num].node.damage()
+	player_db[p_num].hp -= 1
+	if player_db[p_num].hp == 0:
+		player_db[p_num].node.queue_free()
+		if player_db[p_num].pad >= 0:
+			Input.start_joy_vibration(player_db[p_num].pad, .2, .2, .3)
+		if players.get_child_count() == 2:
+			current_state = state.ending
+			message.text = "Game ended!"
+			message.get_parent().show()
+			get_node("ResetTimer").start(3)
+	var hp_bits = player_db[p_num].hud.get_children()
 	for i in range(hp_bits.size()):
 		hp_bits[i].modulate = Color(.3, .3, .3, .3)
-		if player_db[p_num]["hp"] > i:
+		if player_db[p_num].hp > i:
 			hp_bits[i].modulate = Color(1, 1, 1, 1)
 
 # Checks if a pad is already used
 func is_new_pad(id):
 	for p in player_db:
-		if p["pad"] == id:
+		if p.pad == id:
 			return false
 	return true
 
 func _process(_delta):
 	# Create player if sensed input, start game when players join
-	if player_db.size() < max_players and playing:
+	if player_db.size() < max_players and current_state == state.starting:
 		if Input.is_key_pressed(KEY_ENTER) and is_new_pad(-1):
 			new_player(-1)
 		elif Input.is_key_pressed(KEY_KP_ENTER) and is_new_pad(-2):
@@ -174,17 +177,16 @@ func _process(_delta):
 			for c in Input.get_connected_joypads():
 				if Input.is_joy_button_pressed(c, JOY_START) and is_new_pad(c):
 					new_player(c)
-	if player_db.size() >= max_players and not started:
-		start_game()
-	
-	# Game has ended, begin unloading
-	if started and playing and players.get_child_count() < 2:
-		playing = false
-		message.text = "Game ended!"
-		get_node("Game/ResetTimer").start(3)
+	if current_state == state.starting and player_db.size() > 1:
+		if player_db[0].pad == -1 and Input.is_key_pressed(KEY_ENTER):
+			start_game()
+		if player_db[0].pad == -2 and Input.is_key_pressed(KEY_KP_ENTER):
+			start_game()
+		if player_db[0].pad >= 0 and Input.is_joy_button_pressed(player_db[0].pad, JOY_START):
+			start_game()
 	
 	# Center camera to average player position, zoom camera to always view all players
-	if players.get_child_count() > 0:
+	if current_state != state.idle and players.get_child_count() > 0:
 		var avg = Vector2.ZERO
 		for player in players.get_children():
 			avg.x += player.position.x
