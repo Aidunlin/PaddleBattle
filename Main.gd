@@ -23,11 +23,12 @@ func _ready():
 	get_node(main_menu + "CRT").connect("pressed", self, "toggle_crt")
 	get_node(main_menu + "Play").connect("pressed", self, "load_game")
 	get_node(main_menu + "Quit").connect("pressed", get_tree(), "quit")
-	get_node(main_menu + "Health/Inc").connect("pressed", self, "crement", ["hp", 1])
 	get_node(main_menu + "Health/Dec").connect("pressed", self, "crement", ["hp", -1])
-	get_node(main_menu + "Balls/Inc").connect("pressed", self, "crement", ["balls", 1])
+	get_node(main_menu + "Health/Inc").connect("pressed", self, "crement", ["hp", 1])
 	get_node(main_menu + "Balls/Dec").connect("pressed", self, "crement", ["balls", -1])
+	get_node(main_menu + "Balls/Inc").connect("pressed", self, "crement", ["balls", 1])
 	get_node("ResetTimer").connect("timeout", self, "unload_game")
+	get_node(main_menu + "Play").grab_focus()
 	update_option_nodes()
 	new_color()
 	update_balls()
@@ -35,9 +36,12 @@ func _ready():
 
 # New random map color
 func new_color():
+	var prev_color = get_node("Game/TestMap").modulate
 	used_colors = []
-	randomize()
-	var map_color = Color.from_hsv((randi() % 18 * 20.0) / 360.0, 1, 1)
+	var map_color = prev_color
+	while map_color == prev_color:
+		randomize()
+		map_color = Color.from_hsv((randi() % 9 * 40.0) / 360.0, 1, 1)
 	used_colors.append(map_color)
 	get_node("Game/TestMap").modulate = map_color
 
@@ -76,7 +80,7 @@ func update_balls():
 # Set up game, wait for players
 func load_game():
 	current_state = state.starting
-	set_msg("Waiting for players to join...", true)
+	set_msg("Waiting for players to join...\nPress Enter/Start to join (or begin)", true)
 	get_node("UILayer/Menu").hide()
 	get_node("Game").modulate = Color(1, 1, 1)
 	camera.position = defCamPos
@@ -104,6 +108,7 @@ func unload_game():
 	bars.columns = 1
 	get_node("UILayer/Menu").show()
 	get_node("Game").modulate = Color(1, 1, 1, 0.5)
+	get_node(main_menu + "Play").grab_focus()
 
 # Create new player
 func new_player(id):
@@ -115,7 +120,7 @@ func new_player(id):
 	var new_color = used_colors[0]
 	while used_colors.has(new_color):
 		randomize()
-		new_color = Color.from_hsv((randi() % 18 * 20.0) / 360.0, 1, 1)
+		new_color = Color.from_hsv((randi() % 9 * 40.0) / 360.0, 1, 1)
 	used_colors.append(new_color)
 	new_player.modulate = new_color
 	
@@ -141,8 +146,6 @@ func new_player(id):
 	player_db.append({pad = id, hp = max_hp, color = new_color, hud = hp_bar, node = new_player})
 	players.add_child(new_player)
 	players.move_child(new_player, 0)
-	if player_db.size() == 2:
-		message.text += "\nP1, press enter/start when ready"
 
 # Manage player health
 func on_player_hit(p_num):

@@ -11,7 +11,7 @@
 shader = ExtResource( 4 )
 shader_param/screen_width = 1024.0
 shader_param/screen_height = 600.0
-shader_param/BarrelPower = 1.1
+shader_param/BarrelPower = 1.05
 shader_param/color_bleeding = 1.2
 shader_param/bleeding_range_x = 3.0
 shader_param/bleeding_range_y = 3.0
@@ -61,8 +61,8 @@ __meta__ = {
 
 [node name="TextureRect" type="TextureRect" parent="UILayer/Shader"]
 material = SubResource( 1 )
-margin_right = 1024.0
-margin_bottom = 600.0
+margin_right = 1280.0
+margin_bottom = 720.0
 texture = ExtResource( 5 )
 expand = true
 
@@ -76,10 +76,10 @@ __meta__ = {
 
 [node name="Panel" type="PanelContainer" parent="UILayer/Msg"]
 self_modulate = Color( 1, 1, 1, 0.752941 )
-margin_left = 506.0
-margin_top = 296.0
-margin_right = 518.0
-margin_bottom = 304.0
+margin_left = 634.0
+margin_top = 356.0
+margin_right = 646.0
+margin_bottom = 364.0
 theme = ExtResource( 1 )
 __meta__ = {
 "_edit_use_anchors_": false
@@ -110,8 +110,8 @@ __meta__ = {
 [node name="Bars" type="GridContainer" parent="UILayer/HUD"]
 margin_left = 40.0
 margin_top = 40.0
-margin_right = 984.0
-margin_bottom = 560.0
+margin_right = 1240.0
+margin_bottom = 680.0
 custom_constants/vseparation = 18
 
 [node name="Menu" parent="UILayer" instance=ExtResource( 2 )]

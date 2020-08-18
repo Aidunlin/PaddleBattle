@@ -15,7 +15,7 @@ var spawn_pos = Vector2(0, 0)
 var spawn_rot = 0
 var accel = 0.06
 var decel = 0.02
-var speed = {move = 400, sprint = 550, rot = 6}
+var speed = {move = 400, sprint = 550, rot = 4}
 
 func _ready():
 	safe_timer.start(4)
