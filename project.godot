@@ -17,7 +17,7 @@ _global_script_class_icons={
 
 config/name="Paddle Battle"
 config/description="A multiplayer action game with pong-like mechanics"
-run/main_scene="res://Main.tscn"
+run/main_scene="res://main/main.tscn"
 config/use_custom_user_dir=true
 config/custom_user_dir_name="Paddle Battle"
 boot_splash/image="res://img/icon.png"
@@ -33,6 +33,10 @@ gdscript/warnings/return_value_discarded=false
 
 window/size/width=1280
 window/size/height=720
+
+[gdnative]
+
+singletons=[  ]
 
 [input]
 

@@ -1,0 +1,194 @@
+[gd_scene load_steps=17 format=2]
+
+[ext_resource path="res://img/block.png" type="Texture" id=1]
+
+[sub_resource type="TileSet" id=1]
+0/name = "block.png 0"
+0/texture = ExtResource( 1 )
+0/tex_offset = Vector2( 0, 0 )
+0/modulate = Color( 1, 1, 1, 1 )
+0/region = Rect2( 0, 0, 64, 64 )
+0/tile_mode = 0
+0/occluder_offset = Vector2( 0, 0 )
+0/navigation_offset = Vector2( 0, 0 )
+0/shape_offset = Vector2( 0, 0 )
+0/shape_transform = Transform2D( 1, 0, 0, 1, 0, 0 )
+0/shape_one_way = false
+0/shape_one_way_margin = 0.0
+0/shapes = [  ]
+0/z_index = 0
+
+[sub_resource type="RectangleShape2D" id=2]
+extents = Vector2( 1056, 32 )
+
+[sub_resource type="RectangleShape2D" id=3]
+extents = Vector2( 1056, 32 )
+
+[sub_resource type="RectangleShape2D" id=4]
+extents = Vector2( 32, 608 )
+
+[sub_resource type="RectangleShape2D" id=5]
+extents = Vector2( 32, 608 )
+
+[sub_resource type="RectangleShape2D" id=6]
+extents = Vector2( 288, 32 )
+
+[sub_resource type="RectangleShape2D" id=7]
+extents = Vector2( 32, 128 )
+
+[sub_resource type="RectangleShape2D" id=8]
+extents = Vector2( 32, 128 )
+
+[sub_resource type="RectangleShape2D" id=9]
+extents = Vector2( 288, 32 )
+
+[sub_resource type="RectangleShape2D" id=10]
+extents = Vector2( 32, 128 )
+
+[sub_resource type="RectangleShape2D" id=11]
+extents = Vector2( 32, 128 )
+
+[sub_resource type="RectangleShape2D" id=12]
+extents = Vector2( 256, 32 )
+
+[sub_resource type="RectangleShape2D" id=13]
+extents = Vector2( 256, 32 )
+
+[sub_resource type="RectangleShape2D" id=14]
+extents = Vector2( 256, 32 )
+
+[sub_resource type="RectangleShape2D" id=15]
+extents = Vector2( 256, 32 )
+
+[node name="TestMap" type="Node2D"]
+
+[node name="TileMap" type="TileMap" parent="."]
+tile_set = SubResource( 1 )
+format = 1
+tile_data = PoolIntArray( 0, 0, 0, 1, 0, 0, 2, 0, 0, 3, 0, 0, 4, 0, 0, 5, 0, 0, 6, 0, 0, 7, 0, 0, 8, 0, 0, 9, 0, 0, 10, 0, 0, 11, 0, 0, 12, 0, 0, 13, 0, 0, 14, 0, 0, 15, 0, 0, 16, 0, 0, 17, 0, 0, 18, 0, 0, 19, 0, 0, 20, 0, 0, 21, 0, 0, 22, 0, 0, 23, 0, 0, 24, 0, 0, 25, 0, 0, 26, 0, 0, 27, 0, 0, 28, 0, 0, 29, 0, 0, 30, 0, 0, 31, 0, 0, 32, 0, 0, 65536, 0, 0, 65568, 0, 0, 131072, 0, 0, 131104, 0, 0, 196608, 0, 0, 196620, 0, 0, 196628, 0, 0, 196640, 0, 0, 262144, 0, 0, 262156, 0, 0, 262164, 0, 0, 262176, 0, 0, 327680, 0, 0, 327692, 0, 0, 327700, 0, 0, 327712, 0, 0, 393216, 0, 0, 393217, 0, 0, 393218, 0, 0, 393219, 0, 0, 393220, 0, 0, 393221, 0, 0, 393222, 0, 0, 393223, 0, 0, 393228, 0, 0, 393229, 0, 0, 393230, 0, 0, 393231, 0, 0, 393232, 0, 0, 393233, 0, 0, 393234, 0, 0, 393235, 0, 0, 393236, 0, 0, 393241, 0, 0, 393242, 0, 0, 393243, 0, 0, 393244, 0, 0, 393245, 0, 0, 393246, 0, 0, 393247, 0, 0, 393248, 0, 0, 458752, 0, 0, 458784, 0, 0, 524288, 0, 0, 524320, 0, 0, 589824, 0, 0, 589856, 0, 0, 655360, 0, 0, 655392, 0, 0, 720896, 0, 0, 720928, 0, 0, 786432, 0, 0, 786433, 0, 0, 786434, 0, 0, 786435, 0, 0, 786436, 0, 0, 786437, 0, 0, 786438, 0, 0, 786439, 0, 0, 786444, 0, 0, 786445, 0, 0, 786446, 0, 0, 786447, 0, 0, 786448, 0, 0, 786449, 0, 0, 786450, 0, 0, 786451, 0, 0, 786452, 0, 0, 786457, 0, 0, 786458, 0, 0, 786459, 0, 0, 786460, 0, 0, 786461, 0, 0, 786462, 0, 0, 786463, 0, 0, 786464, 0, 0, 851968, 0, 0, 851980, 0, 0, 851988, 0, 0, 852000, 0, 0, 917504, 0, 0, 917516, 0, 0, 917524, 0, 0, 917536, 0, 0, 983040, 0, 0, 983052, 0, 0, 983060, 0, 0, 983072, 0, 0, 1048576, 0, 0, 1048608, 0, 0, 1114112, 0, 0, 1114144, 0, 0, 1179648, 0, 0, 1179649, 0, 0, 1179650, 0, 0, 1179651, 0, 0, 1179652, 0, 0, 1179653, 0, 0, 1179654, 0, 0, 1179655, 0, 0, 1179656, 0, 0, 1179657, 0, 0, 1179658, 0, 0, 1179659, 0, 0, 1179660, 0, 0, 1179661, 0, 0, 1179662, 0, 0, 1179663, 0, 0, 1179664, 0, 0, 1179665, 0, 0, 1179666, 0, 0, 1179667, 0, 0, 1179668, 0, 0, 1179669, 0, 0, 1179670, 0, 0, 1179671, 0, 0, 1179672, 0, 0, 1179673, 0, 0, 1179674, 0, 0, 1179675, 0, 0, 1179676, 0, 0, 1179677, 0, 0, 1179678, 0, 0, 1179679, 0, 0, 1179680, 0, 0 )
+
+[node name="Walls" type="StaticBody2D" parent="."]
+collision_layer = 3
+collision_mask = 3
+
+[node name="TopWall" type="CollisionShape2D" parent="Walls"]
+position = Vector2( 1056, 32 )
+shape = SubResource( 2 )
+
+[node name="BottomWall" type="CollisionShape2D" parent="Walls"]
+position = Vector2( 1056, 1184 )
+shape = SubResource( 3 )
+
+[node name="LeftWall" type="CollisionShape2D" parent="Walls"]
+position = Vector2( 32, 608 )
+shape = SubResource( 4 )
+
+[node name="RightWall" type="CollisionShape2D" parent="Walls"]
+position = Vector2( 2080, 608 )
+shape = SubResource( 5 )
+
+[node name="UWall" type="CollisionShape2D" parent="Walls"]
+position = Vector2( 1056, 416 )
+shape = SubResource( 6 )
+
+[node name="UWall2" type="CollisionShape2D" parent="Walls"]
+position = Vector2( 800, 320 )
+shape = SubResource( 7 )
+
+[node name="UWall3" type="CollisionShape2D" parent="Walls"]
+position = Vector2( 1312, 320 )
+shape = SubResource( 8 )
+
+[node name="NWall" type="CollisionShape2D" parent="Walls"]
+position = Vector2( 1056, 800 )
+shape = SubResource( 9 )
+
+[node name="NWall2" type="CollisionShape2D" parent="Walls"]
+position = Vector2( 800, 896 )
+shape = SubResource( 10 )
+
+[node name="NWall3" type="CollisionShape2D" parent="Walls"]
+position = Vector2( 1312, 896 )
+shape = SubResource( 11 )
+
+[node name="ULWall" type="CollisionShape2D" parent="Walls"]
+position = Vector2( 256, 416 )
+shape = SubResource( 12 )
+
+[node name="LLWall" type="CollisionShape2D" parent="Walls"]
+position = Vector2( 256, 800 )
+shape = SubResource( 13 )
+
+[node name="URWall" type="CollisionShape2D" parent="Walls"]
+position = Vector2( 1856, 416 )
+shape = SubResource( 14 )
+
+[node name="LRWall" type="CollisionShape2D" parent="Walls"]
+position = Vector2( 1856, 800 )
+shape = SubResource( 15 )
+
+[node name="PlayerSpawns" type="Node2D" parent="."]
+
+[node name="PlayerSpawn" type="Node2D" parent="PlayerSpawns"]
+position = Vector2( 1056, 320 )
+rotation = 4.71239
+
+[node name="PlayerSpawn2" type="Node2D" parent="PlayerSpawns"]
+position = Vector2( 1056, 896 )
+rotation = 1.5708
+
+[node name="PlayerSpawn3" type="Node2D" parent="PlayerSpawns"]
+position = Vector2( 192, 608 )
+
+[node name="PlayerSpawn4" type="Node2D" parent="PlayerSpawns"]
+position = Vector2( 1920, 608 )
+rotation = 3.14159
+
+[node name="PlayerSpawn5" type="Node2D" parent="PlayerSpawns"]
+position = Vector2( 192, 224 )
+
+[node name="PlayerSpawn6" type="Node2D" parent="PlayerSpawns"]
+position = Vector2( 1920, 992 )
+rotation = 3.14159
+
+[node name="PlayerSpawn7" type="Node2D" parent="PlayerSpawns"]
+position = Vector2( 192, 992 )
+
+[node name="PlayerSpawn8" type="Node2D" parent="PlayerSpawns"]
+position = Vector2( 1920, 224 )
+rotation = 3.14159
+
+[node name="BallSpawns" type="Node2D" parent="."]
+
+[node name="BallSpawn" type="Node2D" parent="BallSpawns"]
+position = Vector2( 1056, 192 )
+
+[node name="BallSpawn2" type="Node2D" parent="BallSpawns"]
+position = Vector2( 1056, 1024 )
+
+[node name="BallSpawn3" type="Node2D" parent="BallSpawns"]
+position = Vector2( 384, 608 )
+
+[node name="BallSpawn4" type="Node2D" parent="BallSpawns"]
+position = Vector2( 1728, 608 )
+
+[node name="BallSpawn5" type="Node2D" parent="BallSpawns"]
+position = Vector2( 384, 224 )
+
+[node name="BallSpawn6" type="Node2D" parent="BallSpawns"]
+position = Vector2( 1728, 992 )
+
+[node name="BallSpawn7" type="Node2D" parent="BallSpawns"]
+position = Vector2( 384, 992 )
+
+[node name="BallSpawn8" type="Node2D" parent="BallSpawns"]
+position = Vector2( 1728, 224 )
+
+[node name="BallSpawn9" type="Node2D" parent="BallSpawns"]
+position = Vector2( 896, 608 )
+
+[node name="BallSpawn10" type="Node2D" parent="BallSpawns"]
+position = Vector2( 1216, 608 )
+
+[node name="DefCamPos" type="Node2D" parent="."]
+position = Vector2( 1056, 608 )
