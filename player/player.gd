@@ -2,8 +2,6 @@ extends KinematicBody2D
 
 signal hit(p)
 
-onready var back = get_node("Back")
-
 var pad = 0
 var is_enabled = false
 var is_safe = true
@@ -23,9 +21,6 @@ func _ready():
 	position = spawn_position
 	rotation = spawn_rotation
 
-func get_key(k1_key, k2_key):
-	return float(Input.is_key_pressed(k1_key if pad == -1 else k2_key))
-
 func _physics_process(delta):
 	if !is_enabled:
 		return
@@ -38,16 +33,12 @@ func _physics_process(delta):
 		input_velocity = input_velocity.normalized() * move_speed
 		rotation_degrees += (get_key(KEY_H, KEY_KP_3) - get_key(KEY_G, KEY_KP_2)) * rotation_speed
 	else:
-		var left_x = Input.get_joy_axis(pad, JOY_AXIS_0)
-		var left_y = Input.get_joy_axis(pad, JOY_AXIS_1)
-		if Vector2(left_x, left_y).length() > 0.2:
-			var x_mult = 1 if left_x > 0 else -1 if left_x < 0 else 0
-			var y_mult = 1 if left_y > 0 else -1 if left_y < 0 else 0
-			input_velocity = Vector2(x_mult * pow(left_x, 2), y_mult * pow(left_y, 2))
-		input_velocity *= move_speed
-		var right_stick = Vector2(Input.get_joy_axis(pad, JOY_AXIS_2), Input.get_joy_axis(pad, JOY_AXIS_3))
-		if right_stick.length() > 0.7:
-			rotation += get_angle_to(position + right_stick) * 0.1
+		var l = Vector2(Input.get_joy_axis(pad, 0), Input.get_joy_axis(pad, 1))
+		if l.length() > 0.2:
+			input_velocity = Vector2(sign(l.x) * pow(l.x, 2), sign(l.y) * pow(l.y, 2)) * move_speed
+		var r = Vector2(Input.get_joy_axis(pad, 2), Input.get_joy_axis(pad, 3))
+		if r.length() > 0.7:
+			rotation += get_angle_to(position + r) * 0.1
 	
 	# Smoothify movement
 	if input_velocity.length() > 0:
@@ -64,19 +55,15 @@ func _physics_process(delta):
 			velocity = velocity.bounce(coll.normal)
 		Input.start_joy_vibration(pad, 0.1, 0, 0.1)
 
-# Manage player damage, invincibiility, and resetting
+# Return keypress from either key based on pad
+func get_key(k1_key, k2_key):
+	return float(Input.is_key_pressed(k2_key if pad == -2 else k1_key))
+
 func back_entered(body):
 	if body.is_in_group("balls") and !is_safe:
 		emit_signal("hit", int(name))
-
-# Game has begun, allow player movement
-func game_began():
-	is_enabled = true
-
-# Damage player
-func damage():
-	is_safe = true
-	safe_timer.start(2)
+		is_safe = true
+		safe_timer.start(2)
 
 # Remove invincibility
 func safe_ended():

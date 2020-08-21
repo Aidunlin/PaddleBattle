@@ -5,7 +5,7 @@
 [ext_resource path="res://main/menu.tscn" type="PackedScene" id=4]
 [ext_resource path="res://res/theme.tres" type="Theme" id=5]
 
-[sub_resource type="Environment" id=2]
+[sub_resource type="Environment" id=1]
 background_mode = 4
 auto_exposure_scale = 0.18
 auto_exposure_speed = 32.0
@@ -85,4 +85,4 @@ custom_constants/vseparation = 18
 [node name="Menu" parent="UILayer" instance=ExtResource( 4 )]
 
 [node name="WorldEnvironment" type="WorldEnvironment" parent="."]
-environment = SubResource( 2 )
+environment = SubResource( 1 )

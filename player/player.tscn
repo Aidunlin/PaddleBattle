@@ -29,6 +29,4 @@ collision_mask = 2
 [node name="CollisionShape2D" type="CollisionShape2D" parent="Back"]
 position = Vector2( -10.4356, 0 )
 shape = SubResource( 2 )
-
-[node name="SafeTimer" type="Timer" parent="."]
 [connection signal="body_entered" from="Back" to="." method="back_entered"]

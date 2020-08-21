@@ -5,38 +5,36 @@ onready var spawns = get_node("Game/TestMap/PlayerSpawns")
 onready var bars = get_node("UILayer/HUD/Bars")
 onready var message = get_node("UILayer/Msg/Panel/Message")
 
-var main_menu = "UILayer/Menu/Panel/Main/"
-var current_state = "idle"
+var menu_path = "UILayer/Menu/Panel/Main/"
+var state = "idle"
 var max_hp = 3
 var max_balls = 10
 var players = []
 var used_colors = []
-var zoom_margin = 500
-var zoom_accel = 0.05
 var reset_timer = Timer.new()
 
 func _ready():
-	get_node(main_menu + "Play").connect("pressed", self, "load_game")
-	get_node(main_menu + "Quit").connect("pressed", get_tree(), "quit")
-	get_node(main_menu + "Health/Dec").connect("pressed", self, "crement", ["hp", -1])
-	get_node(main_menu + "Health/Inc").connect("pressed", self, "crement", ["hp", 1])
-	get_node(main_menu + "Balls/Dec").connect("pressed", self, "crement", ["balls", -1])
-	get_node(main_menu + "Balls/Inc").connect("pressed", self, "crement", ["balls", 1])
-	get_node(main_menu + "Play").grab_focus()
+	get_node(menu_path + "Play").connect("pressed", self, "load_game")
+	get_node(menu_path + "Quit").connect("pressed", get_tree(), "quit")
+	get_node(menu_path + "Health/Dec").connect("pressed", self, "crement", ["hp", -1])
+	get_node(menu_path + "Health/Inc").connect("pressed", self, "crement", ["hp", 1])
+	get_node(menu_path + "Balls/Dec").connect("pressed", self, "crement", ["balls", -1])
+	get_node(menu_path + "Balls/Inc").connect("pressed", self, "crement", ["balls", 1])
+	get_node(menu_path + "Play").grab_focus()
 	add_child(reset_timer)
 	reset_timer.connect("timeout", self, "unload_game")
 	update_option_nodes()
 	update_balls()
-	get_node("Game/Camera2D").position = defCamPos
 	randomize()
 	var map_color = Color.from_hsv((randi() % 9 * 40.0) / 360.0, 1, 1)
 	used_colors.append(map_color)
 	get_node("Game/TestMap").modulate = map_color
+	get_node("Game/Camera2D").position = defCamPos
 
 # Update UI when changing settings
 func update_option_nodes():
-	get_node(main_menu + "Health/HealthNum").text = str(max_hp)
-	get_node(main_menu + "Balls/BallNum").text = str(max_balls)
+	get_node(menu_path + "Health/HealthNum").text = str(max_hp)
+	get_node(menu_path + "Balls/BallNum").text = str(max_balls)
 
 # Set message text and visibility
 func set_msg(msg, show):
@@ -63,7 +61,7 @@ func update_balls():
 
 # Set up game, wait for players
 func load_game():
-	current_state = "starting"
+	state = "starting"
 	set_msg("Press A/Enter to join (or begin if P1)", true)
 	get_node("UILayer/Menu").hide()
 	get_node("Game/Camera2D").position = defCamPos
@@ -72,12 +70,12 @@ func load_game():
 func start_game():
 	set_msg("", false)
 	for p in players:
-		p.node.game_began()
-	current_state = "playing"
+		p.node.is_enabled = true
+	state = "playing"
 
 # Reset and clear players/balls
 func unload_game():
-	current_state = "idle"
+	state = "idle"
 	reset_timer.stop()
 	get_node("Game/Camera2D").position = defCamPos
 	get_node("Game/Camera2D").zoom = Vector2(1, 1)
@@ -90,7 +88,7 @@ func unload_game():
 		b.queue_free()
 	bars.columns = 1
 	get_node("UILayer/Menu").show()
-	get_node(main_menu + "Play").grab_focus()
+	get_node(menu_path + "Play").grab_focus()
 
 # Create new player
 func new_player(id):
@@ -131,16 +129,15 @@ func new_player(id):
 
 # Manage player health
 func on_player_hit(p_num):
-	if current_state != "playing":
+	if state != "playing":
 		return
-	players[p_num].node.damage()
 	players[p_num].hp -= 1
 	if players[p_num].hp == 0:
 		players[p_num].node.queue_free()
 		if players[p_num].pad >= 0:
 			Input.start_joy_vibration(players[p_num].pad, .2, .2, .3)
-		if get_node("Game/Players").get_child_count() == 2:
-			current_state = "ending"
+		if players.size() == 2:
+			state = "ending"
 			set_msg("Game ended!", true)
 			reset_timer.start(3)
 	var hp_bits = players[p_num].hud.get_children()
@@ -158,7 +155,7 @@ func is_new_pad(id):
 
 func _process(_delta):
 	# Create player if sensed input
-	if players.size() < 8 and current_state == "starting":
+	if players.size() < 8 and state == "starting":
 		if Input.is_key_pressed(KEY_ENTER) and is_new_pad(-1):
 			new_player(-1)
 		elif Input.is_key_pressed(KEY_KP_ENTER) and is_new_pad(-2):
@@ -169,34 +166,31 @@ func _process(_delta):
 					new_player(c)
 	
 	# Start game when player one presses start/enter
-	if current_state == "starting" and players.size() > 1:
-		if players[0].pad == -1 and Input.is_key_pressed(KEY_ENTER):
-			start_game()
-		if players[0].pad == -2 and Input.is_key_pressed(KEY_KP_ENTER):
-			start_game()
-		if players[0].pad >= 0 and Input.is_joy_button_pressed(players[0].pad, JOY_BUTTON_0):
+	if state == "starting" and players.size() > 1:
+		if (players[0].pad == -1 and Input.is_key_pressed(KEY_ENTER)) or \
+		(players[0].pad == -2 and Input.is_key_pressed(KEY_KP_ENTER)) or \
+		(players[0].pad >= 0 and Input.is_joy_button_pressed(players[0].pad, JOY_BUTTON_0)):
 			start_game()
 	
 	# Center camera to average player position, zoom camera to always view all players
-	if current_state != "idle" and get_node("Game/Players").get_child_count() > 0:
+	if state != "idle" and players.size() > 0:
 		var avg = Vector2()
 		for player in get_node("Game/Players").get_children():
 			avg.x += player.position.x
 			avg.y += player.position.y
-		get_node("Game/Camera2D").position = avg / get_node("Game/Players").get_child_count()
+		get_node("Game/Camera2D").position = avg / players.size()
 		
-		var max_x = get_node("Game/Players").get_child(0).position.x
-		var min_x = get_node("Game/Players").get_child(0).position.x
-		var max_y = get_node("Game/Players").get_child(0).position.y
-		var min_y = get_node("Game/Players").get_child(0).position.y
+		var max_x = -INF
+		var min_x = INF
+		var max_y = -INF
+		var min_y = INF
 		for player in get_node("Game/Players").get_children():
 			max_x = max(player.position.x, max_x)
 			min_x = min(player.position.x, min_x)
 			max_y = max(player.position.y, max_y)
 			min_y = min(player.position.y, min_y)
-		var new_zoom = Vector2()
-		var new_zoom_x = (abs(max_x - min_x) + zoom_margin) / OS.window_size.x
-		var new_zoom_y = (abs(max_y - min_y) + zoom_margin) / OS.window_size.y
-		new_zoom = Vector2(max(new_zoom_x, new_zoom_y), max(new_zoom_x, new_zoom_y))
+		var new_zoom_x = (abs(max_x - min_x) + 500) / OS.window_size.x
+		var new_zoom_y = (abs(max_y - min_y) + 500) / OS.window_size.y
+		var new_zoom = Vector2(max(new_zoom_x, new_zoom_y), max(new_zoom_x, new_zoom_y))
 		new_zoom = Vector2(1, 1) if new_zoom < Vector2(1, 1) else new_zoom
-		get_node("Game/Camera2D").zoom = get_node("Game/Camera2D").zoom.linear_interpolate(new_zoom, zoom_accel)
+		get_node("Game/Camera2D").zoom = get_node("Game/Camera2D").zoom.linear_interpolate(new_zoom, 0.05)
