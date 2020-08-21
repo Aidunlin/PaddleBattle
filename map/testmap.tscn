@@ -1,6 +1,6 @@
 [gd_scene load_steps=17 format=2]
 
-[ext_resource path="res://img/block.png" type="Texture" id=1]
+[ext_resource path="res://map/block.png" type="Texture" id=1]
 
 [sub_resource type="TileSet" id=1]
 0/name = "block.png 0"

@@ -3,9 +3,6 @@
 [ext_resource path="res://player/paddle.png" type="Texture" id=1]
 [ext_resource path="res://player/player.gd" type="Script" id=2]
 
-
-
-
 [sub_resource type="CapsuleShape2D" id=1]
 radius = 15.0892
 height = 65.8216
@@ -34,4 +31,4 @@ position = Vector2( -10.4356, 0 )
 shape = SubResource( 2 )
 
 [node name="SafeTimer" type="Timer" parent="."]
-one_shot = true
+[connection signal="body_entered" from="Back" to="." method="back_entered"]
