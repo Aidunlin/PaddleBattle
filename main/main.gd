@@ -1,9 +1,8 @@
 extends Node
 
-onready var camera_spawn = get_node("Game/TestMap/DefCamPos").position
-onready var spawns = get_node("Game/TestMap/PlayerSpawns")
-onready var bars = get_node("UI/HUD/Bars")
-onready var message = get_node("UI/Msg/Panel/Message")
+onready var camera_spawn = $Game/TestMap/CameraSpawn.position
+onready var spawns = $Game/TestMap/PlayerSpawns
+onready var bars = $UI/HUD/Bars
 
 var menu = "UI/Menu/Panel/Main/"
 var state = "idle"
@@ -11,7 +10,7 @@ var health = 3
 var balls = 10
 var players = []
 var colors = []
-var reset_timer = Timer.new()
+var ending_timer = Timer.new()
 
 func _ready():
 	get_node(menu + "Play").grab_focus()
@@ -21,17 +20,40 @@ func _ready():
 	get_node(menu + "Health/Inc").connect("pressed", self, "crement", ["hp", 1])
 	get_node(menu + "Balls/Dec").connect("pressed", self, "crement", ["balls", -1])
 	get_node(menu + "Balls/Inc").connect("pressed", self, "crement", ["balls", 1])
-	add_child(reset_timer)
-	reset_timer.connect("timeout", self, "unload_game")
+	add_child(ending_timer)
+	ending_timer.connect("timeout", self, "unload_game")
 	update_balls()
 	update_options()
 	randomize()
-	var map_color = Color.from_hsv((randi() % 9 * 40.0) / 360.0, 1, 1)
-	colors.append(map_color)
-	get_node("Game/TestMap").modulate = map_color
-	get_node("Game/Camera").position = camera_spawn
+	var color = Color.from_hsv((randi() % 9 * 40.0) / 360.0, 1, 1)
+	colors.append(color)
+	$Game/TestMap.modulate = color
+	$Game/Camera.position = camera_spawn
 
 func _process(_delta):
+	# Center camera to average player position, zoom camera to always view all players
+	if state != "idle" and $Game/Players.get_child_count() > 0:
+		var avg = Vector2()
+		var max_x = -INF
+		var min_x = INF
+		var max_y = -INF
+		var min_y = INF
+		for player in $Game/Players.get_children():
+			avg.x += player.position.x
+			avg.y += player.position.y
+			max_x = max(player.position.x, max_x)
+			min_x = min(player.position.x, min_x)
+			max_y = max(player.position.y, max_y)
+			min_y = min(player.position.y, min_y)
+		avg /= $Game/Players.get_child_count()
+		var zoom_x = (max(max_x - avg.x, avg.x - min_x) * 2 + 500) / OS.window_size.x
+		var zoom_y = (max(max_y - avg.y, avg.y - min_y) * 2 + 500) / OS.window_size.y
+		var zoom = Vector2(max(zoom_x, zoom_y), max(zoom_x, zoom_y))
+		zoom = Vector2(1, 1) if zoom < Vector2(1, 1) else zoom
+		$Game/Camera.position = avg
+		$Game/Camera.zoom = $Game/Camera.zoom.linear_interpolate(zoom, 0.05)
+
+func _input(_event):
 	# Create player if sensed input
 	if players.size() < 8 and state == "starting":
 		if Input.is_key_pressed(KEY_ENTER) and is_new_pad(-1):
@@ -49,29 +71,6 @@ func _process(_delta):
 		(players[0].pad == -2 and Input.is_key_pressed(KEY_KP_ENTER)) or \
 		(players[0].pad >= 0 and Input.is_joy_button_pressed(players[0].pad, 0)):
 			start_game()
-	
-	# Center camera to average player position, zoom camera to always view all players
-	if state != "idle" and get_node("Game/Players").get_children().size() > 0:
-		var avg = Vector2()
-		for player in get_node("Game/Players").get_children():
-			avg.x += player.position.x
-			avg.y += player.position.y
-		get_node("Game/Camera").position = avg / get_node("Game/Players").get_children().size()
-		
-		var max_x = get_node("Game/Players").get_child(0).position.x
-		var min_x = get_node("Game/Players").get_child(0).position.x
-		var max_y = get_node("Game/Players").get_child(0).position.y
-		var min_y = get_node("Game/Players").get_child(0).position.y
-		for player in get_node("Game/Players").get_children():
-			max_x = max(player.position.x, max_x)
-			min_x = min(player.position.x, min_x)
-			max_y = max(player.position.y, max_y)
-			min_y = min(player.position.y, min_y)
-		var zoom_x = (abs(max_x - min_x) + 500) / OS.window_size.x
-		var zoom_y = (abs(max_y - min_y) + 500) / OS.window_size.y
-		var zoom = Vector2(max(zoom_x, zoom_y), max(zoom_x, zoom_y))
-		zoom = Vector2(1, 1) if zoom < Vector2(1, 1) else zoom
-		get_node("Game/Camera").zoom = get_node("Game/Camera").zoom.linear_interpolate(zoom, 0.05)
 
 # Increment/decrement values of options
 func crement(item, x):
@@ -84,12 +83,12 @@ func crement(item, x):
 
 # Reset all the balls
 func update_balls():
-	for ball in get_node("Game/Balls").get_children():
+	for ball in $Game/Balls.get_children():
 		ball.queue_free()
 	for i in balls:
 		var ball = load("res://ball/ball.tscn").instance()
-		ball.position = get_node("Game/TestMap/BallSpawns").get_child(i).position
-		get_node("Game/Balls").add_child(ball)
+		ball.position = $Game/TestMap/BallSpawns.get_child(i).position
+		$Game/Balls.add_child(ball)
 
 # Update UI when changing settings
 func update_options():
@@ -100,8 +99,8 @@ func update_options():
 func load_game():
 	state = "starting"
 	set_msg("Press A/Enter to join (or begin if P1)", true)
-	get_node("UI/Menu").hide()
-	get_node("Game/Camera").position = camera_spawn
+	$UI/Menu.hide()
+	$Game/Camera.position = camera_spawn
 
 # Signal player nodes to begin
 func start_game():
@@ -113,61 +112,61 @@ func start_game():
 # Reset and clear players/balls
 func unload_game():
 	state = "idle"
-	reset_timer.stop()
-	get_node("Game/Camera").position = camera_spawn
-	get_node("Game/Camera").zoom = Vector2(1, 1)
+	ending_timer.stop()
+	$Game/Camera.position = camera_spawn
+	$Game/Camera.zoom = Vector2(1, 1)
 	set_msg("", false)
 	players.clear()
-	for p in get_node("Game/Players").get_children():
-		p.queue_free()
+	for player in $Game/Players.get_children():
+		player.queue_free()
 	update_balls()
-	for b in bars.get_children():
-		b.queue_free()
+	for bar in bars.get_children():
+		bar.queue_free()
 	bars.columns = 1
-	get_node("UI/Menu").show()
+	$UI/Menu.show()
 	get_node(menu + "Play").grab_focus()
 
 # Create new player
 func new_player(id):
 	# Create player node and color
-	var p_num = players.size()
-	var new_player = load("res://player/player.tscn").instance()
-	new_player.name = str(p_num)
-	new_player.pad = id
-	var new_color = colors[0]
-	while colors.has(new_color):
+	var number = players.size()
+	var player = load("res://player/player.tscn").instance()
+	player.name = str(number)
+	player.pad = id
+	var color = colors[0]
+	while colors.has(color):
 		randomize()
-		new_color = Color.from_hsv((randi() % 9 * 40.0) / 360.0, 1, 1)
-	colors.append(new_color)
-	new_player.modulate = new_color
+		color = Color.from_hsv((randi() % 9 * 40.0) / 360.0, 1, 1)
+	colors.append(color)
+	player.modulate = color
 	
 	# Add new HP bar for player
-	var new_bar = HBoxContainer.new()
-	new_bar.size_flags_horizontal = HBoxContainer.SIZE_EXPAND_FILL
-	new_bar.modulate = new_color
-	new_bar.alignment = BoxContainer.ALIGN_CENTER
-	var hp_bar = HBoxContainer.new()
-	hp_bar.set("custom_constants/separation", -18)
+	var bar = HBoxContainer.new()
+	bar.size_flags_horizontal = HBoxContainer.SIZE_EXPAND_FILL
+	bar.modulate = color
+	bar.alignment = BoxContainer.ALIGN_CENTER
+	var hp = HBoxContainer.new()
+	hp.set("custom_constants/separation", -18)
 	for _x in range(health):
-		var hp_bit = TextureRect.new()
-		hp_bit.texture = load("res://main/hp.png")
-		hp_bar.add_child(hp_bit)
-	new_bar.add_child(hp_bar)
-	bars.add_child(new_bar)
+		var bit = TextureRect.new()
+		bit.texture = load("res://main/hp.png")
+		hp.add_child(bit)
+	bar.add_child(hp)
+	bars.add_child(bar)
 	bars.columns = clamp(bars.get_children().size(), 1, 4)
 	
 	# Add player node and data
-	new_player.spawn_position = spawns.get_child(p_num).position
-	new_player.spawn_rotation = spawns.get_child(p_num).rotation
-	new_player.connect("hit", self, "on_player_hit")
-	players.append({pad = id, hp = health, color = new_color, hud = hp_bar, node = new_player})
-	get_node("Game/Players").add_child(new_player)
-	get_node("Game/Players").move_child(new_player, 0)
+	player.spawn_position = spawns.get_child(number).position
+	player.spawn_rotation = spawns.get_child(number).rotation
+	player.connect("hit", self, "on_player_hit")
+	players.append({pad = id, hp = health, color = color, hud = hp, node = player})
+	$Game/Players.add_child(player)
+	$Game/Players.move_child(player, 0)
 
 # Set message text and visibility
 func set_msg(msg, show):
-	message.text = msg
-	message.get_parent().get_parent().visible = show
+	$UI/Msg/Panel/Message.text = msg
+	$UI/Msg/Panel/Message.get_parent().get_parent().visible = show
 
 # Manage player health
 func on_player_hit(p_num):
@@ -180,14 +179,14 @@ func on_player_hit(p_num):
 		if players.size() == 2:
 			state = "ending"
 			set_msg("Game ended!", true)
-			reset_timer.start(3)
-	var hp_bits = players[p_num].hud.get_children()
-	for i in range(hp_bits.size()):
-		hp_bits[i].modulate = Color.white if players[p_num].hp > i else Color("4d4d4d4d")
+			ending_timer.start(3)
+	var bits = players[p_num].hud.get_children()
+	for i in range(health):
+		bits[i].modulate.a = 1.0 if players[p_num].hp > i else 0.1
 
 # Check if a pad is already used
 func is_new_pad(id):
-	for p in players:
-		if p.pad == id:
+	for player in players:
+		if player.pad == id:
 			return false
 	return true

@@ -16,7 +16,6 @@ __meta__ = {
 }
 
 [node name="Panel" type="PanelContainer" parent="."]
-self_modulate = Color( 1, 1, 1, 0.501961 )
 margin_left = 543.0
 margin_top = 261.0
 margin_right = 737.0
