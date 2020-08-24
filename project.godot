@@ -23,7 +23,6 @@ config/custom_user_dir_name="Paddle Battle"
 boot_splash/image="res://res/icon.png"
 boot_splash/use_filter=false
 config/icon="res://res/icon.png"
-config/windows_native_icon="res://res/icon.ico"
 
 [audio]
 
@@ -37,10 +36,6 @@ gdscript/warnings/return_value_discarded=false
 
 window/size/width=1280
 window/size/height=720
-
-[gdnative]
-
-singletons=[  ]
 
 [input]
 
