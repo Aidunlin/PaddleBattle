@@ -15,6 +15,7 @@ var ending_timer = Timer.new()
 func _ready():
 	get_node(menu + "Play").grab_focus()
 	get_node(menu + "Play").connect("pressed", self, "load_game")
+	get_node(menu + "LAN").connect("pressed", self, "switch_lan")
 	get_node(menu + "Quit").connect("pressed", get_tree(), "quit")
 	get_node(menu + "Health/Dec").connect("pressed", self, "crement", ["hp", -1])
 	get_node(menu + "Health/Inc").connect("pressed", self, "crement", ["hp", 1])
@@ -71,6 +72,9 @@ func _input(_event):
 		(players[0].pad == -2 and Input.is_key_pressed(KEY_KP_ENTER)) or \
 		(players[0].pad >= 0 and Input.is_joy_button_pressed(players[0].pad, 0)):
 			start_game()
+
+func switch_lan():
+	get_tree().change_scene("res://online/online.tscn")
 
 # Increment/decrement values of options
 func crement(item, x):
