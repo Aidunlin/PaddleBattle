@@ -27,12 +27,12 @@ func _physics_process(delta):
 	input_velocity = Vector2()
 	
 	# Manage inputs (-1 and -2 are keyboard controls)
-	if pad < 0:
+	if OS.is_window_focused() and pad < 0:
 		input_velocity.y = get_key(KEY_S, KEY_DOWN) - get_key(KEY_W, KEY_UP)
 		input_velocity.x = get_key(KEY_D, KEY_RIGHT) - get_key(KEY_A, KEY_LEFT)
 		input_velocity = input_velocity.normalized() * move_speed
 		rotation_degrees += (get_key(KEY_H, KEY_KP_3) - get_key(KEY_G, KEY_KP_2)) * rotation_speed
-	else:
+	elif OS.is_window_focused():
 		var l = Vector2(Input.get_joy_axis(pad, 0), Input.get_joy_axis(pad, 1))
 		if l.length() > 0.2:
 			input_velocity = Vector2(sign(l.x) * pow(l.x, 2), sign(l.y) * pow(l.y, 2)) * move_speed

@@ -1,85 +1,38 @@
-[gd_scene load_steps=3 format=2]
+[gd_scene load_steps=5 format=2]
 
 [ext_resource path="res://online/online.gd" type="Script" id=1]
 [ext_resource path="res://map/testmap.tscn" type="PackedScene" id=2]
+[ext_resource path="res://online/menu.tscn" type="PackedScene" id=3]
 
-[node name="Main" type="Node"]
+[sub_resource type="Environment" id=1]
+background_mode = 4
+auto_exposure_scale = 0.18
+auto_exposure_speed = 32.0
+glow_enabled = true
+glow_levels/1 = true
+glow_levels/2 = true
+glow_levels/4 = true
+glow_levels/6 = true
+glow_levels/7 = true
+glow_bloom = 1.0
+
+[node name="Online" type="Node"]
 script = ExtResource( 1 )
 
-[node name="MenuLayer" type="CanvasLayer" parent="."]
-
-[node name="Menu" type="CenterContainer" parent="MenuLayer"]
-anchor_right = 1.0
-anchor_bottom = 1.0
-__meta__ = {
-"_edit_use_anchors_": false
-}
-
-[node name="Main" type="VBoxContainer" parent="MenuLayer/Menu"]
-margin_left = 540.0
-margin_top = 284.0
-margin_right = 740.0
-margin_bottom = 436.0
-rect_min_size = Vector2( 200, 0 )
-custom_constants/separation = 8
-__meta__ = {
-"_edit_use_anchors_": false
-}
-
-[node name="Label" type="Label" parent="MenuLayer/Menu/Main"]
-margin_right = 200.0
-margin_bottom = 14.0
-text = "Paddle Battle - LAN (alpha)"
-align = 1
-
-[node name="HostButton" type="Button" parent="MenuLayer/Menu/Main"]
-margin_top = 22.0
-margin_right = 200.0
-margin_bottom = 42.0
-text = "Host"
-
-[node name="Address" type="LineEdit" parent="MenuLayer/Menu/Main"]
-margin_top = 50.0
-margin_right = 200.0
-margin_bottom = 74.0
-size_flags_horizontal = 3
-text = "127.0.0.1"
-align = 1
-max_length = 15
-context_menu_enabled = false
-__meta__ = {
-"_edit_use_anchors_": false
-}
-
-[node name="JoinButton" type="Button" parent="MenuLayer/Menu/Main"]
-margin_top = 82.0
-margin_right = 200.0
-margin_bottom = 102.0
-text = "Join"
-
-[node name="BackButton" type="Button" parent="MenuLayer/Menu/Main"]
-margin_top = 110.0
-margin_right = 200.0
-margin_bottom = 130.0
-text = "Back"
-
-[node name="Message" type="Label" parent="MenuLayer/Menu/Main"]
-margin_top = 138.0
-margin_right = 200.0
-margin_bottom = 152.0
-align = 1
-
 [node name="Game" type="Node2D" parent="."]
-visible = false
 
 [node name="TestMap" parent="Game" instance=ExtResource( 2 )]
 
-[node name="Camera2D" type="Camera2D" parent="Game"]
+[node name="Camera" type="Camera2D" parent="Game"]
 position = Vector2( 1056, 608 )
 current = true
 smoothing_enabled = true
 
 [node name="Players" type="Node2D" parent="Game"]
-[connection signal="pressed" from="MenuLayer/Menu/Main/HostButton" to="." method="_on_HostButton_pressed"]
-[connection signal="pressed" from="MenuLayer/Menu/Main/JoinButton" to="." method="_on_JoinButton_pressed"]
-[connection signal="pressed" from="MenuLayer/Menu/Main/BackButton" to="." method="_on_BackButton_pressed"]
+
+[node name="UI" type="CanvasLayer" parent="."]
+
+[node name="Menu" parent="UI" instance=ExtResource( 3 )]
+
+[node name="WorldEnvironment" type="WorldEnvironment" parent="."]
+environment = SubResource( 1 )

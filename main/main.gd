@@ -65,13 +65,17 @@ func _input(_event):
 			for c in Input.get_connected_joypads():
 				if Input.is_joy_button_pressed(c, 0) and is_new_pad(c):
 					new_player(c)
-	
+
 	# Start game when player one presses start/enter
 	if state == "starting" and players.size() > 1:
 		if (players[0].pad == -1 and Input.is_key_pressed(KEY_ENTER)) or \
 		(players[0].pad == -2 and Input.is_key_pressed(KEY_KP_ENTER)) or \
 		(players[0].pad >= 0 and Input.is_joy_button_pressed(players[0].pad, 0)):
 			start_game()
+	
+	if state == "playing" or state == "starting":
+		if Input.is_key_pressed(KEY_SHIFT) and Input.is_key_pressed(KEY_ESCAPE):
+			unload_game()
 
 func switch_lan():
 	get_tree().change_scene("res://online/online.tscn")
