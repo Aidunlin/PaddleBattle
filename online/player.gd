@@ -34,10 +34,15 @@ func _physics_process(delta):
 		else:
 			velocity = velocity.linear_interpolate(Vector2(), 0.02)
 		
-		# Manage wall collisions
-		var collision = move_and_collide(velocity * delta, false)
-		if collision:
-			velocity = velocity.bounce(collision.normal)
+		# Manage colls with balls
+		var coll = move_and_collide(velocity * delta, false)
+		if coll:
+			if coll.collider.is_in_group("balls"):
+				coll.collider.apply_central_impulse(-coll.normal * velocity.length())
+			else:
+				velocity = velocity.bounce(coll.normal)
+			if using_pad:
+				Input.start_joy_vibration(0, 0.1, 0, 0.1)
 		
 		rset_unreliable("p_position", position)
 		rset_unreliable("p_rotation", rotation)

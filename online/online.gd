@@ -7,6 +7,8 @@ onready var players = $Game/Players
 
 var menu = "UI/Menu/Panel/Main/"
 var player_data = {}
+var ball_data = []
+var balls = 10
 var playing = false
 onready var self_data = {position = $Game/TestMap/CameraSpawn.position, rotation = 0}
 
@@ -25,11 +27,15 @@ func _ready():
 func _process(_delta):
 	if playing:
 		camera.position = self_data.position
+		if get_tree().is_network_server():
+			rpc_unreliable("update_balls", ball_data)
 
 func _input(_event):
 	if playing:
 		if Input.is_key_pressed(KEY_SHIFT) and Input.is_key_pressed(KEY_ESCAPE):
 			unload_game("")
+
+# Button presses
 
 func host_pressed():
 	var peer = NetworkedMultiplayerENet.new()
@@ -53,6 +59,8 @@ func join_pressed():
 func back_pressed():
 	get_tree().change_scene("res://main/main.tscn")
 
+# Basic network funcs
+
 func peer_connected(id):
 	if not get_tree().is_network_server():
 		rpc_id(1, "request_data", get_tree().get_network_unique_id(), id)
@@ -67,6 +75,8 @@ func connected_to_server():
 	player_data[get_tree().get_network_unique_id()] = self_data
 	rpc("send_data", get_tree().get_network_unique_id(), self_data)
 
+# Initial request/send when joining
+
 remote func request_data(from_id, peer_id):
 	if get_tree().is_network_server():
 		rpc_id(from_id, "send_data", peer_id, player_data[peer_id])
@@ -75,12 +85,15 @@ remote func send_data(id, data):
 	player_data[id] = data
 	init_player(id, data)
 
+# Loading/unloading from game state
+
 func load_game():
 	message.text = ""
 	$UI/Menu.hide()
 	$Game.show()
 	init_player(get_tree().get_network_unique_id(), self_data)
 	playing = true
+	init_balls()
 
 func unload_game(msg):
 	playing = false
@@ -88,20 +101,49 @@ func unload_game(msg):
 	for p in players.get_children():
 		p.queue_free()
 	player_data.empty()
+	for ball in $Game/Balls.get_children():
+		ball.queue_free()
+	ball_data.clear()
 	$UI/Menu.show()
 	$Game.hide()
 	get_tree().set_deferred("network_peer", null)
 
+# Player funcs
+
 func init_player(id, data):
-	var new_player = load("res://online/player.tscn").instance()
-	new_player.name = str(id)
-	new_player.set_network_master(id)
-	new_player.modulate = data.color
-	new_player.connect("update", self, "update_player")
-	players.add_child(new_player)
-	new_player.position = data.position
-	new_player.rotation = data.rotation
+	var player = load("res://online/player.tscn").instance()
+	player.name = str(id)
+	player.set_network_master(id)
+	player.modulate = data.color
+	player.connect("update", self, "update_player")
+	players.add_child(player)
+	player.position = data.position
+	player.rotation = data.rotation
 
 func update_player(id, position, rotation):
 	player_data[id].position = position
 	player_data[id].rotation = rotation
+
+# Ball funcs
+
+func init_balls():
+	for i in balls:
+		if get_tree().is_network_server():
+			var ball = load("res://ball/ball.tscn").instance()
+			ball.set_network_master(1)
+			ball.name = str(i)
+			ball.position = $Game/TestMap/BallSpawns.get_child(i).position
+			ball_data.append({position = ball.position, rotation = ball.rotation})
+			$Game/Balls.add_child(ball)
+		else:
+			var ball = load("res://online/clientball.tscn").instance()
+			$Game/Balls.add_child(ball)
+
+remotesync func update_balls(data):
+	for i in balls:
+		if get_tree().is_network_server():
+			ball_data[i].position = $Game/Balls.get_child(i).position
+			ball_data[i].rotation = $Game/Balls.get_child(i).rotation
+		else:
+			$Game/Balls.get_child(i).position = data[i].position
+			$Game/Balls.get_child(i).rotation = data[i].rotation

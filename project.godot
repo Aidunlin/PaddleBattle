@@ -32,11 +32,6 @@ default_bus_layout=""
 
 gdscript/warnings/return_value_discarded=false
 
-[display]
-
-window/size/width=1280
-window/size/height=720
-
 [input]
 
 ui_accept={
