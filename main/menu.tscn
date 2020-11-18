@@ -16,10 +16,10 @@ __meta__ = {
 }
 
 [node name="Panel" type="PanelContainer" parent="."]
-margin_left = 543.0
-margin_top = 242.0
-margin_right = 737.0
-margin_bottom = 478.0
+margin_left = 415.0
+margin_top = 182.0
+margin_right = 609.0
+margin_bottom = 418.0
 
 [node name="Main" type="VBoxContainer" parent="Panel"]
 margin_left = 6.0

@@ -153,13 +153,13 @@ func new_player(id):
 	bar.size_flags_horizontal = HBoxContainer.SIZE_EXPAND_FILL
 	bar.modulate = color
 	bar.alignment = BoxContainer.ALIGN_CENTER
-	var hp = HBoxContainer.new()
-	hp.set("custom_constants/separation", -18)
+	var hp_bar = HBoxContainer.new()
+	hp_bar.set("custom_constants/separation", -18)
 	for _x in range(health):
 		var bit = TextureRect.new()
 		bit.texture = load("res://main/hp.png")
-		hp.add_child(bit)
-	bar.add_child(hp)
+		hp_bar.add_child(bit)
+	bar.add_child(hp_bar)
 	bars.add_child(bar)
 	bars.columns = clamp(bars.get_children().size(), 1, 4)
 	
@@ -167,7 +167,7 @@ func new_player(id):
 	player.spawn_position = spawns.get_child(number).position
 	player.spawn_rotation = spawns.get_child(number).rotation
 	player.connect("hit", self, "on_player_hit")
-	players.append({pad = id, hp = health, color = color, hud = hp, node = player})
+	players.append({pad=id, hp=health, color=color, hud=hp_bar, node=player})
 	$Game/Players.add_child(player)
 	$Game/Players.move_child(player, 0)
 

@@ -10,7 +10,7 @@ var player_data = {}
 var ball_data = []
 var balls = 10
 var playing = false
-onready var self_data = {position = $Game/TestMap/CameraSpawn.position, rotation = 0}
+onready var self_data = {position=$Game/TestMap/CameraSpawn.position, rotation=0}
 
 func _ready():
 	get_node(menu + "Host").grab_focus()
@@ -19,10 +19,11 @@ func _ready():
 	get_node(menu + "Back").connect("pressed", self, "back_pressed")
 	get_tree().connect("network_peer_connected", self, "peer_connected")
 	get_tree().connect("network_peer_disconnected", self, "peer_disconnected")
-	get_tree().connect("connection_failed", self, "unload_game", ["Connection failed"])
-	get_tree().connect("server_disconnected", self, "unload_game", ["Server disconnected"])
+	get_tree().connect("connection_failed", self, "unload_game", ["Connection failed!"])
+	get_tree().connect("server_disconnected", self, "unload_game", ["Server disconnected!"])
 	randomize()
-	self_data.color = Color.from_hsv(randf(), 1, 1)
+	self_data.color = Color.from_hsv((randi() % 9 * 40.0) / 360.0, 1, 1)
+	$Game/TestMap.modulate = Color.from_hsv((randi() % 9 * 40.0) / 360.0, 1, 1)
 
 func _process(_delta):
 	if playing:
@@ -45,12 +46,15 @@ func host_pressed():
 	load_game()
 
 func join_pressed():
-	message.text = "Connecting"
 	var address_text = address.text
 	if not address_text.is_valid_ip_address():
 		if address_text != "":
+			message.text = "Invalid IP!"
 			return
 		address_text = "127.0.0.1"
+	message.text = "Connecting..."
+	get_node(menu + "Host").disabled = true
+	get_node(menu + "JoinBar/Join").disabled = true
 	get_tree().connect("connected_to_server", self, "connected_to_server")
 	var peer = NetworkedMultiplayerENet.new()
 	peer.create_client(address_text, 8910)
@@ -89,6 +93,8 @@ remote func send_data(id, data):
 
 func load_game():
 	message.text = ""
+	get_node(menu + "Host").disabled = false
+	get_node(menu + "JoinBar/Join").disabled = false
 	$UI/Menu.hide()
 	$Game.show()
 	init_player(get_tree().get_network_unique_id(), self_data)
@@ -136,7 +142,7 @@ func init_balls():
 			ball_data.append({position = ball.position, rotation = ball.rotation})
 			$Game/Balls.add_child(ball)
 		else:
-			var ball = load("res://online/clientball.tscn").instance()
+			var ball = load("res://online/ball.tscn").instance()
 			$Game/Balls.add_child(ball)
 
 remotesync func update_balls(data):
