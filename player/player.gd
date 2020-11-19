@@ -26,6 +26,9 @@ func _ready():
 		if not is_network_master():
 			is_master = false
 	
+	add_child(safe_timer)
+	safe_timer.connect("timeout", self, "safe_ended")
+	
 	# Override when playing over LAN
 	if playing_lan:
 		enabled = true
@@ -34,9 +37,7 @@ func _ready():
 	else:
 		position = spawn_position
 		rotation = spawn_rotation
-	
-	add_child(safe_timer)
-	safe_timer.connect("timeout", self, "safe_ended")
+		safe_timer.start(3)
 
 func _physics_process(delta):
 	if not enabled:
