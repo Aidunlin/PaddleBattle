@@ -70,8 +70,8 @@ func peer_connected(id):
 		rpc_id(1, "request_data", get_tree().get_network_unique_id(), id)
 
 func peer_disconnected(id):
-	if players.has_node(str(id)):
-		players.get_node(str(id)).queue_free()
+	if $Game/Players.has_node(str(id)):
+		$Game/Players.get_node(str(id)).queue_free()
 	player_data.erase(id)
 
 func connected_to_server():
@@ -104,9 +104,9 @@ func load_game():
 func unload_game(msg):
 	playing = false
 	message.text = msg
-	for p in players.get_children():
+	for p in $Game/Players.get_children():
 		p.queue_free()
-	player_data.empty()
+	player_data.clear()
 	for ball in $Game/Balls.get_children():
 		ball.queue_free()
 	ball_data.clear()
@@ -122,7 +122,7 @@ func init_player(id, data):
 	player.set_network_master(id)
 	player.modulate = data.color
 	player.connect("update", self, "update_player")
-	players.add_child(player)
+	$Game/Players.add_child(player)
 	player.position = data.position
 	player.rotation = data.rotation
 
@@ -136,8 +136,6 @@ func init_balls():
 	for i in balls:
 		if get_tree().is_network_server():
 			var ball = load("res://ball/ball.tscn").instance()
-			ball.set_network_master(1)
-			ball.name = str(i)
 			ball.position = $Game/TestMap/BallSpawns.get_child(i).position
 			ball_data.append({position = ball.position, rotation = ball.rotation})
 			$Game/Balls.add_child(ball)

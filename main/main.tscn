@@ -34,34 +34,6 @@ smoothing_enabled = true
 
 [node name="UI" type="CanvasLayer" parent="."]
 
-[node name="Msg" type="CenterContainer" parent="UI"]
-visible = false
-anchor_right = 1.0
-anchor_bottom = 1.0
-theme = ExtResource( 5 )
-__meta__ = {
-"_edit_use_anchors_": false
-}
-
-[node name="Panel" type="PanelContainer" parent="UI/Msg"]
-margin_left = 506.0
-margin_top = 296.0
-margin_right = 518.0
-margin_bottom = 304.0
-__meta__ = {
-"_edit_use_anchors_": false
-}
-
-[node name="Message" type="Label" parent="UI/Msg/Panel"]
-margin_left = 6.0
-margin_top = 4.0
-margin_right = 14.0
-margin_bottom = 34.0
-align = 1
-__meta__ = {
-"_edit_use_anchors_": false
-}
-
 [node name="HUD" type="MarginContainer" parent="UI"]
 anchor_right = 1.0
 anchor_bottom = 1.0
@@ -82,6 +54,29 @@ margin_bottom = 560.0
 custom_constants/vseparation = 18
 
 [node name="Menu" parent="UI" instance=ExtResource( 4 )]
+
+[node name="Msg" type="VBoxContainer" parent="UI"]
+visible = false
+anchor_right = 1.0
+margin_bottom = 38.0
+theme = ExtResource( 5 )
+
+[node name="Panel" type="PanelContainer" parent="UI/Msg"]
+margin_right = 1024.0
+margin_bottom = 38.0
+__meta__ = {
+"_edit_use_anchors_": false
+}
+
+[node name="Message" type="Label" parent="UI/Msg/Panel"]
+margin_left = 6.0
+margin_top = 4.0
+margin_right = 1018.0
+margin_bottom = 34.0
+align = 1
+__meta__ = {
+"_edit_use_anchors_": false
+}
 
 [node name="WorldEnvironment" type="WorldEnvironment" parent="."]
 environment = SubResource( 1 )
