@@ -16,149 +16,46 @@ __meta__ = {
 }
 
 [node name="Panel" type="PanelContainer" parent="."]
-margin_left = 282.0
-margin_top = 207.0
-margin_right = 742.0
-margin_bottom = 393.0
+margin_left = 397.0
+margin_top = 201.0
+margin_right = 627.0
+margin_bottom = 399.0
 
 [node name="Main" type="VBoxContainer" parent="Panel"]
 margin_left = 6.0
 margin_top = 4.0
-margin_right = 454.0
-margin_bottom = 182.0
+margin_right = 224.0
+margin_bottom = 194.0
 custom_constants/separation = 8
 
 [node name="Label" type="Label" parent="Panel/Main"]
-margin_right = 448.0
+margin_right = 218.0
 margin_bottom = 38.0
 custom_fonts/font = SubResource( 1 )
 text = "Paddle Battle"
 align = 1
 
-[node name="Options" type="HBoxContainer" parent="Panel/Main"]
+[node name="Play" type="Button" parent="Panel/Main"]
 margin_top = 46.0
-margin_right = 448.0
-margin_bottom = 178.0
-
-[node name="Local" type="VBoxContainer" parent="Panel/Main/Options"]
 margin_right = 218.0
-margin_bottom = 132.0
-rect_min_size = Vector2( 218, 0 )
-
-[node name="Label" type="Label" parent="Panel/Main/Options/Local"]
-margin_right = 218.0
-margin_bottom = 30.0
-text = "Local"
-align = 1
-
-[node name="Health" type="HBoxContainer" parent="Panel/Main/Options/Local"]
-margin_top = 34.0
-margin_right = 218.0
-margin_bottom = 64.0
-
-[node name="Label" type="Label" parent="Panel/Main/Options/Local/Health"]
-margin_right = 116.0
-margin_bottom = 30.0
-rect_min_size = Vector2( 80, 0 )
-size_flags_horizontal = 3
-text = "Health"
-
-[node name="Inc" type="Button" parent="Panel/Main/Options/Local/Health"]
-margin_left = 120.0
-margin_right = 150.0
-margin_bottom = 30.0
-rect_min_size = Vector2( 30, 0 )
-text = "+"
-
-[node name="HealthNum" type="Label" parent="Panel/Main/Options/Local/Health"]
-margin_left = 154.0
-margin_right = 184.0
-margin_bottom = 30.0
-rect_min_size = Vector2( 30, 0 )
-text = "3"
-align = 1
-
-[node name="Dec" type="Button" parent="Panel/Main/Options/Local/Health"]
-margin_left = 188.0
-margin_right = 218.0
-margin_bottom = 30.0
-rect_min_size = Vector2( 30, 0 )
-text = "-"
-
-[node name="Balls" type="HBoxContainer" parent="Panel/Main/Options/Local"]
-margin_top = 68.0
-margin_right = 218.0
-margin_bottom = 98.0
-
-[node name="Label" type="Label" parent="Panel/Main/Options/Local/Balls"]
-margin_right = 116.0
-margin_bottom = 30.0
-rect_min_size = Vector2( 80, 0 )
-size_flags_horizontal = 3
-text = "Balls"
-
-[node name="Inc" type="Button" parent="Panel/Main/Options/Local/Balls"]
-margin_left = 120.0
-margin_right = 150.0
-margin_bottom = 30.0
-rect_min_size = Vector2( 30, 0 )
-text = "+"
-__meta__ = {
-"_edit_use_anchors_": false
-}
-
-[node name="BallNum" type="Label" parent="Panel/Main/Options/Local/Balls"]
-margin_left = 154.0
-margin_right = 184.0
-margin_bottom = 30.0
-rect_min_size = Vector2( 30, 0 )
-text = "10"
-align = 1
-
-[node name="Dec" type="Button" parent="Panel/Main/Options/Local/Balls"]
-margin_left = 188.0
-margin_right = 218.0
-margin_bottom = 30.0
-rect_min_size = Vector2( 30, 0 )
-text = "-"
-
-[node name="Play" type="Button" parent="Panel/Main/Options/Local"]
-margin_top = 102.0
-margin_right = 218.0
-margin_bottom = 132.0
+margin_bottom = 76.0
 text = "Play Local"
 
-[node name="VSeparator" type="VSeparator" parent="Panel/Main/Options"]
-margin_left = 222.0
-margin_right = 226.0
-margin_bottom = 132.0
-
-[node name="LAN" type="VBoxContainer" parent="Panel/Main/Options"]
-margin_left = 230.0
-margin_right = 448.0
-margin_bottom = 132.0
-rect_min_size = Vector2( 218, 0 )
-
-[node name="Label" type="Label" parent="Panel/Main/Options/LAN"]
+[node name="Host" type="Button" parent="Panel/Main"]
+margin_top = 84.0
 margin_right = 218.0
-margin_bottom = 30.0
-text = "LAN (WIP)"
-align = 1
+margin_bottom = 114.0
+text = "Host (LAN)"
 
-[node name="Host" type="Button" parent="Panel/Main/Options/LAN"]
-margin_top = 34.0
+[node name="JoinBar" type="HBoxContainer" parent="Panel/Main"]
+margin_top = 122.0
 margin_right = 218.0
-margin_bottom = 64.0
-text = "Host"
+margin_bottom = 152.0
 
-[node name="Join" type="HBoxContainer" parent="Panel/Main/Options/LAN"]
-margin_top = 68.0
-margin_right = 218.0
-margin_bottom = 98.0
-
-[node name="IP" type="LineEdit" parent="Panel/Main/Options/LAN/Join"]
+[node name="IP" type="LineEdit" parent="Panel/Main/JoinBar"]
 margin_right = 162.0
 margin_bottom = 30.0
+rect_min_size = Vector2( 162, 0 )
 size_flags_horizontal = 3
 max_length = 15
 context_menu_enabled = false
@@ -167,14 +64,14 @@ __meta__ = {
 "_editor_description_": ""
 }
 
-[node name="Join" type="Button" parent="Panel/Main/Options/LAN/Join"]
+[node name="Join" type="Button" parent="Panel/Main/JoinBar"]
 margin_left = 166.0
 margin_right = 218.0
 margin_bottom = 30.0
 text = "Join"
 
-[node name="Quit" type="Button" parent="Panel/Main/Options/LAN"]
-margin_top = 102.0
+[node name="Quit" type="Button" parent="Panel/Main"]
+margin_top = 160.0
 margin_right = 218.0
-margin_bottom = 132.0
+margin_bottom = 190.0
 text = "Quit"
