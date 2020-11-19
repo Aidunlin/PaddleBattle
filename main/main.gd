@@ -14,7 +14,7 @@ var state = "idle"
 var playing_lan = false
 var health = 3
 var balls = 10
-var self_data = {position=camera_spawn, rotation=0}
+onready var self_data = {position=camera_spawn, rotation=0}
 var player_data = {}
 var ball_data = []
 var ending_timer = Timer.new()
@@ -30,12 +30,12 @@ func _ready():
 	get_tree().connect("network_peer_connected", self, "peer_connected")
 	get_tree().connect("network_peer_disconnected", self, "peer_disconnected")
 	get_tree().connect("connected_to_server", self, "connected_to_server")
-	get_tree().connect("connection_failed", self, "unload_lan_game", ["Connection failed!"])
-	get_tree().connect("server_disconnected", self, "unload_lan_game", ["Server disconnected!"])
+	get_tree().connect("connection_failed", self, "unload_game", ["Connection failed!"])
+	get_tree().connect("server_disconnected", self, "unload_game", ["Server disconnected!"])
 	
 	add_child(ending_timer)
 	add_child(msg_timer)
-	ending_timer.connect("timeout", self, "unload_local_game")
+	ending_timer.connect("timeout", self, "unload_game", [""])
 	msg_timer.connect("timeout", self, "set_msg", [""])
 	randomize()
 	$Game/TestMap.modulate = Color.from_hsv((randi() % 9 * 40.0) / 360.0, 1, 1)
@@ -92,10 +92,7 @@ func _input(_event):
 	# Force unload the game on shortcut press
 	if playing_lan or state == "playing" or state == "starting":
 		if Input.is_key_pressed(KEY_SHIFT) and Input.is_key_pressed(KEY_ESCAPE):
-			if get_tree().has_network_peer():
-				unload_lan_game("")
-			else:
-				unload_local_game()
+			unload_game("")
 
 # Set message text/visibility and timer
 func set_msg(msg):
@@ -129,25 +126,30 @@ func join_lan_game():
 	peer.create_client(ip, 8910)
 	get_tree().set_network_peer(peer)
 
+# Each client requests data of new client
 func peer_connected(id):
 	if not get_tree().is_network_server():
 		rpc_id(1, "request_data", get_tree().get_network_unique_id(), id)
 
+# Clear the disconnected peer's data
 func peer_disconnected(id):
 	if player_nodes.has_node(str(id)):
 		player_nodes.get_node(str(id)).queue_free()
 	player_data.erase(id)
 
+# Client loads game and sends their data to everyone
 func connected_to_server():
 	self_data.color = Color.from_hsv((randi() % 9 * 40.0) / 360.0, 1, 1)
 	load_lan_game()
 	player_data[get_tree().get_network_unique_id()] = self_data
 	rpc("send_data", get_tree().get_network_unique_id(), self_data)
 
+# Host sends specific client data to requesting client
 remote func request_data(from_id, peer_id):
 	if get_tree().is_network_server():
 		rpc_id(from_id, "send_data", peer_id, player_data[peer_id])
 
+# Requesting client receives specific data
 remote func send_data(id, data):
 	player_data[id] = data
 	new_lan_player(id, data)
@@ -189,10 +191,23 @@ func start_local_game():
 		p.node.is_enabled = true
 	state = "playing"
 
-# Reset and clear players/balls
-func unload_local_game():
+# Set up LAN game
+func load_lan_game():
 	set_msg("")
+	get_node(menu + "Host").disabled = false
+	get_node(menu + "JoinBar/Join").disabled = false
+	menu_node.hide()
+	new_lan_player(get_tree().get_network_unique_id(), self_data)
+	playing_lan = true
+	init_balls()
+
+# Reset the game
+func unload_game(msg):
+	set_msg(msg)
+	if msg != "":
+		msg_timer.start(3)
 	state = "idle"
+	playing_lan = false
 	ending_timer.stop()
 	for player in player_nodes.get_children():
 		player.queue_free()
@@ -206,32 +221,8 @@ func unload_local_game():
 	menu_node.show()
 	camera.position = camera_spawn
 	camera.zoom = Vector2(1, 1)
-	get_node(menu + "Play").grab_focus()
-
-func load_lan_game():
-	set_msg("")
-	get_node(menu + "Host").disabled = false
-	get_node(menu + "JoinBar/Join").disabled = false
-	menu_node.hide()
-	new_lan_player(get_tree().get_network_unique_id(), self_data)
-	playing_lan = true
-	init_balls()
-
-func unload_lan_game(msg):
-	playing_lan = false
-	set_msg(msg)
-	msg_timer.start(3)
-	for player in player_nodes.get_children():
-		player.queue_free()
-	player_data.clear()
-	for ball in ball_nodes.get_children():
-		ball.queue_free()
-	ball_data.clear()
-	self_data = {position=camera_spawn, rotation=0}
-	menu_node.show()
-	camera.position = camera_spawn
-	camera.zoom = Vector2(1, 1)
-	get_tree().set_deferred("network_peer", null)
+	if get_tree().has_network_peer():
+		get_tree().set_deferred("network_peer", null)
 	get_node(menu + "Play").grab_focus()
 
 # Create local player with gamepad id
@@ -274,9 +265,10 @@ func new_lan_player(id, data):
 	player.set_network_master(id)
 	player.modulate = data.color
 	player.connect("update", self, "update_player")
-	player_nodes.add_child(player)
 	player.position = data.position
 	player.rotation = data.rotation
+	player_nodes.add_child(player)
+	player_nodes.move_child(player, 0)
 
 # Update lan player data
 func update_player(id, position, rotation):

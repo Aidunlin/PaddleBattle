@@ -7,8 +7,8 @@ var input_velocity = Vector2()
 var move_speed = 500
 var using_pad = false
 
-puppet var p_position = Vector2()
-puppet var p_rotation = 0
+puppet var puppet_position = Vector2()
+puppet var puppet_rotation = 0
 
 func _physics_process(delta):
 	if is_network_master():
@@ -44,11 +44,11 @@ func _physics_process(delta):
 			if using_pad:
 				Input.start_joy_vibration(0, 0.1, 0, 0.1)
 		
-		rset_unreliable("p_position", position)
-		rset_unreliable("p_rotation", rotation)
+		rset_unreliable("puppet_position", position)
+		rset_unreliable("puppet_rotation", rotation)
 	else:
-		position = p_position
-		rotation = p_rotation
+		position = puppet_position
+		rotation = puppet_rotation
 	
 	emit_signal("update", int(name), position, rotation)
 
