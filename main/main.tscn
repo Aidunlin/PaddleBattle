@@ -1,11 +1,15 @@
-[gd_scene load_steps=6 format=2]
+[gd_scene load_steps=7 format=2]
 
+[ext_resource path="res://res/robotomono.ttf" type="DynamicFontData" id=1]
 [ext_resource path="res://main/main.gd" type="Script" id=2]
-[ext_resource path="res://map/testmap.tscn" type="PackedScene" id=3]
-[ext_resource path="res://main/menu.tscn" type="PackedScene" id=4]
+[ext_resource path="res://map/map.tscn" type="PackedScene" id=3]
 [ext_resource path="res://res/theme.tres" type="Theme" id=5]
 
-[sub_resource type="Environment" id=1]
+[sub_resource type="DynamicFont" id=1]
+size = 22
+font_data = ExtResource( 1 )
+
+[sub_resource type="Environment" id=2]
 background_mode = 4
 auto_exposure_scale = 0.18
 auto_exposure_speed = 32.0
@@ -22,7 +26,7 @@ script = ExtResource( 2 )
 
 [node name="Game" type="Node2D" parent="."]
 
-[node name="TestMap" parent="Game" instance=ExtResource( 3 )]
+[node name="Map" parent="Game" instance=ExtResource( 3 )]
 
 [node name="Camera" type="Camera2D" parent="Game"]
 current = true
@@ -53,8 +57,6 @@ margin_right = 984.0
 margin_bottom = 560.0
 custom_constants/vseparation = 18
 
-[node name="Menu" parent="UI" instance=ExtResource( 4 )]
-
 [node name="Msg" type="VBoxContainer" parent="UI"]
 visible = false
 anchor_right = 1.0
@@ -78,5 +80,86 @@ __meta__ = {
 "_edit_use_anchors_": false
 }
 
+[node name="Menu" type="CenterContainer" parent="UI"]
+anchor_right = 1.0
+anchor_bottom = 1.0
+theme = ExtResource( 5 )
+__meta__ = {
+"_edit_use_anchors_": false
+}
+
+[node name="Panel" type="PanelContainer" parent="UI/Menu"]
+margin_left = 395.0
+margin_top = 201.0
+margin_right = 629.0
+margin_bottom = 399.0
+
+[node name="Main" type="VBoxContainer" parent="UI/Menu/Panel"]
+margin_left = 6.0
+margin_top = 4.0
+margin_right = 228.0
+margin_bottom = 194.0
+custom_constants/separation = 8
+
+[node name="Label" type="Label" parent="UI/Menu/Panel/Main"]
+margin_right = 222.0
+margin_bottom = 38.0
+custom_fonts/font = SubResource( 1 )
+text = "PADDLE BATTLE"
+align = 1
+
+[node name="Play" type="Button" parent="UI/Menu/Panel/Main"]
+margin_top = 46.0
+margin_right = 222.0
+margin_bottom = 76.0
+text = "Play Local"
+
+[node name="Host" type="Button" parent="UI/Menu/Panel/Main"]
+margin_top = 84.0
+margin_right = 222.0
+margin_bottom = 114.0
+text = "Host (LAN)"
+
+[node name="JoinBar" type="HBoxContainer" parent="UI/Menu/Panel/Main"]
+margin_top = 122.0
+margin_right = 222.0
+margin_bottom = 152.0
+custom_constants/separation = 8
+
+[node name="IP" type="LineEdit" parent="UI/Menu/Panel/Main/JoinBar"]
+margin_right = 162.0
+margin_bottom = 30.0
+rect_min_size = Vector2( 162, 0 )
+size_flags_horizontal = 3
+clear_button_enabled = true
+placeholder_text = "127.0.0.1"
+__meta__ = {
+"_editor_description_": ""
+}
+
+[node name="Join" type="Button" parent="UI/Menu/Panel/Main/JoinBar"]
+margin_left = 170.0
+margin_right = 222.0
+margin_bottom = 30.0
+text = "Join"
+
+[node name="Quit" type="Button" parent="UI/Menu/Panel/Main"]
+margin_top = 160.0
+margin_right = 222.0
+margin_bottom = 190.0
+text = "Quit"
+
 [node name="WorldEnvironment" type="WorldEnvironment" parent="."]
-environment = SubResource( 1 )
+environment = SubResource( 2 )
+
+[node name="JoinTimer" type="Timer" parent="."]
+
+[node name="EndTimer" type="Timer" parent="."]
+
+[node name="MsgTimer" type="Timer" parent="."]
+[connection signal="pressed" from="UI/Menu/Panel/Main/Play" to="." method="load_local_game"]
+[connection signal="pressed" from="UI/Menu/Panel/Main/Host" to="." method="host_lan_game"]
+[connection signal="pressed" from="UI/Menu/Panel/Main/JoinBar/Join" to="." method="join_lan_game"]
+[connection signal="timeout" from="JoinTimer" to="." method="unload_game" binds= [ "Could not connect!" ]]
+[connection signal="timeout" from="EndTimer" to="." method="unload_game"]
+[connection signal="timeout" from="MsgTimer" to="." method="set_msg"]

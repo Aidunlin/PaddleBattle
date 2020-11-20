@@ -3,20 +3,20 @@ extends KinematicBody2D
 signal hit(id)
 signal update(id, pos, rot)
 
+onready var safe_timer = $SafeTimer
+
 var pad = 0
 var enabled = false
 var safe = true
 var using_pad = false
 var playing_lan = false
 var is_master = true
-var safe_timer = Timer.new()
 
 var velocity = Vector2()
 var input_velocity = Vector2()
 var spawn_position = Vector2()
 var spawn_rotation = 0
 var move_speed = 500
-var rotation_speed = 4
 
 puppet var puppet_position = Vector2()
 puppet var puppet_rotation = 0
@@ -25,9 +25,6 @@ func _ready():
 	if get_tree().network_peer:
 		if not is_network_master():
 			is_master = false
-	
-	add_child(safe_timer)
-	safe_timer.connect("timeout", self, "safe_ended")
 	
 	# Override when playing over LAN
 	if playing_lan:
@@ -50,10 +47,7 @@ func _physics_process(delta):
 			input_velocity.y = get_key(KEY_S, KEY_DOWN) - get_key(KEY_W, KEY_UP)
 			input_velocity.x = get_key(KEY_D, KEY_RIGHT) - get_key(KEY_A, KEY_LEFT)
 			input_velocity = input_velocity.normalized() * move_speed
-			if playing_lan:
-				rotation += get_local_mouse_position().angle() * 0.1
-			else:
-				rotation_degrees += (get_key(KEY_H, KEY_KP_3) - get_key(KEY_G, KEY_KP_2)) * rotation_speed
+			rotation_degrees += (get_key(KEY_H, KEY_KP_3) - get_key(KEY_G, KEY_KP_2)) * 4
 		elif OS.is_window_focused():
 			var l = Vector2(Input.get_joy_axis(pad, 0), Input.get_joy_axis(pad, 1))
 			if l.length() > 0.2:
@@ -89,6 +83,7 @@ func _physics_process(delta):
 		emit_signal("update", int(name), position, rotation)
 
 func _input(_event):
+	# Switch input method when playing over LAN
 	if playing_lan:
 		if not using_pad and Input.is_joy_button_pressed(0, JOY_BUTTON_0):
 			using_pad = true
