@@ -23,7 +23,7 @@ onready var join_timer = $JoinTimer
 onready var end_timer = $EndTimer
 onready var msg_timer = $MsgTimer
 
-var network_id = 0
+var peer_id = 0
 var state = "idle"
 var health = 3
 var balls = 10
@@ -116,15 +116,15 @@ func is_new_pad(id):
 	return true
 
 
-### NETWORKING CODE ###
+### NETWORK MANAGEMENT ###
 
 # Begin hosting LAN game
 func host_lan_game():
 	var peer = NetworkedMultiplayerENet.new()
 	peer.create_server(8910, 7)
 	get_tree().set_network_peer(peer)
-	network_id = get_tree().get_network_unique_id()
-	player_data[network_id] = {position = camera_spawn, rotation = 0,
+	peer_id = get_tree().get_network_unique_id()
+	player_data[peer_id] = {position = camera_spawn, rotation = 0,
 		color = Color.from_hsv((randi() % 9 * 40.0) / 360.0, 1, 1)}
 	load_lan_game()
 
@@ -147,12 +147,12 @@ func join_lan_game():
 	get_tree().set_network_peer(peer)
 	join_timer.start(5)
 
-# Each client requests data of new client
+# Send data to new peer
 func peer_connected(id):
+	peer_id = get_tree().get_network_unique_id()
 	set_msg("Player joined!")
 	msg_timer.start(2)
-	if not get_tree().is_network_server():
-		rpc_id(1, "request_data", network_id, id)
+	rpc_id(id, "data_to_peer", player_data[peer_id])
 
 # Clear the disconnected peer's data
 func peer_disconnected(id):
@@ -162,22 +162,18 @@ func peer_disconnected(id):
 		player_nodes.get_node(str(id)).queue_free()
 	player_data.erase(id)
 
-# Client loads game and sends their data to everyone
+# Client connects and sends data to host
 func connected_to_server():
-	network_id = get_tree().get_network_unique_id()
+	peer_id = get_tree().get_network_unique_id()
 	join_timer.stop()
-	player_data[network_id] = {position = camera_spawn, rotation = 0,
-				 color = Color.from_hsv((randi() % 9 * 40.0) / 360.0, 1, 1)}
+	player_data[peer_id] = {position = camera_spawn, rotation = 0,
+		color = Color.from_hsv((randi() % 9 * 40.0) / 360.0, 1, 1)}
 	load_lan_game()
-	rpc("send_data", network_id, player_data[network_id])
+	rpc_id(1, "data_to_peer", player_data[peer_id])
 
-# Host sends specific client data to requesting client
-remote func request_data(from_id, peer_id):
-	if get_tree().is_network_server():
-		rpc_id(from_id, "send_data", peer_id, player_data[peer_id])
-
-# Requesting client receives specific data
-remote func send_data(id, data):
+# Sender's data is sent to peer by RPC call (above)
+remote func data_to_peer(data):
+	var id = get_tree().get_rpc_sender_id()
 	player_data[id] = data
 	new_lan_player(id, data)
 
@@ -203,7 +199,7 @@ func start_local_game():
 func load_lan_game():
 	set_msg()
 	menu_node.hide()
-	new_lan_player(network_id, player_data[network_id])
+	new_lan_player(peer_id, player_data[peer_id])
 	state = "lan"
 	init_balls()
 
@@ -229,7 +225,7 @@ func unload_game(msg = ""):
 	camera_node.zoom = Vector2(1, 1)
 	if get_tree().has_network_peer():
 		get_tree().set_deferred("network_peer", null)
-		network_id = 0
+		peer_id = 0
 	play_btn.grab_focus()
 	play_btn.disabled = false
 	host_btn.disabled = false
@@ -289,7 +285,7 @@ func new_lan_player(id, data):
 
 # Update lan player data
 func update_player(id, position, rotation):
-	if state == "lan":
+	if state == "lan" and player_data.has(id):
 		player_data[id].position = position
 		player_data[id].rotation = rotation
 
