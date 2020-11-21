@@ -1,12 +1,16 @@
-[gd_scene load_steps=7 format=2]
+[gd_scene load_steps=8 format=2]
 
 [ext_resource path="res://res/robotomono.ttf" type="DynamicFontData" id=1]
 [ext_resource path="res://main/main.gd" type="Script" id=2]
 [ext_resource path="res://map/map.tscn" type="PackedScene" id=3]
 [ext_resource path="res://res/theme.tres" type="Theme" id=5]
 
+[sub_resource type="DynamicFont" id=3]
+outline_size = 2
+font_data = ExtResource( 1 )
+
 [sub_resource type="DynamicFont" id=1]
-size = 22
+size = 26
 font_data = ExtResource( 1 )
 
 [sub_resource type="Environment" id=2]
@@ -29,7 +33,6 @@ script = ExtResource( 2 )
 [node name="Map" parent="Game" instance=ExtResource( 3 )]
 
 [node name="Camera" type="Camera2D" parent="Game"]
-current = true
 smoothing_enabled = true
 
 [node name="Players" type="Node2D" parent="Game"]
@@ -57,24 +60,11 @@ margin_right = 984.0
 margin_bottom = 560.0
 custom_constants/vseparation = 18
 
-[node name="Msg" type="VBoxContainer" parent="UI"]
-visible = false
+[node name="Message" type="Label" parent="UI"]
 anchor_right = 1.0
-margin_bottom = 38.0
+margin_bottom = 30.0
 theme = ExtResource( 5 )
-
-[node name="Panel" type="PanelContainer" parent="UI/Msg"]
-margin_right = 1024.0
-margin_bottom = 38.0
-__meta__ = {
-"_edit_use_anchors_": false
-}
-
-[node name="Message" type="Label" parent="UI/Msg/Panel"]
-margin_left = 6.0
-margin_top = 4.0
-margin_right = 1018.0
-margin_bottom = 34.0
+custom_fonts/font = SubResource( 3 )
 align = 1
 __meta__ = {
 "_edit_use_anchors_": false
@@ -88,45 +78,39 @@ __meta__ = {
 "_edit_use_anchors_": false
 }
 
-[node name="Panel" type="PanelContainer" parent="UI/Menu"]
-margin_left = 395.0
-margin_top = 201.0
-margin_right = 629.0
-margin_bottom = 399.0
-
-[node name="Main" type="VBoxContainer" parent="UI/Menu/Panel"]
-margin_left = 6.0
-margin_top = 4.0
-margin_right = 228.0
-margin_bottom = 194.0
+[node name="Main" type="VBoxContainer" parent="UI/Menu"]
+margin_left = 401.0
+margin_top = 221.0
+margin_right = 623.0
+margin_bottom = 379.0
 custom_constants/separation = 8
 
-[node name="Label" type="Label" parent="UI/Menu/Panel/Main"]
+[node name="Label" type="Label" parent="UI/Menu/Main"]
 margin_right = 222.0
-margin_bottom = 38.0
+margin_bottom = 44.0
 custom_fonts/font = SubResource( 1 )
 text = "PADDLE BATTLE"
 align = 1
 
-[node name="Play" type="Button" parent="UI/Menu/Panel/Main"]
-margin_top = 46.0
+[node name="Play" type="Button" parent="UI/Menu/Main"]
+margin_top = 52.0
 margin_right = 222.0
-margin_bottom = 76.0
-text = "Play Local"
+margin_bottom = 82.0
+text = "Play"
 
-[node name="Host" type="Button" parent="UI/Menu/Panel/Main"]
-margin_top = 84.0
+[node name="Host" type="Button" parent="UI/Menu/Main"]
+margin_top = 90.0
 margin_right = 222.0
-margin_bottom = 114.0
-text = "Host (LAN)"
+margin_bottom = 120.0
+text = "Host"
 
-[node name="JoinBar" type="HBoxContainer" parent="UI/Menu/Panel/Main"]
-margin_top = 122.0
+[node name="JoinBar" type="HBoxContainer" parent="UI/Menu/Main"]
+margin_top = 128.0
 margin_right = 222.0
-margin_bottom = 152.0
+margin_bottom = 158.0
 custom_constants/separation = 8
 
-[node name="IP" type="LineEdit" parent="UI/Menu/Panel/Main/JoinBar"]
+[node name="IP" type="LineEdit" parent="UI/Menu/Main/JoinBar"]
 margin_right = 162.0
 margin_bottom = 30.0
 rect_min_size = Vector2( 162, 0 )
@@ -137,17 +121,11 @@ __meta__ = {
 "_editor_description_": ""
 }
 
-[node name="Join" type="Button" parent="UI/Menu/Panel/Main/JoinBar"]
+[node name="Join" type="Button" parent="UI/Menu/Main/JoinBar"]
 margin_left = 170.0
 margin_right = 222.0
 margin_bottom = 30.0
 text = "Join"
-
-[node name="Quit" type="Button" parent="UI/Menu/Panel/Main"]
-margin_top = 160.0
-margin_right = 222.0
-margin_bottom = 190.0
-text = "Quit"
 
 [node name="WorldEnvironment" type="WorldEnvironment" parent="."]
 environment = SubResource( 2 )
@@ -156,10 +134,10 @@ environment = SubResource( 2 )
 
 [node name="EndTimer" type="Timer" parent="."]
 
-[node name="MsgTimer" type="Timer" parent="."]
-[connection signal="pressed" from="UI/Menu/Panel/Main/Play" to="." method="load_local_game"]
-[connection signal="pressed" from="UI/Menu/Panel/Main/Host" to="." method="host_lan_game"]
-[connection signal="pressed" from="UI/Menu/Panel/Main/JoinBar/Join" to="." method="join_lan_game"]
+[node name="MessageTimer" type="Timer" parent="."]
+[connection signal="pressed" from="UI/Menu/Main/Play" to="." method="load_local_game"]
+[connection signal="pressed" from="UI/Menu/Main/Host" to="." method="host_lan_game"]
+[connection signal="pressed" from="UI/Menu/Main/JoinBar/Join" to="." method="join_lan_game"]
 [connection signal="timeout" from="JoinTimer" to="." method="unload_game" binds= [ "Could not connect!" ]]
 [connection signal="timeout" from="EndTimer" to="." method="unload_game"]
-[connection signal="timeout" from="MsgTimer" to="." method="set_msg"]
+[connection signal="timeout" from="MessageTimer" to="." method="set_msg"]

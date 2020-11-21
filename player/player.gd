@@ -1,7 +1,7 @@
 extends KinematicBody2D
 
 signal hit(id)
-signal update(id, pos, rot)
+signal update(id, pos, vel, rot)
 
 onready var safe_timer = $SafeTimer
 
@@ -14,11 +14,10 @@ var is_master = true
 
 var velocity = Vector2()
 var input_velocity = Vector2()
-var spawn_position = Vector2()
-var spawn_rotation = 0
 var move_speed = 500
 
 puppet var puppet_position = Vector2()
+puppet var puppet_velocity = Vector2()
 puppet var puppet_rotation = 0
 
 func _ready():
@@ -32,8 +31,6 @@ func _ready():
 		safe = false
 		pad = -1
 	else:
-		position = spawn_position
-		rotation = spawn_rotation
 		safe_timer.start(3)
 
 func _physics_process(delta):
@@ -61,26 +58,33 @@ func _physics_process(delta):
 			velocity = velocity.linear_interpolate(input_velocity, 0.06)
 		else:
 			velocity = velocity.linear_interpolate(Vector2(), 0.02)
-		
-		# Manage collisions with balls
-		var collision = move_and_collide(velocity * delta, false)
-		if collision and enabled:
-			if collision.collider.is_in_group("balls"):
-				collision.collider.apply_central_impulse(-collision.normal * velocity.length())
+	
+	var collision = move_and_collide(velocity * delta, false)
+	if collision and enabled:
+		if collision.collider.is_in_group("balls"):
+			if playing_lan:
+				if get_tree().is_network_server():
+					collision.collider.apply_central_impulse(-collision.normal * velocity.length())
+					if not is_master:
+						rpc("bounce", velocity.bounce(collision.normal))
 			else:
-				velocity = velocity.bounce(collision.normal)
-			if pad >= 0:
-				Input.start_joy_vibration(pad, 0.1, 0, 0.1)
+				collision.collider.apply_central_impulse(-collision.normal * velocity.length())
+		velocity = velocity.bounce(collision.normal)
+			
+		if pad >= 0:
+			Input.start_joy_vibration(pad, 0.1, 0, 0.1)
 	
 	# Sync position and rotation across network peers
 	if get_tree().network_peer:
 		if is_master:
 			rset_unreliable("puppet_position", position)
+			rset_unreliable("puppet_velocity", velocity)
 			rset_unreliable("puppet_rotation", rotation)
 		else:
 			position = puppet_position
+			velocity = puppet_velocity
 			rotation = puppet_rotation
-		emit_signal("update", int(name), position, rotation)
+		emit_signal("update", int(name), position, velocity, rotation)
 
 func _input(_event):
 	# Switch input method when playing over LAN
@@ -91,6 +95,9 @@ func _input(_event):
 		elif using_pad and Input.is_key_pressed(KEY_ENTER):
 			using_pad = false
 			pad = -1
+
+remote func bounce(vel):
+	velocity = vel
 
 # Return keypress from either key based on pad
 func get_key(key1, key2):
