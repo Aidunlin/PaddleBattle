@@ -19,16 +19,16 @@
 0/z_index = 0
 
 [sub_resource type="RectangleShape2D" id=2]
-extents = Vector2( 1056, 32 )
+extents = Vector2( 1056, 64 )
 
 [sub_resource type="RectangleShape2D" id=3]
-extents = Vector2( 1056, 32 )
+extents = Vector2( 1056, 64 )
 
 [sub_resource type="RectangleShape2D" id=4]
-extents = Vector2( 32, 608 )
+extents = Vector2( 64, 608 )
 
 [sub_resource type="RectangleShape2D" id=5]
-extents = Vector2( 32, 608 )
+extents = Vector2( 64, 608 )
 
 [sub_resource type="RectangleShape2D" id=6]
 extents = Vector2( 288, 32 )
@@ -75,19 +75,19 @@ collision_layer = 3
 collision_mask = 3
 
 [node name="TopWall" type="CollisionShape2D" parent="Walls"]
-position = Vector2( 1056, 32 )
+position = Vector2( 1056, 0 )
 shape = SubResource( 2 )
 
 [node name="BottomWall" type="CollisionShape2D" parent="Walls"]
-position = Vector2( 1056, 1184 )
+position = Vector2( 1056, 1216 )
 shape = SubResource( 3 )
 
 [node name="LeftWall" type="CollisionShape2D" parent="Walls"]
-position = Vector2( 32, 608 )
+position = Vector2( 0, 608 )
 shape = SubResource( 4 )
 
 [node name="RightWall" type="CollisionShape2D" parent="Walls"]
-position = Vector2( 2080, 608 )
+position = Vector2( 2112, 608 )
 shape = SubResource( 5 )
 
 [node name="UWall" type="CollisionShape2D" parent="Walls"]

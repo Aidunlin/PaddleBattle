@@ -62,15 +62,21 @@ func _physics_process(delta):
 	var collision = move_and_collide(velocity * delta, false)
 	if collision and enabled:
 		if collision.collider.is_in_group("balls"):
-			if playing_lan:
+			if playing_lan and is_master:
 				if get_tree().is_network_server():
-					collision.collider.apply_central_impulse(-collision.normal * velocity.length())
-					if not is_master:
-						rpc("bounce", velocity.bounce(collision.normal))
+					collision.collider.apply_central_impulse(-collision.normal * 100)
+				else:
+					var data = {
+						ball = int(collision.collider.name),
+						position = collision.collider.position,
+						rotation = collision.collider.rotation,
+						linear_velocity = -collision.normal * 10
+					}
+					get_node("/root/Main").rpc_unreliable_id(1, "update_ball", data)
 			else:
-				collision.collider.apply_central_impulse(-collision.normal * velocity.length())
-		velocity = velocity.bounce(collision.normal)
-			
+				collision.collider.apply_central_impulse(-collision.normal * 100)
+		else:
+			velocity = velocity.bounce(collision.normal)
 		if pad >= 0:
 			Input.start_joy_vibration(pad, 0.1, 0, 0.1)
 	
@@ -95,9 +101,6 @@ func _input(_event):
 		elif using_pad and Input.is_key_pressed(KEY_ENTER):
 			using_pad = false
 			pad = -1
-
-remote func bounce(vel):
-	velocity = vel
 
 # Return keypress from either key based on pad
 func get_key(key1, key2):

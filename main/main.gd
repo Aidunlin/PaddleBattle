@@ -2,8 +2,8 @@ extends Node
 
 onready var map_node = $Game/Map
 onready var camera_spawn = $Game/Map/CameraSpawn.position
-onready var player_spawns = $Game/Map/PlayerSpawns
-onready var ball_spawns = $Game/Map/BallSpawns
+onready var player_spawns = $Game/Map/PlayerSpawns.get_children()
+onready var ball_spawns = $Game/Map/BallSpawns.get_children()
 onready var camera_node = $Game/Camera
 onready var player_nodes = $Game/Players
 onready var ball_nodes = $Game/Balls
@@ -259,8 +259,8 @@ func new_local_player(id):
 	bars.columns = clamp(bars.get_children().size(), 1, 4)
 	
 	# Add player node and data
-	player.position = player_spawns.get_child(number).position
-	player.rotation = player_spawns.get_child(number).rotation
+	player.position = player_spawns[number].position
+	player.rotation = player_spawns[number].rotation
 	player.connect("hit", self, "player_hit")
 	player_data[number] = {
 		pad = id,
@@ -318,13 +318,8 @@ func init_balls():
 		if get_tree().network_peer:
 			if get_tree().is_network_server():
 				ball_data.append({})
-			else:
-				ball.mode = RigidBody2D.MODE_KINEMATIC
-				ball.remove_from_group("balls")
-				ball.set_collision_layer_bit(1, false)
-				ball.set_collision_mask_bit(0, false)
 		ball.name = str(i)
-		ball.position = ball_spawns.get_child(i).position
+		ball.position = ball_spawns[i].position
 		ball_nodes.add_child(ball)
 
 # Update balls on LAN
@@ -334,8 +329,18 @@ remotesync func update_balls(data):
 		if get_tree().is_network_server():
 			ball_data[i] = {
 				position = ball.position,
-				rotation = ball.rotation
+				rotation = ball.rotation,
+				linear_velocity = ball.linear_velocity,
+				angular_velocity = ball.angular_velocity
 			}
 		else:
 			ball.position = data[i].position
 			ball.rotation = data[i].rotation
+			ball.linear_velocity = data[i].linear_velocity
+			ball.angular_velocity = data[i].angular_velocity
+
+remote func update_ball(data):
+	var ball = ball_nodes.get_child(data.ball)
+	ball.position = data.position
+	ball.rotation = data.rotation
+	ball.apply_central_impulse(data.linear_velocity)
