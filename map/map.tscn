@@ -130,34 +130,34 @@ shape = SubResource( 14 )
 position = Vector2( 1856, 800 )
 shape = SubResource( 15 )
 
-[node name="PlayerSpawns" type="Node" parent="."]
+[node name="PaddleSpawns" type="Node" parent="."]
 
-[node name="PlayerSpawn" type="Node2D" parent="PlayerSpawns"]
+[node name="PaddleSpawn" type="Node2D" parent="PaddleSpawns"]
 position = Vector2( 1056, 320 )
 rotation = -1.5708
 
-[node name="PlayerSpawn2" type="Node2D" parent="PlayerSpawns"]
+[node name="PaddleSpawn2" type="Node2D" parent="PaddleSpawns"]
 position = Vector2( 1056, 896 )
 rotation = 1.5708
 
-[node name="PlayerSpawn3" type="Node2D" parent="PlayerSpawns"]
+[node name="PaddleSpawn3" type="Node2D" parent="PaddleSpawns"]
 position = Vector2( 192, 608 )
 
-[node name="PlayerSpawn4" type="Node2D" parent="PlayerSpawns"]
+[node name="PaddleSpawn4" type="Node2D" parent="PaddleSpawns"]
 position = Vector2( 1920, 608 )
 rotation = 3.14159
 
-[node name="PlayerSpawn5" type="Node2D" parent="PlayerSpawns"]
+[node name="PaddleSpawn5" type="Node2D" parent="PaddleSpawns"]
 position = Vector2( 192, 224 )
 
-[node name="PlayerSpawn6" type="Node2D" parent="PlayerSpawns"]
+[node name="PaddleSpawn6" type="Node2D" parent="PaddleSpawns"]
 position = Vector2( 1920, 992 )
 rotation = 3.14159
 
-[node name="PlayerSpawn7" type="Node2D" parent="PlayerSpawns"]
+[node name="PaddleSpawn7" type="Node2D" parent="PaddleSpawns"]
 position = Vector2( 192, 992 )
 
-[node name="PlayerSpawn8" type="Node2D" parent="PlayerSpawns"]
+[node name="PaddleSpawn8" type="Node2D" parent="PaddleSpawns"]
 position = Vector2( 1920, 224 )
 rotation = 3.14159
 

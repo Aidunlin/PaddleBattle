@@ -13,8 +13,8 @@ var move_speed = 0
 var velocity = Vector2()
 var input_velocity = Vector2()
 var input_rotation = 0
-var client_input_velocity = Vector2()
-var client_input_rotation = 0
+var client_velocity = Vector2()
+var client_rotation = 0
 
 func _ready():
 	# Override when playing over LAN
@@ -47,10 +47,10 @@ func _physics_process(delta):
 			if r.length() > 0.7:
 				input_rotation = get_angle_to(position + r) * 0.1
 	else:
-		input_velocity = client_input_velocity
-		input_rotation = client_input_rotation
-	
+		input_velocity = client_velocity
+		input_rotation = client_rotation
 	rotation += input_rotation
+	
 	# Smoothify movement
 	if input_velocity.length() > 0:
 		velocity = velocity.linear_interpolate(input_velocity, 0.06)
@@ -64,8 +64,11 @@ func _physics_process(delta):
 			collision.collider.apply_central_impulse(-collision.normal * 100)
 		else:
 			velocity = velocity.bounce(collision.normal)
-		if pad >= 0:
-			Input.start_joy_vibration(pad, 0.1, 0, 0.1)
+		if not playing_lan or name == "1":
+			if pad >= 0:
+				Input.start_joy_vibration(pad, 0.1, 0, 0.1)
+		else:
+			get_node("/root/Main").rpc_id(int(name), "vibrate")
 
 func _input(_event):
 	# Switch input method when playing over LAN
@@ -76,8 +79,8 @@ func _input(_event):
 			pad = -1
 
 func inputs_from_client(input_data):
-	client_input_velocity = input_data.velocity
-	client_input_rotation = input_data.rotation
+	client_velocity = input_data.velocity
+	client_rotation = input_data.rotation
 
 # Return keypress from either key based on pad
 func get_key(key1, key2):

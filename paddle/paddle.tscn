@@ -1,17 +1,17 @@
 [gd_scene load_steps=5 format=2]
 
-[ext_resource path="res://player/paddle.png" type="Texture" id=1]
-[ext_resource path="res://player/player.gd" type="Script" id=2]
+[ext_resource path="res://paddle/paddle.png" type="Texture" id=1]
+[ext_resource path="res://paddle/paddle.gd" type="Script" id=2]
 
 [sub_resource type="CapsuleShape2D" id=1]
 radius = 15.0001
 height = 66.0
 
 [sub_resource type="CapsuleShape2D" id=2]
-radius = 15.0
-height = 62.0
+radius = 11.0
+height = 68.0
 
-[node name="Player" type="KinematicBody2D" groups=[
+[node name="Paddle" type="KinematicBody2D" groups=[
 "players",
 ]]
 collision_mask = 6
@@ -28,7 +28,7 @@ collision_layer = 0
 collision_mask = 2
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="Back"]
-position = Vector2( -1, 0 )
+position = Vector2( -5, 0 )
 shape = SubResource( 2 )
 
 [node name="SafeTimer" type="Timer" parent="."]
