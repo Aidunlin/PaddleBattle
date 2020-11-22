@@ -21,6 +21,12 @@ onready var join_timer = $JoinTimer
 onready var end_timer = $EndTimer
 onready var message_timer = $MessageTimer
 
+var hp_texture = preload("res://main/hp.png")
+var paddle_scene = preload("res://paddle/paddle.tscn")
+var client_paddle_scene = preload("res://paddle/clientpaddle.tscn")
+var ball_scene = preload("res://ball/ball.tscn")
+var client_ball_scene = preload("res://ball/clientball.tscn")
+
 enum State {IDLE, STARTING, PLAYING_LOCAL, PLAYING_LAN, ENDING}
 var current_state = State.IDLE
 
@@ -252,7 +258,7 @@ func unload_game(msg = ""):
 # Create paddle
 func init_paddle(id, data = {}):
 	var number = paddle_nodes.get_child_count()
-	var paddle = load("res://paddle/paddle.tscn").instance()
+	var paddle = paddle_scene.instance()
 	paddle.move_speed = move_speed
 	paddle.position = paddle_spawns[number].position
 	paddle.rotation = paddle_spawns[number].rotation
@@ -273,7 +279,7 @@ func init_paddle(id, data = {}):
 		hp_bar.set("custom_constants/separation", -18)
 		for _x in max_health:
 			var bit = TextureRect.new()
-			bit.texture = load("res://main/hp.png")
+			bit.texture = hp_texture
 			hp_bar.add_child(bit)
 		bar.add_child(hp_bar)
 		bars.add_child(bar)
@@ -292,7 +298,7 @@ func init_paddle(id, data = {}):
 	# LAN paddle
 	else:
 		if peer_id != 1:
-			paddle = load("res://paddle/clientpaddle.tscn").instance()
+			paddle = client_paddle_scene.instance()
 			paddle.position = data.position
 			paddle.rotation = data.rotation
 		paddle.modulate = data.color
@@ -369,12 +375,12 @@ func paddle_hit(id):
 # Create balls
 func init_balls():
 	for i in ball_count:
-		var ball = load("res://ball/ball.tscn").instance()
+		var ball = ball_scene.instance()
 		if get_tree().network_peer:
 			if peer_id == 1:
 				ball_data.append({})
 			else:
-				ball = load("res://ball/clientball.tscn").instance()
+				ball = client_ball_scene.instance()
 		ball.position = ball_spawns[i].position
 		ball.name = str(i)
 		ball_nodes.add_child(ball)
