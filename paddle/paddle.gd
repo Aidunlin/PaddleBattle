@@ -4,7 +4,7 @@ signal hit(id)
 
 onready var safe_timer = $SafeTimer
 
-var playing_lan: bool = false
+var owned_by_server: bool = false
 var is_server: bool = true
 var pad: int = -1
 var keys: int = -1
@@ -19,22 +19,17 @@ var client_velocity: Vector2 = Vector2()
 var client_rotation: float = 0
 
 func _ready():
-	# Override when playing over LAN
+	safe_timer.start(3)
 	if get_tree().network_peer:
-		playing_lan = true
 		if not get_tree().is_network_server():
 			is_server = false
-		enabled = true
-		safe = false
-	else:
-		safe_timer.start(3)
 
 func _physics_process(delta):
 	if not enabled:
 		return
 	
 	# Manage inputs
-	if not playing_lan or is_server:
+	if owned_by_server:
 		input_velocity = Vector2()
 		input_rotation = 0
 		if OS.is_window_focused():
@@ -67,11 +62,10 @@ func _physics_process(delta):
 			collision.collider.apply_central_impulse(-collision.normal * 100)
 		else:
 			velocity = velocity.bounce(collision.normal)
-		if not playing_lan or is_server:
-			if pad >= 0:
-				Input.start_joy_vibration(pad, 0.1, 0, 0.1)
-		elif has_node("/root/Main"):
-			get_node("/root/Main").rpc_id(int(name), "vibrate")
+		if is_server:
+			Input.start_joy_vibration(pad, 0.1, 0, 0.1)
+		else:
+			get_node("/root/Main").rpc_id(get_tree().get_network_unique_id(), "vibrate", name)
 
 # Set client data; called from Main
 func inputs_from_client(input_data: Dictionary):

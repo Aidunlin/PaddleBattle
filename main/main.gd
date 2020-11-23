@@ -80,14 +80,23 @@ func _physics_process(_delta):
 
 func _input(_event):
 	# Create paddle if sensed input
-	if playing and paddle_data.size() < 8:
+	if playing and OS.is_window_focused() and paddle_data.size() < 8:
 		if Input.is_key_pressed(KEY_ENTER) and is_new_input("keys", 0):
-			init_paddle({name = paddle_name, keys = 0})
+			if peer_id == 1:
+				init_paddle({name = paddle_name, keys = 0, id = peer_id})
+			else:
+				rpc_id(1, "init_paddle", {name = paddle_name, keys = 0, id = peer_id})
 		if Input.is_key_pressed(KEY_KP_ENTER) and is_new_input("keys", 1):
-			init_paddle({name = paddle_name, keys = 1})
+			if peer_id == 1:
+				init_paddle({name = paddle_name, keys = 1, id = peer_id})
+			else:
+				rpc_id(1, "init_paddle", {name = paddle_name, keys = 1, id = peer_id})
 		for pad in Input.get_connected_joypads():
 			if Input.is_joy_button_pressed(pad, 0) and is_new_input("pad", pad):
-				init_paddle({name = paddle_name, pad = pad})
+				if peer_id == 1:
+					init_paddle({name = paddle_name, pad = pad, id = peer_id})
+				else:
+					rpc_id(1, "init_paddle", {name = paddle_name, pad = pad, id = peer_id})
 	
 	# Force unload the game on shortcut press
 	if playing and Input.is_key_pressed(KEY_SHIFT) and Input.is_key_pressed(KEY_ESCAPE):
@@ -158,16 +167,6 @@ func join_game():
 # Send data to new peer
 func peer_connected(_id):
 	pass
-#	set_msg("Peer connected!", 2)
-#	if peer_id == 1:
-#		paddle_data[paddle_name] = {
-#			id = id,
-#			position = Vector2(),
-#			rotation = 0,
-#			color = Color.from_hsv((randi() % 9 * 40.0) / 360.0, 1, 1)
-#		}
-#		init_paddle(id, paddle_data[paddle_name])
-#		rpc("data_to_clients", paddle_data)
 
 # Unload the game if someone disconnects
 func peer_disconnected(_id):
@@ -260,14 +259,14 @@ remotesync func update_objects(paddles: Dictionary, balls: Array):
 			var paddle_node = paddle_nodes.get_node(paddle)
 			paddle_node.position = paddles[paddle].position
 			paddle_node.rotation = paddles[paddle].rotation
+			if paddles[paddle].id == peer_id:
+				var input_data = get_client_inputs(paddle, input_list[paddle])
+				rpc_unreliable_id(1, "inputs_to_host", paddle, input_data)
 		
 		for ball in ball_count:
 			var ball_node = ball_nodes.get_child(ball)
 			ball_node.position = balls[ball].position
 			ball_node.rotation = balls[ball].rotation
-		
-		#var input_data = get_client_inputs(peer_id)
-		#rpc_unreliable_id(1, "inputs_to_host", input_data)
 
 
 
@@ -279,18 +278,11 @@ remote func init_paddle(data: Dictionary = {}):
 	var paddle_node = paddle_scene.instance()
 	paddle_node.move_speed = move_speed
 	
-	if peer_id == 1:
-		if data.has("keys"):
-			paddle_node.keys = data.keys
-		if data.has("pad"):
-			paddle_node.pad = data.pad
-		input_list[paddle_count] = {
-			keys = paddle_node.keys,
-			pad = paddle_node.pad
-		}
-	else:
+	# Change to client paddle if client
+	if peer_id != 1:
 		paddle_node = client_paddle_scene.instance()
 	
+	# Set position
 	if data.has("position") and data.has("rotation"):
 		paddle_node.position = data.position
 		paddle_node.rotation = data.rotation
@@ -298,62 +290,87 @@ remote func init_paddle(data: Dictionary = {}):
 		paddle_node.position = paddle_spawns[paddle_count].position
 		paddle_node.rotation = paddle_spawns[paddle_count].rotation
 	
+	# Set color
 	if data.has("color"):
 		paddle_node.modulate = data.color
 	else:
 		randomize()
 		paddle_node.modulate = Color.from_hsv((randi() % 9 * 40.0) / 360.0, 1, 1)
 	
-	paddle_node.name = data.name + ("(2)" if paddle_nodes.has_node(data.name) else "")
+	# Set name
+	var name_count: int = 0
+	for paddle in paddle_nodes.get_children():
+		if data.name in paddle.name:
+			name_count += 1
+	var name_suffix: String = str(name_count) if name_count > 0 else ""
+	paddle_node.name = data.name + name_suffix
 	
+	# Set keys
+	if peer_id == data.id:
+		input_list[paddle_node.name] = {
+			keys = data.keys if data.has("keys") else -1,
+			pad = data.pad if data.has("pad") else -1
+		}
+		if peer_id == 1:
+			paddle_node.keys = input_list[paddle_node.name].keys
+			paddle_node.pad = input_list[paddle_node.name].pad
+			paddle_node.owned_by_server = true
+	
+	# Finalize data
 	if peer_id == 1:
 		paddle_data[paddle_node.name] = {
 			position = paddle_node.position,
 			rotation = paddle_node.rotation,
 			color = paddle_node.modulate,
-			name = paddle_node.name
+			name = paddle_node.name,
+			id = data.id
 		}
+		# Send data to client to create paddle
 		if open_to_lan:
-			rpc("init_paddle", paddle_data[paddle_node.name])
+			var new_data = paddle_data[paddle_node.name].duplicate(true)
+			if data.id != peer_id:
+				new_data.keys = data.keys if data.has("keys") else -1
+				new_data.pad = data.pad if data.has("pad") else -1
+			rpc("init_paddle", new_data)
 	
+	# Add paddle to tree
 	paddle_nodes.add_child(paddle_node)
 	paddle_nodes.move_child(paddle_node, 0)
 
 # Collect client inputs for LAN
-func get_client_inputs(id: int) -> Dictionary:
-	var paddle_node = paddle_nodes.get_node(str(id))
+func get_client_inputs(paddle: String, input: Dictionary) -> Dictionary:
+	var paddle_node = paddle_nodes.get_node(paddle)
 	var input_velocity: Vector2 = Vector2()
 	var input_rotation: float = 0
 	if OS.is_window_focused():
-		input_velocity.y = get_key(KEY_S, KEY_DOWN) - get_key(KEY_W, KEY_UP)
-		input_velocity.x = get_key(KEY_D, KEY_RIGHT) - get_key(KEY_A, KEY_LEFT)
-		input_velocity = input_velocity.normalized() * move_speed
-		input_rotation = deg2rad((get_key(KEY_H, KEY_KP_3) - get_key(KEY_G, KEY_KP_2)) * 4)
-		
-		var left_stick: Vector2 = Vector2(Input.get_joy_axis(0, 0), Input.get_joy_axis(0, 1))
-		if left_stick.length() > 0.2:
-			input_velocity.y = sign(left_stick.y) * pow(left_stick.y, 2)
-			input_velocity.x = sign(left_stick.x) * pow(left_stick.x, 2)
-			input_velocity *= move_speed
-		var right_stick: Vector2 = Vector2(Input.get_joy_axis(0, 2), Input.get_joy_axis(0, 3))
-		if right_stick.length() > 0.7:
-			input_rotation = paddle_node.get_angle_to(paddle_node.position + right_stick) * 0.1
-	
+		if input.keys >= 0:
+			input_velocity.x = get_key(KEY_D, KEY_RIGHT, input.keys) - get_key(KEY_A, KEY_LEFT, input.keys)
+			input_velocity.y = get_key(KEY_S, KEY_DOWN, input.keys) - get_key(KEY_W, KEY_UP, input.keys)
+			input_velocity = input_velocity.normalized() * move_speed
+			input_rotation = deg2rad((get_key(KEY_H, KEY_KP_3, input.keys) - get_key(KEY_G, KEY_KP_2, input.keys)) * 4)
+		if input.pad >= 0:
+			var left_stick = Vector2(Input.get_joy_axis(input.pad, 0), Input.get_joy_axis(input.pad, 1))
+			var right_stick = Vector2(Input.get_joy_axis(input.pad, 2), Input.get_joy_axis(input.pad, 3))
+			if left_stick.length() > 0.2:
+				input_velocity.x = sign(left_stick.x) * pow(left_stick.x, 2)
+				input_velocity.y = sign(left_stick.y) * pow(left_stick.y, 2)
+				input_velocity *= move_speed
+			if right_stick.length() > 0.7:
+				input_rotation = paddle_node.get_angle_to(paddle_node.position + right_stick) * 0.1
 	return {velocity = input_velocity, rotation = input_rotation}
 
 # Return keypress from either key
-func get_key(key1: int, key2: int) -> int:
-	return int(Input.is_key_pressed(key1) or Input.is_key_pressed(key2))
+func get_key(key1: int, key2: int, keys) -> int:
+	return int(Input.is_key_pressed(key1 if keys == 0 else key2))
 
 # Send client inputs to client's paddle host-side
-remote func inputs_to_host(input_data: Dictionary):
-	var id: int = get_tree().get_rpc_sender_id()
+remote func inputs_to_host(paddle: String, input_data: Dictionary):
 	input_data.velocity = input_data.velocity.clamped(move_speed)
-	paddle_nodes.get_node(str(id)).inputs_from_client(input_data)
+	paddle_nodes.get_node(paddle).inputs_from_client(input_data)
 
 # Vibrate client's controller; called from host-side paddle
-remote func vibrate():
-	Input.start_joy_vibration(0, 0.1, 0, 0.1)
+remote func vibrate(paddle):
+	Input.start_joy_vibration(input_list[paddle], 0.1, 0, 0.1)
 
 # Manage paddle health
 func paddle_hit(id: int):
