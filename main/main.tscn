@@ -133,7 +133,7 @@ environment = SubResource( 3 )
 [node name="EndTimer" type="Timer" parent="."]
 
 [node name="MessageTimer" type="Timer" parent="."]
-[connection signal="pressed" from="UI/Menu/Main/Play" to="." method="load_local_game"]
+[connection signal="pressed" from="UI/Menu/Main/Play" to="." method="start_local_game"]
 [connection signal="pressed" from="UI/Menu/Main/Host" to="." method="host_lan_game"]
 [connection signal="pressed" from="UI/Menu/Main/JoinBar/Join" to="." method="join_lan_game"]
 [connection signal="timeout" from="JoinTimer" to="." method="unload_game" binds= [ "Could not connect!" ]]

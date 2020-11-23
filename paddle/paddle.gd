@@ -4,17 +4,18 @@ signal hit(id)
 
 onready var safe_timer = $SafeTimer
 
-var playing_lan = false
-var pad = 0
-var enabled = false
-var safe = true
-var move_speed = 0
+var playing_lan: bool = false
+var pad: int = -1
+var keys: int = -1
+var enabled: bool = true
+var safe: bool = true
+var move_speed: int = 0
 
-var velocity = Vector2()
-var input_velocity = Vector2()
-var input_rotation = 0
-var client_velocity = Vector2()
-var client_rotation = 0
+var velocity: Vector2 = Vector2()
+var input_velocity: Vector2 = Vector2()
+var input_rotation: float = 0
+var client_velocity: Vector2 = Vector2()
+var client_rotation: float = 0
 
 func _ready():
 	# Override when playing over LAN
@@ -22,7 +23,8 @@ func _ready():
 		playing_lan = true
 		enabled = true
 		safe = false
-		pad = -1
+		pad = 0
+		keys = 0
 	else:
 		safe_timer.start(3)
 
@@ -34,31 +36,31 @@ func _physics_process(delta):
 	if not playing_lan or name == "1":
 		input_velocity = Vector2()
 		input_rotation = 0
-		if OS.is_window_focused() and pad < 0:
-			input_velocity.y = get_key(KEY_S, KEY_DOWN) - get_key(KEY_W, KEY_UP)
-			input_velocity.x = get_key(KEY_D, KEY_RIGHT) - get_key(KEY_A, KEY_LEFT)
-			input_velocity = input_velocity.normalized() * move_speed
-			input_rotation = deg2rad((get_key(KEY_H, KEY_KP_3) - get_key(KEY_G, KEY_KP_2)) * 4)
-		elif OS.is_window_focused():
-			var l = Vector2(Input.get_joy_axis(pad, 0), Input.get_joy_axis(pad, 1))
-			if l.length() > 0.2:
-				input_velocity = Vector2(sign(l.x) * pow(l.x, 2), sign(l.y) * pow(l.y, 2)) * move_speed
-			var r = Vector2(Input.get_joy_axis(pad, 2), Input.get_joy_axis(pad, 3))
-			if r.length() > 0.7:
-				input_rotation = get_angle_to(position + r) * 0.1
+		if OS.is_window_focused():
+			if keys >= 0:
+				input_velocity.y = get_key(KEY_S, KEY_DOWN) - get_key(KEY_W, KEY_UP)
+				input_velocity.x = get_key(KEY_D, KEY_RIGHT) - get_key(KEY_A, KEY_LEFT)
+				input_velocity = input_velocity.normalized() * move_speed
+				input_rotation = deg2rad((get_key(KEY_H, KEY_KP_3) - get_key(KEY_G, KEY_KP_2)) * 4)
+			if pad >= 0:
+				var left_stick = Vector2(Input.get_joy_axis(pad, 0), Input.get_joy_axis(pad, 1))
+				var right_stick = Vector2(Input.get_joy_axis(pad, 2), Input.get_joy_axis(pad, 3))
+				if left_stick.length() > 0.2:
+					input_velocity.y = sign(left_stick.y) * pow(left_stick.y, 2)
+					input_velocity.x = sign(left_stick.x) * pow(left_stick.x, 2)
+					input_velocity *= move_speed
+				if right_stick.length() > 0.7:
+					input_rotation = get_angle_to(position + right_stick) * 0.1
 	else:
 		input_velocity = client_velocity
 		input_rotation = client_rotation
 	rotation += input_rotation
 	
 	# Smoothify movement
-	if input_velocity.length() > 0:
-		velocity = velocity.linear_interpolate(input_velocity, 0.06)
-	else:
-		velocity = velocity.linear_interpolate(Vector2(), 0.02)
+	velocity = velocity.linear_interpolate(input_velocity, 0.06 if input_velocity.length() > 0 else 0.02)
 	
 	# Detect collisions with balls/walls
-	var collision = move_and_collide(velocity * delta, false)
+	var collision: KinematicCollision2D = move_and_collide(velocity * delta, false)
 	if collision and enabled:
 		if collision.collider.is_in_group("balls"):
 			collision.collider.apply_central_impulse(-collision.normal * 100)
@@ -67,29 +69,21 @@ func _physics_process(delta):
 		if not playing_lan or name == "1":
 			if pad >= 0:
 				Input.start_joy_vibration(pad, 0.1, 0, 0.1)
-		else:
+		elif has_node("/root/Main"):
 			get_node("/root/Main").rpc_id(int(name), "vibrate")
 
-func _input(_event):
-	# Switch input method when playing over LAN
-	if playing_lan and OS.is_window_focused():
-		if pad == -1 and Input.is_joy_button_pressed(0, JOY_BUTTON_0):
-			pad = 0
-		elif pad == 0 and Input.is_key_pressed(KEY_ENTER):
-			pad = -1
-
-func inputs_from_client(input_data):
+func inputs_from_client(input_data: Dictionary):
 	client_velocity = input_data.velocity
 	client_rotation = input_data.rotation
 
 # Return keypress from either key based on pad
-func get_key(key1, key2):
+func get_key(key1: int, key2: int):
 	if playing_lan:
-		return float(Input.is_key_pressed(key1) or Input.is_key_pressed(key2))
-	return float(Input.is_key_pressed(key2 if pad == -2 else key1))
+		return int(Input.is_key_pressed(key1) or Input.is_key_pressed(key2))
+	return int(Input.is_key_pressed(key1 if keys == 0 else key2))
 
 # Hit detection and damage
-func back_entered(body):
+func back_entered(body: Node2D):
 	if body.is_in_group("balls") and not safe:
 		emit_signal("hit", int(name))
 		safe = true

@@ -1,4 +1,5 @@
 .import/
 .vscode/
+release/
 *.log
 *.cfg
