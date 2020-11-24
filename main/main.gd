@@ -14,8 +14,8 @@ onready var message_node = $UI/Message
 onready var menu_node = $UI/Menu
 onready var play_button = $UI/Menu/Main/Play
 onready var name_input = $UI/Menu/Main/Name
-onready var ip_input = $UI/Menu/Main/JoinBar/IP
-onready var join_button = $UI/Menu/Main/JoinBar/Join
+onready var ip_input = $UI/Menu/Main/IP
+onready var join_button = $UI/Menu/Main/Join
 
 onready var join_timer = $JoinTimer
 onready var message_timer = $MessageTimer
@@ -27,10 +27,10 @@ const ball_scene = preload("res://ball/ball.tscn")
 const client_ball_scene = preload("res://ball/clientball.tscn")
 
 var playing: bool = false
-var open_to_lan: bool = false
+var open_to_lan: bool = true
 var peer_id: int = 1
 
-var paddle_name: String = ""
+var peer_name: String = ""
 var paddle_data: Dictionary = {}
 var ball_data: Array = []
 var input_list: Dictionary = {}
@@ -41,7 +41,6 @@ var ball_count: int = 10
 
 func _ready():
 	play_button.grab_focus()
-	get_tree().connect("network_peer_connected", self, "peer_connected")
 	get_tree().connect("network_peer_disconnected", self, "peer_disconnected")
 	get_tree().connect("connected_to_server", self, "connected_to_server")
 	get_tree().connect("connection_failed", self, "unload_game", ["Connection failed!"])
@@ -83,24 +82,24 @@ func _input(_event):
 	if playing and OS.is_window_focused() and paddle_data.size() < 8:
 		if Input.is_key_pressed(KEY_ENTER) and is_new_input("keys", 0):
 			if peer_id == 1:
-				init_paddle({name = paddle_name, keys = 0, id = peer_id})
+				init_paddle({name = peer_name, keys = 0, id = peer_id})
 			else:
-				rpc_id(1, "init_paddle", {name = paddle_name, keys = 0, id = peer_id})
+				rpc_id(1, "init_paddle", {name = peer_name, keys = 0, id = peer_id})
 		if Input.is_key_pressed(KEY_KP_ENTER) and is_new_input("keys", 1):
 			if peer_id == 1:
-				init_paddle({name = paddle_name, keys = 1, id = peer_id})
+				init_paddle({name = peer_name, keys = 1, id = peer_id})
 			else:
-				rpc_id(1, "init_paddle", {name = paddle_name, keys = 1, id = peer_id})
+				rpc_id(1, "init_paddle", {name = peer_name, keys = 1, id = peer_id})
 		for pad in Input.get_connected_joypads():
 			if Input.is_joy_button_pressed(pad, 0) and is_new_input("pad", pad):
 				if peer_id == 1:
-					init_paddle({name = paddle_name, pad = pad, id = peer_id})
+					init_paddle({name = peer_name, pad = pad, id = peer_id})
 				else:
-					rpc_id(1, "init_paddle", {name = paddle_name, pad = pad, id = peer_id})
+					rpc_id(1, "init_paddle", {name = peer_name, pad = pad, id = peer_id})
 	
 	# Force unload the game on shortcut press
 	if playing and Input.is_key_pressed(KEY_SHIFT) and Input.is_key_pressed(KEY_ESCAPE):
-		unload_game()
+		unload_game("You left the game!")
 	
 	# Pressing enter in the IP input "presses" join button
 	if ip_input.has_focus() and Input.is_key_pressed(KEY_ENTER):
@@ -140,7 +139,7 @@ func get_name() -> String:
 	var new_name: String = name_input.text
 	if new_name == "":
 		set_msg("Invalid name!", 3)
-	paddle_name = new_name
+	peer_name = new_name
 	return new_name
 
 
@@ -160,33 +159,45 @@ func join_game():
 	toggle_buttons(true)
 	var peer = NetworkedMultiplayerENet.new()
 	peer.create_client(ip, 8910)
-	get_tree().set_network_peer(peer)
+	get_tree().network_peer = peer
 	peer_id = get_tree().get_network_unique_id()
 	join_timer.start(5)
 
-# Send data to new peer
-func peer_connected(_id):
-	pass
-
-# Unload the game if someone disconnects
-func peer_disconnected(_id):
-	unload_game("Peer disconnected!")
+# Unload disconnected paddle(s)
+func peer_disconnected(id):
+	var sent_msg: bool = false
+	var paddles_to_clear: Array = []
+	for paddle in paddle_data:
+		if paddle_data[paddle].id == id:
+			if not sent_msg:
+				set_msg(paddle_data[paddle].name + " disconnected!", 2)
+				sent_msg = true
+			paddles_to_clear.append(paddle)
+	for paddle in paddles_to_clear:
+		paddle_data.erase(paddle)
+		paddle_nodes.get_node(paddle).queue_free()
+		bars.get_node(paddle).queue_free()
+	bars.columns = clamp(paddle_data.size(), 1, 8)
 
 # Client connects and sends name
 func connected_to_server():
-	rpc_id(1, "send_client_name", paddle_name)
+	rpc_id(1, "check_client_name", peer_name)
 
-remote func send_client_name(client_name):
-	var id = get_tree().get_rpc_sender_id()
-	if paddle_name.begins_with(client_name):
-		rpc_id(id, "kicked", "Same name")
-	else:
-		set_msg("Peer connected!", 2)
-		rpc_id(id, "load_lan_game", paddle_data)
+# Host checks client name, kicking if it already exists
+remote func check_client_name(client_name):
+	var id: int = get_tree().get_rpc_sender_id()
+	for paddle in paddle_data:
+		if paddle_data[paddle].name == client_name:
+			rpc_id(id, "kick", "Same name")
+			return
+	set_msg(client_name + " connected!", 2)
+	rpc_id(id, "load_lan_game", paddle_data)
 
-remote func kicked(reason: String = ""):
+# Force client to unload
+remote func kick(reason: String = ""):
 	unload_game("You were kicked! " + reason)
 
+# Send data to paddle
 remote func load_lan_game(data: Dictionary):
 	join_timer.stop()
 	menu_node.hide()
@@ -218,11 +229,14 @@ remote func load_game():
 
 # Reset the game
 func unload_game(msg: String = ""):
+	playing = false
+	if get_tree().has_network_peer():
+		get_tree().set_deferred("network_peer", null)
+		peer_id = 1
 	join_timer.stop()
 	set_msg(msg)
 	if msg != "":
 		message_timer.start(3)
-	playing = false
 	input_list.clear()
 	for paddle in paddle_nodes.get_children():
 		paddle.queue_free()
@@ -235,34 +249,33 @@ func unload_game(msg: String = ""):
 	bars.columns = 1
 	menu_node.show()
 	camera_node.position = camera_spawn
-	if get_tree().has_network_peer():
-		get_tree().set_deferred("network_peer", null)
-		peer_id = 1
 	play_button.grab_focus()
 	toggle_buttons(false)
 
 # Update paddles and balls over LAN
 remotesync func update_objects(paddles: Dictionary, balls: Array):
+	# Update data with nodes on host
 	if peer_id == 1:
 		for paddle in paddles:
 			var paddle_node = paddle_nodes.get_node(paddle)
 			paddle_data[paddle].position = paddle_node.position
 			paddle_data[paddle].rotation = paddle_node.rotation
-		
 		for ball in ball_count:
 			var ball_node = ball_nodes.get_child(ball)
 			ball_data[ball].position = ball_node.position
 			ball_data[ball].rotation = ball_node.rotation
 	
+	# Update nodes with data from host
 	else:
 		for paddle in paddles:
+			paddle_data[paddle].position = paddles[paddle].position
+			paddle_data[paddle].rotation = paddles[paddle].rotation
 			var paddle_node = paddle_nodes.get_node(paddle)
 			paddle_node.position = paddles[paddle].position
 			paddle_node.rotation = paddles[paddle].rotation
 			if paddles[paddle].id == peer_id:
-				var input_data = get_client_inputs(paddle, input_list[paddle])
+				var input_data: Dictionary = get_client_inputs(paddle, input_list[paddle])
 				rpc_unreliable_id(1, "inputs_to_host", paddle, input_data)
-		
 		for ball in ball_count:
 			var ball_node = ball_nodes.get_child(ball)
 			ball_node.position = balls[ball].position
@@ -305,7 +318,7 @@ remote func init_paddle(data: Dictionary = {}):
 	var name_suffix: String = str(name_count) if name_count > 0 else ""
 	paddle_node.name = data.name + name_suffix
 	
-	# Set keys
+	# Set input
 	if peer_id == data.id:
 		input_list[paddle_node.name] = {
 			keys = data.keys if data.has("keys") else -1,
@@ -316,22 +329,47 @@ remote func init_paddle(data: Dictionary = {}):
 			paddle_node.pad = input_list[paddle_node.name].pad
 			paddle_node.owned_by_server = true
 	
+	# Create HUD elements
+	var bar = VBoxContainer.new()
+	bar.name = paddle_node.name
+	bar.size_flags_horizontal = VBoxContainer.SIZE_EXPAND_FILL
+	bar.modulate = paddle_node.modulate
+	bar.alignment = BoxContainer.ALIGN_CENTER
+	var label = Label.new()
+	label.text = paddle_node.name
+	label.align = Label.ALIGN_CENTER
+	bar.add_child(label)
+	var hp_bar = HBoxContainer.new()
+	hp_bar.name = paddle_node.name
+	hp_bar.alignment = BoxContainer.ALIGN_CENTER
+	hp_bar.set("custom_constants/separation", -18)
+	for _x in max_health:
+		var bit = TextureRect.new()
+		bit.texture = hp_texture
+		hp_bar.add_child(bit)
+	bar.add_child(hp_bar)
+	bars.add_child(bar)
+	bars.columns = clamp(bars.get_child_count(), 1, 8)
+	
 	# Finalize data
-	if peer_id == 1:
-		paddle_data[paddle_node.name] = {
-			position = paddle_node.position,
-			rotation = paddle_node.rotation,
-			color = paddle_node.modulate,
-			name = paddle_node.name,
-			id = data.id
-		}
-		# Send data to client to create paddle
-		if open_to_lan:
-			var new_data = paddle_data[paddle_node.name].duplicate(true)
-			if data.id != peer_id:
-				new_data.keys = data.keys if data.has("keys") else -1
-				new_data.pad = data.pad if data.has("pad") else -1
-			rpc("init_paddle", new_data)
+	paddle_data[paddle_node.name] = {
+		position = paddle_node.position,
+		rotation = paddle_node.rotation,
+		spawn_position = paddle_node.position,
+		spawn_rotation = paddle_node.rotation,
+		name = paddle_node.name,
+		id = data.id,
+		health = max_health,
+		color = paddle_node.modulate
+	}
+	
+	# Send data to client to create paddle
+	if peer_id == 1 and open_to_lan:
+		var new_data = paddle_data[paddle_node.name].duplicate(true)
+		if data.id != peer_id:
+			new_data.keys = data.keys if data.has("keys") else -1
+			new_data.pad = data.pad if data.has("pad") else -1
+		rpc("init_paddle", new_data)
 	
 	# Add paddle to tree
 	paddle_nodes.add_child(paddle_node)
@@ -346,18 +384,17 @@ func get_client_inputs(paddle: String, input: Dictionary) -> Dictionary:
 		if input.keys >= 0:
 			input_velocity.x = get_key(KEY_D, KEY_RIGHT, input.keys) - get_key(KEY_A, KEY_LEFT, input.keys)
 			input_velocity.y = get_key(KEY_S, KEY_DOWN, input.keys) - get_key(KEY_W, KEY_UP, input.keys)
-			input_velocity = input_velocity.normalized() * move_speed
+			input_velocity = input_velocity.normalized()
 			input_rotation = deg2rad((get_key(KEY_H, KEY_KP_3, input.keys) - get_key(KEY_G, KEY_KP_2, input.keys)) * 4)
 		if input.pad >= 0:
-			var left_stick = Vector2(Input.get_joy_axis(input.pad, 0), Input.get_joy_axis(input.pad, 1))
-			var right_stick = Vector2(Input.get_joy_axis(input.pad, 2), Input.get_joy_axis(input.pad, 3))
+			var left_stick: Vector2 = Vector2(Input.get_joy_axis(input.pad, 0), Input.get_joy_axis(input.pad, 1))
+			var right_stick: Vector2 = Vector2(Input.get_joy_axis(input.pad, 2), Input.get_joy_axis(input.pad, 3))
 			if left_stick.length() > 0.2:
 				input_velocity.x = sign(left_stick.x) * pow(left_stick.x, 2)
 				input_velocity.y = sign(left_stick.y) * pow(left_stick.y, 2)
-				input_velocity *= move_speed
 			if right_stick.length() > 0.7:
 				input_rotation = paddle_node.get_angle_to(paddle_node.position + right_stick) * 0.1
-	return {velocity = input_velocity, rotation = input_rotation}
+	return {velocity = input_velocity * move_speed, rotation = input_rotation}
 
 # Return keypress from either key
 func get_key(key1: int, key2: int, keys) -> int:
@@ -369,25 +406,28 @@ remote func inputs_to_host(paddle: String, input_data: Dictionary):
 	paddle_nodes.get_node(paddle).inputs_from_client(input_data)
 
 # Vibrate client's controller; called from host-side paddle
-remote func vibrate(paddle):
-	Input.start_joy_vibration(input_list[paddle], 0.1, 0, 0.1)
+remote func vibrate(paddle: String, destroyed: bool = false):
+	if destroyed:
+		Input.start_joy_vibration(input_list[paddle].pad, .2, .2, .3)
+	else:
+		Input.start_joy_vibration(input_list[paddle].pad, 0.1, 0, 0.1)
 
 # Manage paddle health
-func paddle_hit(id: int):
-	if playing and open_to_lan:
-		return
-	paddle_data[id].health -= 1
-	var bits = paddle_data[id].hud.get_children()
+remote func paddle_hit(paddle: String):
+	if peer_id == 1:
+		rpc("paddle_hit", paddle)
+	paddle_data[paddle].health -= 1
+	if paddle_data[paddle].health < 1:
+		if paddle_data[paddle].id == peer_id:
+			vibrate(paddle, true)
+		set_msg(paddle_data[paddle].name + " was destroyed!", 2)
+		if peer_id == 1:
+			paddle_nodes.get_node(paddle).position = paddle_data[paddle].spawn_position
+			paddle_nodes.get_node(paddle).rotation = paddle_data[paddle].spawn_rotation
+		paddle_data[paddle].health = max_health
+	var health_bits = bars.get_node(paddle).get_node(paddle).get_children()
 	for i in max_health:
-		bits[i].modulate.a = 1.0 if paddle_data[id].health > i else 0.1
-	if paddle_data[id].health == 0:
-		Input.start_joy_vibration(paddle_data[id].pad, .2, .2, .3)
-		set_msg("Paddle died!", 2)
-		paddle_data[id].node.position = paddle_spawns[id].position
-		paddle_data[id].node.rotation = paddle_spawns[id].rotation
-		paddle_data[id].health = max_health
-		for i in max_health:
-			bits[i].modulate.a = 1.0
+		health_bits[i].modulate.a = 1.0 if paddle_data[paddle].health > i else 0.1
 
 
 

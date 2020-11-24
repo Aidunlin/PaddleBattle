@@ -43,19 +43,20 @@ smoothing_enabled = true
 anchor_right = 1.0
 anchor_bottom = 1.0
 theme = ExtResource( 5 )
-custom_constants/margin_right = 40
-custom_constants/margin_top = 40
-custom_constants/margin_left = 40
-custom_constants/margin_bottom = 40
+custom_constants/margin_right = 30
+custom_constants/margin_top = 30
+custom_constants/margin_left = 30
+custom_constants/margin_bottom = 30
 __meta__ = {
+"_edit_lock_": true,
 "_edit_use_anchors_": false
 }
 
 [node name="Bars" type="GridContainer" parent="UI/HUD"]
-margin_left = 40.0
-margin_top = 40.0
-margin_right = 984.0
-margin_bottom = 560.0
+margin_left = 30.0
+margin_top = 30.0
+margin_right = 994.0
+margin_bottom = 570.0
 custom_constants/vseparation = 18
 
 [node name="Message" type="Label" parent="UI"]
@@ -65,6 +66,7 @@ theme = ExtResource( 5 )
 custom_fonts/font = SubResource( 1 )
 align = 1
 __meta__ = {
+"_edit_lock_": true,
 "_edit_use_anchors_": false
 }
 
@@ -73,14 +75,15 @@ anchor_right = 1.0
 anchor_bottom = 1.0
 theme = ExtResource( 5 )
 __meta__ = {
+"_edit_lock_": true,
 "_edit_use_anchors_": false
 }
 
 [node name="Main" type="VBoxContainer" parent="UI/Menu"]
 margin_left = 404.0
-margin_top = 200.0
+margin_top = 183.0
 margin_right = 620.0
-margin_bottom = 400.0
+margin_bottom = 417.0
 custom_constants/separation = 8
 
 [node name="Label" type="Label" parent="UI/Menu/Main"]
@@ -94,44 +97,42 @@ align = 1
 margin_top = 52.0
 margin_right = 216.0
 margin_bottom = 82.0
+focus_neighbour_top = NodePath("../Join")
 size_flags_horizontal = 3
 align = 1
-max_length = 16
 placeholder_text = "Name"
 
 [node name="OpenLAN" type="CheckButton" parent="UI/Menu/Main"]
 margin_top = 90.0
 margin_right = 216.0
-margin_bottom = 124.0
+margin_bottom = 120.0
+pressed = true
+action_mode = 0
 text = "Open to LAN"
 align = 1
 
 [node name="Play" type="Button" parent="UI/Menu/Main"]
-margin_top = 132.0
+margin_top = 128.0
 margin_right = 216.0
-margin_bottom = 162.0
+margin_bottom = 158.0
 text = "Play"
 
-[node name="JoinBar" type="HBoxContainer" parent="UI/Menu/Main"]
-margin_top = 170.0
+[node name="IP" type="LineEdit" parent="UI/Menu/Main"]
+margin_top = 166.0
 margin_right = 216.0
-margin_bottom = 200.0
-custom_constants/separation = 8
-
-[node name="IP" type="LineEdit" parent="UI/Menu/Main/JoinBar"]
-margin_right = 156.0
-margin_bottom = 30.0
+margin_bottom = 196.0
 size_flags_horizontal = 3
-clear_button_enabled = true
-placeholder_text = "127.0.0.1"
+align = 1
+placeholder_text = "IP"
 __meta__ = {
 "_editor_description_": ""
 }
 
-[node name="Join" type="Button" parent="UI/Menu/Main/JoinBar"]
-margin_left = 164.0
+[node name="Join" type="Button" parent="UI/Menu/Main"]
+margin_top = 204.0
 margin_right = 216.0
-margin_bottom = 30.0
+margin_bottom = 234.0
+focus_neighbour_bottom = NodePath("../Name")
 text = "Join"
 
 [node name="WorldEnvironment" type="WorldEnvironment" parent="."]
@@ -142,6 +143,6 @@ environment = SubResource( 3 )
 [node name="MessageTimer" type="Timer" parent="."]
 [connection signal="pressed" from="UI/Menu/Main/OpenLAN" to="." method="toggle_lan"]
 [connection signal="pressed" from="UI/Menu/Main/Play" to="." method="start_game"]
-[connection signal="pressed" from="UI/Menu/Main/JoinBar/Join" to="." method="join_game"]
+[connection signal="pressed" from="UI/Menu/Main/Join" to="." method="join_game"]
 [connection signal="timeout" from="JoinTimer" to="." method="unload_game" binds= [ "Could not connect!" ]]
 [connection signal="timeout" from="MessageTimer" to="." method="set_msg"]

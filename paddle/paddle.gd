@@ -1,7 +1,5 @@
 extends KinematicBody2D
 
-signal hit(id)
-
 onready var safe_timer = $SafeTimer
 
 var owned_by_server: bool = false
@@ -79,7 +77,7 @@ func get_key(key1: int, key2: int) -> int:
 # Hit detection and damage
 func back_entered(body: Node2D):
 	if body.is_in_group("balls") and not safe:
-		emit_signal("hit", int(name))
+		get_node("/root/Main").paddle_hit(name)
 		safe = true
 		safe_timer.start(2)
 
