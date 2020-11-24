@@ -40,13 +40,12 @@ var ball_count: int = 10
 
 
 func _ready():
+	load_config()
 	play_button.grab_focus()
 	get_tree().connect("network_peer_disconnected", self, "peer_disconnected")
 	get_tree().connect("connected_to_server", self, "connected_to_server")
 	get_tree().connect("connection_failed", self, "unload_game", ["Connection failed!"])
 	get_tree().connect("server_disconnected", self, "unload_game", ["Host disconnected!"])
-	randomize()
-	map_node.modulate = Color.from_hsv((randi() % 9 * 40.0) / 360.0, 1, 1)
 	camera_node.position = camera_spawn
 	camera_node.current = true
 
@@ -142,6 +141,31 @@ func get_name() -> String:
 	peer_name = new_name
 	return new_name
 
+func save_config():
+	var file: File = File.new()
+	file.open("user://save.txt", File.WRITE)
+	var save: Dictionary = {
+		"name": name_input.text,
+		"ip": ip_input.text,
+		"open_to_lan": open_to_lan
+	}
+	file.store_line(to_json(save))
+	file.close()
+
+func load_config():
+	var file = File.new()
+	if not file.file_exists("user://save.txt"):
+		return
+	file.open("user://save.txt", File.READ)
+	var save: Dictionary = parse_json(file.get_line())
+	if save.has("name"):
+		name_input.text = save.name
+	if save.has("ip"):
+		ip_input.text = save.ip
+	if save.has("open_to_lan"):
+		open_to_lan = save.open_to_lan
+		$UI/Menu/Main/OpenLAN.pressed = open_to_lan
+
 
 ##### NETWORK #####
 
@@ -191,16 +215,19 @@ remote func check_client_name(client_name):
 			rpc_id(id, "kick", "Same name")
 			return
 	set_msg(client_name + " connected!", 2)
-	rpc_id(id, "load_lan_game", paddle_data)
+	rpc_id(id, "load_lan_game", paddle_data, map_node.modulate)
 
 # Force client to unload
 remote func kick(reason: String = ""):
 	unload_game("You were kicked! " + reason)
 
-# Send data to paddle
-remote func load_lan_game(data: Dictionary):
+# Send data to client to load game
+remote func load_lan_game(data: Dictionary, map_color: Color):
+	save_config()
 	join_timer.stop()
+	map_node.modulate = map_color
 	menu_node.hide()
+	map_node.show()
 	playing = true
 	for paddle in data:
 		init_paddle(data[paddle])
@@ -211,6 +238,7 @@ remote func load_lan_game(data: Dictionary):
 
 ##### GAME #####
 
+# Start game
 func start_game():
 	if get_name() == "":
 		return
@@ -218,11 +246,11 @@ func start_game():
 	peer.create_server(8910, 7)
 	get_tree().network_peer = peer
 	get_tree().refuse_new_network_connections = not open_to_lan
-	load_game()
-
-# Set up game
-remote func load_game():
+	save_config()
+	randomize()
+	map_node.modulate = Color.from_hsv((randi() % 9 * 40.0) / 360.0, 1, 1)
 	menu_node.hide()
+	map_node.show()
 	playing = true
 	init_balls()
 	set_msg("Press A/Enter to create your paddle", 5)
@@ -247,7 +275,9 @@ func unload_game(msg: String = ""):
 	for bar in bars.get_children():
 		bar.queue_free()
 	bars.columns = 1
+	map_node.modulate = Color(0, 0, 0)
 	menu_node.show()
+	map_node.hide()
 	camera_node.position = camera_spawn
 	play_button.grab_focus()
 	toggle_buttons(false)
@@ -303,19 +333,25 @@ remote func init_paddle(data: Dictionary = {}):
 		paddle_node.position = paddle_spawns[paddle_count].position
 		paddle_node.rotation = paddle_spawns[paddle_count].rotation
 	
-	# Set color
+	# Set random (but unique) color
 	if data.has("color"):
 		paddle_node.modulate = data.color
 	else:
-		randomize()
-		paddle_node.modulate = Color.from_hsv((randi() % 9 * 40.0) / 360.0, 1, 1)
+		var used_colors: Array = [map_node.modulate]
+		for paddle in paddle_data:
+			used_colors.append(paddle_data[paddle].color)
+		var new_color: Color = used_colors[0]
+		while new_color in used_colors:
+			randomize()
+			new_color = Color.from_hsv((randi() % 9 * 40.0) / 360.0, 1, 1)
+		paddle_node.modulate = new_color
 	
 	# Set name
-	var name_count: int = 0
+	var name_count: int = 1
 	for paddle in paddle_nodes.get_children():
 		if data.name in paddle.name:
 			name_count += 1
-	var name_suffix: String = str(name_count) if name_count > 0 else ""
+	var name_suffix: String = str(name_count) if name_count > 1 else ""
 	paddle_node.name = data.name + name_suffix
 	
 	# Set input
