@@ -28,10 +28,6 @@ config/icon="res://res/icon.png"
 
 default_bus_layout=""
 
-[debug]
-
-gdscript/warnings/return_value_discarded=false
-
 [input]
 
 ui_accept={
