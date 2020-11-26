@@ -20,9 +20,9 @@ config/description="A multiplayer action game with pong-like mechanics"
 run/main_scene="res://main/main.tscn"
 config/use_custom_user_dir=true
 config/custom_user_dir_name="Paddle Battle"
-boot_splash/image="res://res/icon.png"
+boot_splash/image="res://icon.png"
 boot_splash/use_filter=false
-config/icon="res://res/icon.png"
+config/icon="res://icon.png"
 
 [audio]
 

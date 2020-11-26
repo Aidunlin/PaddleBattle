@@ -6,6 +6,7 @@ const CLIENT_PADDLE_SCENE: PackedScene = preload("res://paddle/clientpaddle.tscn
 const BALL_SCENE: PackedScene = preload("res://ball/ball.tscn")
 const CLIENT_BALL_SCENE: PackedScene = preload("res://ball/clientball.tscn")
 
+const VERSION: String = "0.4.0.dev"
 const MOVE_SPEED: int = 500
 const MAX_HEALTH: int = 3
 const BALL_COUNT: int = 10
@@ -27,34 +28,38 @@ onready var camera_node: Camera2D = get_node("Camera")
 onready var paddle_nodes: Node2D = get_node("Paddles")
 onready var ball_nodes: Node2D = get_node("Balls")
 
-onready var bars: GridContainer = get_node("UI/HUD/Bars")
-onready var message_node: Label = get_node("UI/Message")
+onready var bars: GridContainer = get_node("CanvasLayer/UI/HUD/Bars")
+onready var message_node: Label = get_node("CanvasLayer/UI/Message")
 
-onready var menu_node: CenterContainer = get_node("UI/Menu")
-onready var name_input: LineEdit = get_node("UI/Menu/Main/Name")
-onready var open_lan_check: CheckBox = get_node("UI/Menu/Main/OpenLAN")
-onready var play_button: Button = get_node("UI/Menu/Main/Play")
-onready var ip_input: LineEdit = get_node("UI/Menu/Main/IP")
-onready var join_button: Button = get_node("UI/Menu/Main/Join")
+onready var menu_node: CenterContainer = get_node("CanvasLayer/UI/Menu")
+onready var name_input: LineEdit = get_node("CanvasLayer/UI/Menu/Main/Name")
+onready var open_lan_toggle: CheckBox = get_node("CanvasLayer/UI/Menu/Main/OpenLAN")
+onready var play_button: Button = get_node("CanvasLayer/UI/Menu/Main/Play")
+onready var ip_input: LineEdit = get_node("CanvasLayer/UI/Menu/Main/IP")
+onready var join_button: Button = get_node("CanvasLayer/UI/Menu/Main/Join")
+
+onready var footer_node: HBoxContainer = get_node("CanvasLayer/UI/Footer")
+onready var version_node: Label = get_node("CanvasLayer/UI/Footer/Version")
 
 onready var join_timer: Timer = get_node("JoinTimer")
 onready var message_timer: Timer = get_node("MessageTimer")
 
 
 func _ready() -> void:
+	version_node.text = VERSION
 	load_config()
 	play_button.grab_focus()
 	get_tree().connect("network_peer_disconnected", self, "_on_network_peer_disconnected")
 	get_tree().connect("connected_to_server", self, "_on_connected_to_server")
-	get_tree().connect("connection_failed", self, "_on_connection_failed")
-	get_tree().connect("server_disconnected", self, "_on_server_disconnected")
+	get_tree().connect("connection_failed", self, "unload_game", ["Failed to connect!"])
+	get_tree().connect("server_disconnected", self, "unload_game", ["Server disconnected!"])
 	camera_node.position = camera_spawn
 	camera_node.current = true
 
 
 func _physics_process(_delta: float) -> void:
 	# Update objects over LAN
-	if is_playing and is_open_to_lan and peer_id == 1:
+	if is_playing and peer_id == 1:
 		rpc_unreliable("update_objects", paddle_data, ball_data)
 	
 	# Modify camera to always show paddles
@@ -109,7 +114,7 @@ func _input(_event: InputEvent) -> void:
 	
 	# Pressing enter in the IP input "presses" join button
 	if ip_input.has_focus() and Input.is_key_pressed(KEY_ENTER):
-		join_game()
+		connect_to_server()
 
 
 
@@ -133,7 +138,9 @@ func is_new_input(type: String, id: int) -> bool:
 
 
 func toggle_buttons(toggle: bool) -> void:
+	name_input.editable = not toggle
 	play_button.disabled = toggle
+	open_lan_toggle.disabled = toggle
 	ip_input.editable = not toggle
 	join_button.disabled = toggle
 
@@ -181,7 +188,7 @@ func load_config() -> void:
 		ip_input.text = save.ip
 	if save.has("is_open_to_lan"):
 		is_open_to_lan = save.is_open_to_lan
-		open_lan_check.pressed = is_open_to_lan
+		open_lan_toggle.pressed = is_open_to_lan
 	file.close()
 
 
@@ -189,7 +196,7 @@ func load_config() -> void:
 ##### NETWORK #####
 
 # Attempt to join LAN game
-func join_game() -> void:
+func connect_to_server() -> void:
 	if get_name() == "":
 		return
 	var ip: String = ip_input.text
@@ -224,31 +231,21 @@ func _on_network_peer_disconnected(id: int) -> void:
 	bars.columns = clamp(paddle_data.size(), 1, 8)
 
 
-# Client connects and sends name
+# Client connects and sends version for checking
 func _on_connected_to_server() -> void:
-	rpc_id(1, "check", peer_name)
+	rpc_id(1, "check", peer_name, VERSION)
 
 
-func _on_connection_failed() -> void:
-	unload_game("Failed to connect!")
-
-
-func _on_server_disconnected() -> void:
-	unload_game("Host disconnected!")
-
-
-# Host checks client name, kicking if it already exists
-remote func check(name: String) -> void:
+remote func check(name: String, version: String) -> void:
 	var id: int = get_tree().get_rpc_sender_id()
-	for paddle in paddle_data:
-		if paddle_data[paddle].name == name:
-			rpc_id(id, "kick", "Same name")
-			return
+	if version != VERSION:
+		rpc_id(id, "kick", "Different server version (" + VERSION + ")")
+		return
 	set_message(name + " connected!", 2)
 	rpc_id(id, "load_game", paddle_data, map_node.modulate)
 
 
-# Force client to unload
+# Force client to disconnect
 remote func kick(reason: String = "") -> void:
 	unload_game("You were kicked! " + reason)
 
@@ -259,12 +256,13 @@ remote func load_game(data: Dictionary, map_color: Color) -> void:
 	join_timer.stop()
 	map_node.modulate = map_color
 	menu_node.hide()
+	footer_node.hide()
 	map_node.show()
-	is_playing = true
 	for paddle in data:
 		create_paddle(data[paddle])
 	create_balls()
 	set_message("Joined! Press A/Enter to create your paddle", 5)
+	is_playing = true
 
 
 
@@ -281,6 +279,7 @@ func start_game() -> void:
 	randomize()
 	map_node.modulate = Color.from_hsv((randi() % 9 * 40.0) / 360.0, 1, 1)
 	menu_node.hide()
+	footer_node.hide()
 	map_node.show()
 	is_playing = true
 	create_balls()
@@ -308,6 +307,7 @@ func unload_game(msg: String = "") -> void:
 	bars.columns = 1
 	map_node.modulate = Color(0, 0, 0)
 	menu_node.show()
+	footer_node.show()
 	map_node.hide()
 	camera_node.position = camera_spawn
 	play_button.grab_focus()
@@ -315,6 +315,8 @@ func unload_game(msg: String = "") -> void:
 
 
 remotesync func update_objects(paddles: Dictionary, balls: Array) -> void:
+	if not is_playing:
+		return
 	# Update data with nodes on host
 	if peer_id == 1:
 		for paddle in paddles:
@@ -442,15 +444,18 @@ remote func create_paddle(data: Dictionary = {}) -> void:
 
 func get_inputs(paddle: String, input: Dictionary) -> Dictionary:
 	if not OS.is_window_focused():
-		return {velocity = Vector2(), rotation = 0}
+		return {velocity = Vector2(), rotation = 0, dash = false}
 	
 	var paddle_node: Node2D = paddle_nodes.get_node(paddle)
 	var input_velocity: Vector2 = Vector2()
 	var input_rotation: float = 0
+	var dash: bool = false
 	if input.keys >= 0:
 		input_velocity.x = get_key(KEY_D, KEY_RIGHT, input.keys) - get_key(KEY_A, KEY_LEFT, input.keys)
 		input_velocity.y = get_key(KEY_S, KEY_DOWN, input.keys) - get_key(KEY_W, KEY_UP, input.keys)
 		input_velocity = input_velocity.normalized()
+		if bool(get_key(KEY_SHIFT, KEY_KP_1, input.keys)):
+			dash = true
 		input_rotation = deg2rad((get_key(KEY_H, KEY_KP_3, input.keys) - get_key(KEY_G, KEY_KP_2, input.keys)) * 4)
 	if input.pad >= 0:
 		var left_stick: Vector2 = Vector2(Input.get_joy_axis(input.pad, 0), Input.get_joy_axis(input.pad, 1))
@@ -458,16 +463,18 @@ func get_inputs(paddle: String, input: Dictionary) -> Dictionary:
 		if left_stick.length() > 0.2:
 			input_velocity.x = sign(left_stick.x) * pow(left_stick.x, 2)
 			input_velocity.y = sign(left_stick.y) * pow(left_stick.y, 2)
+			if Input.is_joy_button_pressed(input.pad, JOY_L2):
+				dash = true
 		if right_stick.length() > 0.7:
 			input_rotation = paddle_node.get_angle_to(paddle_node.position + right_stick) * 0.1
 	
-	return {velocity = input_velocity * MOVE_SPEED, rotation = input_rotation}
+	return {velocity = input_velocity * MOVE_SPEED, rotation = input_rotation, dash = dash}
 
 
 # Send client inputs their host-side paddle
-remote func inputs_to_host(paddle: String, input_data: Dictionary) -> void:
-	input_data.velocity = input_data.velocity.clamped(MOVE_SPEED)
-	paddle_nodes.get_node(paddle).inputs_from_client(input_data)
+remote func inputs_to_host(paddle: String, input: Dictionary) -> void:
+	input.velocity = input.velocity.clamped(MOVE_SPEED)
+	paddle_nodes.get_node(paddle).inputs_from_client(input)
 
 
 remote func vibrate(paddle: String, is_destroyed: bool = false) -> void:
@@ -475,7 +482,7 @@ remote func vibrate(paddle: String, is_destroyed: bool = false) -> void:
 		if is_destroyed:
 			Input.start_joy_vibration(input_list[paddle].pad, .2, .2, .3)
 		else:
-			Input.start_joy_vibration(input_list[paddle].pad, 0.1, 0, 0.1)
+			Input.start_joy_vibration(input_list[paddle].pad, .1, 0, .1)
 	
 	elif peer_id == 1 and is_open_to_lan:
 		rpc_id(paddle_data[paddle].id, "vibrate", paddle, is_destroyed)
