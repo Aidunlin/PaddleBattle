@@ -6,7 +6,7 @@ const CLIENT_PADDLE_SCENE: PackedScene = preload("res://paddle/clientpaddle.tscn
 const BALL_SCENE: PackedScene = preload("res://ball/ball.tscn")
 const CLIENT_BALL_SCENE: PackedScene = preload("res://ball/clientball.tscn")
 
-const VERSION: String = "0.4.0.dev"
+const VERSION: String = "0.4.0"
 const MOVE_SPEED: int = 500
 
 var is_playing: bool = false
