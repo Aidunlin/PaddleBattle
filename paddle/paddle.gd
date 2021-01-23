@@ -1,7 +1,6 @@
 extends KinematicBody2D
 
 var is_owned_by_server: bool = false
-var is_server: bool = true
 var pad: int = -1
 var keys: int = -1
 var is_safe: bool = true
@@ -20,8 +19,6 @@ onready var dash_reset_timer: Timer = get_node("DashResetTimer")
 
 func _ready() -> void:
 	safe_timer.start(3)
-	if not get_tree().is_network_server():
-		is_server = false
 
 
 func _physics_process(delta: float) -> void:
@@ -105,5 +102,3 @@ func inputs_from_client(input_data: Dictionary) -> void:
 
 func get_key(key1: int, key2: int) -> int:
 	return int(Input.is_key_pressed(key1 if keys == 0 else key2))
-
-

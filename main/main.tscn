@@ -1,4 +1,4 @@
-[gd_scene load_steps=7 format=2]
+[gd_scene load_steps=10 format=2]
 
 [ext_resource path="res://robotomono.ttf" type="DynamicFontData" id=1]
 [ext_resource path="res://main/main.gd" type="Script" id=2]
@@ -15,7 +15,26 @@ font_data = ExtResource( 1 )
 [sub_resource type="Theme" id=2]
 default_font = SubResource( 1 )
 
-[sub_resource type="Environment" id=3]
+[sub_resource type="DynamicFont" id=3]
+size = 30
+outline_size = 2
+outline_color = Color( 0, 0, 0, 1 )
+font_data = ExtResource( 1 )
+
+[sub_resource type="DynamicFont" id=4]
+outline_size = 2
+outline_color = Color( 0, 0, 0, 1 )
+extra_spacing_bottom = 8
+font_data = ExtResource( 1 )
+
+[sub_resource type="DynamicFont" id=5]
+size = 18
+outline_size = 2
+outline_color = Color( 0, 0, 0, 1 )
+extra_spacing_bottom = 4
+font_data = ExtResource( 1 )
+
+[sub_resource type="Environment" id=6]
 background_mode = 4
 auto_exposure_scale = 0.18
 auto_exposure_speed = 32.0
@@ -80,7 +99,6 @@ margin_left = 30.0
 margin_top = 30.0
 margin_right = 994.0
 margin_bottom = 570.0
-custom_constants/vseparation = 18
 
 [node name="Menu" type="CenterContainer" parent="CanvasLayer/UI"]
 anchor_right = 1.0
@@ -91,88 +109,199 @@ __meta__ = {
 }
 
 [node name="Main" type="VBoxContainer" parent="CanvasLayer/UI/Menu"]
-margin_left = 437.0
-margin_top = 176.0
-margin_right = 586.0
-margin_bottom = 424.0
-custom_constants/separation = 8
+margin_left = 395.0
+margin_top = 163.0
+margin_right = 629.0
+margin_bottom = 436.0
 
 [node name="Title" type="Label" parent="CanvasLayer/UI/Menu/Main"]
-margin_right = 149.0
-margin_bottom = 28.0
+margin_right = 234.0
+margin_bottom = 41.0
+custom_fonts/font = SubResource( 3 )
 text = "PADDLE BATTLE"
 align = 1
 
-[node name="Name" type="LineEdit" parent="CanvasLayer/UI/Menu/Main"]
-margin_top = 36.0
-margin_right = 149.0
-margin_bottom = 74.0
-focus_neighbour_top = NodePath("../Join")
+[node name="Version" type="Label" parent="CanvasLayer/UI/Menu/Main"]
+margin_top = 45.0
+margin_right = 234.0
+margin_bottom = 75.0
+custom_fonts/font = SubResource( 4 )
+text = "NO VERSION"
 align = 1
-placeholder_text = "Name"
 
-[node name="OpenLAN" type="CheckBox" parent="CanvasLayer/UI/Menu/Main"]
-margin_top = 82.0
-margin_right = 149.0
-margin_bottom = 118.0
-pressed = true
-action_mode = 0
-text = "Open to LAN"
-align = 1
+[node name="NameBar" type="HBoxContainer" parent="CanvasLayer/UI/Menu/Main"]
+margin_top = 79.0
+margin_right = 234.0
+margin_bottom = 117.0
+
+[node name="Label" type="Label" parent="CanvasLayer/UI/Menu/Main/NameBar"]
+margin_top = 5.0
+margin_right = 55.0
+margin_bottom = 33.0
+text = "Name:"
+
+[node name="Name" type="LineEdit" parent="CanvasLayer/UI/Menu/Main/NameBar"]
+margin_left = 59.0
+margin_right = 234.0
+margin_bottom = 38.0
+size_flags_horizontal = 3
 
 [node name="Play" type="Button" parent="CanvasLayer/UI/Menu/Main"]
-margin_top = 126.0
-margin_right = 149.0
-margin_bottom = 160.0
+margin_top = 121.0
+margin_right = 234.0
+margin_bottom = 155.0
 text = "Play"
 
-[node name="IP" type="LineEdit" parent="CanvasLayer/UI/Menu/Main"]
-margin_top = 168.0
-margin_right = 149.0
-margin_bottom = 206.0
-align = 1
-placeholder_text = "IP"
+[node name="Options" type="Button" parent="CanvasLayer/UI/Menu/Main"]
+margin_top = 159.0
+margin_right = 234.0
+margin_bottom = 193.0
+text = "Options"
+
+[node name="IPBar" type="HBoxContainer" parent="CanvasLayer/UI/Menu/Main"]
+margin_top = 197.0
+margin_right = 234.0
+margin_bottom = 235.0
+__meta__ = {
+"_edit_use_anchors_": false
+}
+
+[node name="Label" type="Label" parent="CanvasLayer/UI/Menu/Main/IPBar"]
+margin_top = 5.0
+margin_right = 33.0
+margin_bottom = 33.0
+text = "IP:"
+
+[node name="IP" type="LineEdit" parent="CanvasLayer/UI/Menu/Main/IPBar"]
+margin_left = 37.0
+margin_right = 234.0
+margin_bottom = 38.0
+size_flags_horizontal = 3
 __meta__ = {
 "_editor_description_": ""
 }
 
 [node name="Join" type="Button" parent="CanvasLayer/UI/Menu/Main"]
-margin_top = 214.0
-margin_right = 149.0
-margin_bottom = 248.0
-focus_neighbour_bottom = NodePath("../Name")
+margin_top = 239.0
+margin_right = 234.0
+margin_bottom = 273.0
 text = "Join"
 
-[node name="Footer" type="HBoxContainer" parent="CanvasLayer/UI"]
+[node name="Options" type="VBoxContainer" parent="CanvasLayer/UI/Menu"]
+visible = false
+margin_left = 395.0
+margin_top = 209.0
+margin_right = 629.0
+margin_bottom = 391.0
+rect_min_size = Vector2( 234, 0 )
+
+[node name="Label" type="Label" parent="CanvasLayer/UI/Menu/Options"]
+margin_right = 234.0
+margin_bottom = 28.0
+text = "Options"
+align = 1
+
+[node name="OpenLAN" type="CheckBox" parent="CanvasLayer/UI/Menu/Options"]
+margin_top = 32.0
+margin_right = 234.0
+margin_bottom = 68.0
+pressed = true
+action_mode = 0
+text = "Open to LAN"
+align = 1
+
+[node name="HealthBar" type="HBoxContainer" parent="CanvasLayer/UI/Menu/Options"]
+margin_top = 72.0
+margin_right = 234.0
+margin_bottom = 106.0
+
+[node name="Label" type="Label" parent="CanvasLayer/UI/Menu/Options/HealthBar"]
+margin_top = 3.0
+margin_right = 138.0
+margin_bottom = 31.0
+size_flags_horizontal = 3
+text = "Health:"
+
+[node name="Dec" type="Button" parent="CanvasLayer/UI/Menu/Options/HealthBar"]
+margin_left = 142.0
+margin_right = 170.0
+margin_bottom = 34.0
+rect_min_size = Vector2( 28, 0 )
+text = "-"
+
+[node name="Health" type="Label" parent="CanvasLayer/UI/Menu/Options/HealthBar"]
+margin_left = 174.0
+margin_top = 3.0
+margin_right = 202.0
+margin_bottom = 31.0
+rect_min_size = Vector2( 28, 0 )
+align = 1
+
+[node name="Inc" type="Button" parent="CanvasLayer/UI/Menu/Options/HealthBar"]
+margin_left = 206.0
+margin_right = 234.0
+margin_bottom = 34.0
+rect_min_size = Vector2( 28, 0 )
+text = "+"
+
+[node name="BallsBar" type="HBoxContainer" parent="CanvasLayer/UI/Menu/Options"]
+margin_top = 110.0
+margin_right = 234.0
+margin_bottom = 144.0
+
+[node name="Label" type="Label" parent="CanvasLayer/UI/Menu/Options/BallsBar"]
+margin_top = 3.0
+margin_right = 138.0
+margin_bottom = 31.0
+size_flags_horizontal = 3
+text = "Balls:"
+
+[node name="Dec" type="Button" parent="CanvasLayer/UI/Menu/Options/BallsBar"]
+margin_left = 142.0
+margin_right = 170.0
+margin_bottom = 34.0
+rect_min_size = Vector2( 28, 0 )
+text = "-"
+
+[node name="Balls" type="Label" parent="CanvasLayer/UI/Menu/Options/BallsBar"]
+margin_left = 174.0
+margin_top = 3.0
+margin_right = 202.0
+margin_bottom = 31.0
+rect_min_size = Vector2( 28, 0 )
+align = 1
+
+[node name="Inc" type="Button" parent="CanvasLayer/UI/Menu/Options/BallsBar"]
+margin_left = 206.0
+margin_right = 234.0
+margin_bottom = 34.0
+rect_min_size = Vector2( 28, 0 )
+text = "+"
+
+[node name="Back" type="Button" parent="CanvasLayer/UI/Menu/Options"]
+margin_top = 148.0
+margin_right = 234.0
+margin_bottom = 182.0
+text = "Back"
+
+[node name="Author" type="Label" parent="CanvasLayer/UI"]
 anchor_top = 1.0
 anchor_right = 1.0
 anchor_bottom = 1.0
 margin_top = -28.0
+size_flags_horizontal = 3
+custom_fonts/font = SubResource( 5 )
+text = "Created by Aidunlin"
+align = 1
 __meta__ = {
 "_edit_use_anchors_": false
 }
 
-[node name="Author" type="Label" parent="CanvasLayer/UI/Footer"]
-margin_right = 910.0
-margin_bottom = 28.0
-size_flags_horizontal = 3
-text = "Created by Aidunlin"
-
-[node name="Version" type="Label" parent="CanvasLayer/UI/Footer"]
-margin_left = 914.0
-margin_right = 1024.0
-margin_bottom = 28.0
-text = "NO VERSION"
-align = 2
-
 [node name="WorldEnvironment" type="WorldEnvironment" parent="."]
-environment = SubResource( 3 )
+environment = SubResource( 6 )
 
 [node name="JoinTimer" type="Timer" parent="."]
 
 [node name="MessageTimer" type="Timer" parent="."]
-[connection signal="pressed" from="CanvasLayer/UI/Menu/Main/OpenLAN" to="." method="toggle_lan"]
-[connection signal="pressed" from="CanvasLayer/UI/Menu/Main/Play" to="." method="start_game"]
-[connection signal="pressed" from="CanvasLayer/UI/Menu/Main/Join" to="." method="connect_to_server"]
 [connection signal="timeout" from="JoinTimer" to="." method="unload_game" binds= [ "Could not connect!" ]]
 [connection signal="timeout" from="MessageTimer" to="." method="set_message"]

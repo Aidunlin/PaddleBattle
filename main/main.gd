@@ -8,12 +8,14 @@ const CLIENT_BALL_SCENE: PackedScene = preload("res://ball/clientball.tscn")
 
 const VERSION: String = "0.4.0.dev"
 const MOVE_SPEED: int = 500
-const MAX_HEALTH: int = 3
-const BALL_COUNT: int = 10
 
 var is_playing: bool = false
 var is_open_to_lan: bool = true
 var peer_id: int = 1
+
+var initial_max_health: int = 0
+var max_health: int = 3
+var ball_count: int = 10
 
 var peer_name: String = ""
 var paddle_data: Dictionary = {}
@@ -28,18 +30,29 @@ onready var camera_node: Camera2D = get_node("Camera")
 onready var paddle_nodes: Node2D = get_node("Paddles")
 onready var ball_nodes: Node2D = get_node("Balls")
 
-onready var bars: GridContainer = get_node("CanvasLayer/UI/HUD/Bars")
 onready var message_node: Label = get_node("CanvasLayer/UI/Message")
-
+onready var bars: GridContainer = get_node("CanvasLayer/UI/HUD/Bars")
 onready var menu_node: CenterContainer = get_node("CanvasLayer/UI/Menu")
-onready var name_input: LineEdit = get_node("CanvasLayer/UI/Menu/Main/Name")
-onready var open_lan_toggle: CheckBox = get_node("CanvasLayer/UI/Menu/Main/OpenLAN")
+
+onready var main_menu_node: VBoxContainer = get_node("CanvasLayer/UI/Menu/Main")
+onready var version_node: Label = get_node("CanvasLayer/UI/Menu/Main/Version")
+onready var name_input: LineEdit = get_node("CanvasLayer/UI/Menu/Main/NameBar/Name")
 onready var play_button: Button = get_node("CanvasLayer/UI/Menu/Main/Play")
-onready var ip_input: LineEdit = get_node("CanvasLayer/UI/Menu/Main/IP")
+onready var options_button: Button = get_node("CanvasLayer/UI/Menu/Main/Options")
+onready var ip_input: LineEdit = get_node("CanvasLayer/UI/Menu/Main/IPBar/IP")
 onready var join_button: Button = get_node("CanvasLayer/UI/Menu/Main/Join")
 
-onready var footer_node: HBoxContainer = get_node("CanvasLayer/UI/Footer")
-onready var version_node: Label = get_node("CanvasLayer/UI/Footer/Version")
+onready var options_menu_node: VBoxContainer = get_node("CanvasLayer/UI/Menu/Options")
+onready var open_lan_toggle: CheckBox = get_node("CanvasLayer/UI/Menu/Options/OpenLAN")
+onready var health_dec_button: Button = get_node("CanvasLayer/UI/Menu/Options/HealthBar/Dec")
+onready var health_inc_button: Button = get_node("CanvasLayer/UI/Menu/Options/HealthBar/Inc")
+onready var health_node: Label = get_node("CanvasLayer/UI/Menu/Options/HealthBar/Health")
+onready var balls_dec_button: Button = get_node("CanvasLayer/UI/Menu/Options/BallsBar/Dec")
+onready var balls_inc_button: Button = get_node("CanvasLayer/UI/Menu/Options/BallsBar/Inc")
+onready var balls_node: Label = get_node("CanvasLayer/UI/Menu/Options/BallsBar/Balls")
+onready var back_button: Button = get_node("CanvasLayer/UI/Menu/Options/Back")
+
+onready var author_node: Label = get_node("CanvasLayer/UI/Author")
 
 onready var join_timer: Timer = get_node("JoinTimer")
 onready var message_timer: Timer = get_node("MessageTimer")
@@ -49,8 +62,17 @@ func _ready() -> void:
 	version_node.text = VERSION
 	load_config()
 	play_button.grab_focus()
-	get_tree().connect("network_peer_disconnected", self, "_on_network_peer_disconnected")
-	get_tree().connect("connected_to_server", self, "_on_connected_to_server")
+	play_button.connect("pressed", self, "start_game")
+	options_button.connect("pressed", self, "toggle_menus", [false])
+	join_button.connect("pressed", self, "connect_to_server")
+	open_lan_toggle.connect("pressed", self, "toggle_lan")
+	health_dec_button.connect("pressed", self, "crement", ["health", -1])
+	health_inc_button.connect("pressed", self, "crement", ["health", 1])
+	balls_dec_button.connect("pressed", self, "crement", ["balls", -1])
+	balls_inc_button.connect("pressed", self, "crement", ["balls", 1])
+	back_button.connect("pressed", self, "toggle_menus", [true])
+	get_tree().connect("network_peer_disconnected", self, "peer_disconnected")
+	get_tree().connect("connected_to_server", self, "connected")
 	get_tree().connect("connection_failed", self, "unload_game", ["Failed to connect!"])
 	get_tree().connect("server_disconnected", self, "unload_game", ["Server disconnected!"])
 	camera_node.position = camera_spawn
@@ -120,6 +142,7 @@ func _input(_event: InputEvent) -> void:
 
 ##### HELPERS #####
 
+
 # Set message text/visibility and timer
 func set_message(new: String = "", time: int = 0) -> void:
 	message_node.text = new
@@ -137,12 +160,30 @@ func is_new_input(type: String, id: int) -> bool:
 	return true
 
 
+func crement(which: String, value: int) -> void:
+	if which == "health":
+		max_health = clamp(max_health + value, 1, 5)
+	elif which == "balls":
+		ball_count = clamp(ball_count + value, 1, 10)
+	health_node.text = str(max_health)
+	balls_node.text = str(ball_count)
+
+
 func toggle_buttons(toggle: bool) -> void:
 	name_input.editable = not toggle
 	play_button.disabled = toggle
-	open_lan_toggle.disabled = toggle
+	options_button.disabled = toggle
 	ip_input.editable = not toggle
 	join_button.disabled = toggle
+
+
+func toggle_menus(main: bool) -> void:
+	main_menu_node.visible = main
+	options_menu_node.visible = not main
+	if main:
+		options_button.grab_focus()
+	else:
+		back_button.grab_focus()
 
 
 func toggle_lan() -> void:
@@ -165,11 +206,13 @@ func get_key(key1: int, key2: int, keys) -> int:
 # Save configurables to file in JSON format
 func save_config() -> void:
 	var file: File = File.new()
-	file.open("user://save.json", File.WRITE)
+	file.open("user://config.json", File.WRITE)
 	var save: Dictionary = {
 		name = name_input.text,
 		ip = ip_input.text,
-		is_open_to_lan = is_open_to_lan
+		is_open_to_lan = is_open_to_lan,
+		health = max_health,
+		balls = ball_count
 	}
 	file.store_line(to_json(save))
 	file.close()
@@ -178,9 +221,9 @@ func save_config() -> void:
 # Load configurables from JSON file if exists
 func load_config() -> void:
 	var file: File = File.new()
-	if not file.file_exists("user://save.json"):
+	if not file.file_exists("user://config.json"):
 		return
-	file.open("user://save.json", File.READ)
+	file.open("user://config.json", File.READ)
 	var save: Dictionary = parse_json(file.get_line())
 	if save.has("name"):
 		name_input.text = save.name
@@ -189,11 +232,17 @@ func load_config() -> void:
 	if save.has("is_open_to_lan"):
 		is_open_to_lan = save.is_open_to_lan
 		open_lan_toggle.pressed = is_open_to_lan
+	if save.has("health"):
+		max_health = save.health
+	if save.has("balls"):
+		ball_count = save.balls
+	crement("", 0)
 	file.close()
 
 
 
 ##### NETWORK #####
+
 
 # Attempt to join LAN game
 func connect_to_server() -> void:
@@ -205,8 +254,9 @@ func connect_to_server() -> void:
 			set_message("Invalid IP!", 3)
 			return
 		ip = "127.0.0.1"
-	set_message("Connecting...")
+	set_message("Trying to connect...")
 	toggle_buttons(true)
+	initial_max_health = max_health
 	var peer: NetworkedMultiplayerENet = NetworkedMultiplayerENet.new()
 	peer.create_client(ip, 8910)
 	get_tree().network_peer = peer
@@ -215,7 +265,7 @@ func connect_to_server() -> void:
 
 
 # Unload disconnected paddle(s)
-func _on_network_peer_disconnected(id: int) -> void:
+func peer_disconnected(id: int) -> void:
 	var has_sent_msg: bool = false
 	var paddles_to_clear: Array = []
 	for paddle in paddle_data:
@@ -232,41 +282,39 @@ func _on_network_peer_disconnected(id: int) -> void:
 
 
 # Client connects and sends version for checking
-func _on_connected_to_server() -> void:
+func connected() -> void:
 	rpc_id(1, "check", peer_name, VERSION)
+	set_message("Waiting for response...")
 
 
 remote func check(name: String, version: String) -> void:
 	var id: int = get_tree().get_rpc_sender_id()
 	if version != VERSION:
-		rpc_id(id, "kick", "Different server version (" + VERSION + ")")
+		rpc_id(id, "unload_game", "Different server version (" + VERSION + ")")
 		return
 	set_message(name + " connected!", 2)
-	rpc_id(id, "load_game", paddle_data, map_node.modulate)
-
-
-# Force client to disconnect
-remote func kick(reason: String = "") -> void:
-	unload_game("You were kicked! " + reason)
+	rpc_id(id, "load_game", paddle_data, map_node.modulate, max_health, ball_count)
 
 
 # Send data to client to load game
-remote func load_game(data: Dictionary, map_color: Color) -> void:
+remote func load_game(data: Dictionary, map_color: Color, health: int, balls: int) -> void:
 	save_config()
+	max_health = health
 	join_timer.stop()
 	map_node.modulate = map_color
 	menu_node.hide()
-	footer_node.hide()
+	author_node.hide()
 	map_node.show()
 	for paddle in data:
 		create_paddle(data[paddle])
-	create_balls()
-	set_message("Joined! Press A/Enter to create your paddle", 5)
+	create_balls(balls)
+	set_message("Press A/Enter to create your paddle", 5)
 	is_playing = true
 
 
 
 ##### GAME #####
+
 
 func start_game() -> void:
 	if get_name() == "":
@@ -279,22 +327,22 @@ func start_game() -> void:
 	randomize()
 	map_node.modulate = Color.from_hsv((randi() % 9 * 40.0) / 360.0, 1, 1)
 	menu_node.hide()
-	footer_node.hide()
+	author_node.hide()
 	map_node.show()
 	is_playing = true
-	create_balls()
+	create_balls(ball_count)
 	set_message("Press A/Enter to create your paddle", 5)
 
 
-func unload_game(msg: String = "") -> void:
+remote func unload_game(msg: String = "") -> void:
 	is_playing = false
 	if get_tree().has_network_peer():
+		if peer_id != 1:
+			max_health = initial_max_health
 		get_tree().set_deferred("network_peer", null)
 		peer_id = 1
 	join_timer.stop()
-	set_message(msg)
-	if msg != "":
-		message_timer.start(3)
+	set_message(msg, 3)
 	input_list.clear()
 	for paddle in paddle_nodes.get_children():
 		paddle.queue_free()
@@ -307,7 +355,7 @@ func unload_game(msg: String = "") -> void:
 	bars.columns = 1
 	map_node.modulate = Color(0, 0, 0)
 	menu_node.show()
-	footer_node.show()
+	author_node.show()
 	map_node.hide()
 	camera_node.position = camera_spawn
 	play_button.grab_focus()
@@ -317,18 +365,18 @@ func unload_game(msg: String = "") -> void:
 remotesync func update_objects(paddles: Dictionary, balls: Array) -> void:
 	if not is_playing:
 		return
-	# Update data with nodes on host
+	# Update data with nodes on server
 	if peer_id == 1:
 		for paddle in paddles:
 			var paddle_node: Node2D = paddle_nodes.get_node(paddle)
 			paddle_data[paddle].position = paddle_node.position
 			paddle_data[paddle].rotation = paddle_node.rotation
-		for ball in BALL_COUNT:
+		for ball in ball_nodes.get_child_count():
 			var ball_node: Node2D = ball_nodes.get_child(ball)
 			ball_data[ball].position = ball_node.position
 			ball_data[ball].rotation = ball_node.rotation
 	
-	# Update nodes with data from host
+	# Update nodes with data from server
 	else:
 		for paddle in paddles:
 			paddle_data[paddle].position = paddles[paddle].position
@@ -339,7 +387,7 @@ remotesync func update_objects(paddles: Dictionary, balls: Array) -> void:
 			if paddles[paddle].id == peer_id:
 				var input_data: Dictionary = get_inputs(paddle, input_list[paddle])
 				rpc_unreliable_id(1, "inputs_to_host", paddle, input_data)
-		for ball in BALL_COUNT:
+		for ball in ball_nodes.get_child_count():
 			var ball_node: Node2D = ball_nodes.get_child(ball)
 			ball_node.position = balls[ball].position
 			ball_node.rotation = balls[ball].rotation
@@ -347,6 +395,7 @@ remotesync func update_objects(paddles: Dictionary, balls: Array) -> void:
 
 
 ##### PADDLE #####
+
 
 remote func create_paddle(data: Dictionary = {}) -> void:
 	var paddle_count: int = paddle_nodes.get_child_count()
@@ -411,7 +460,7 @@ remote func create_paddle(data: Dictionary = {}) -> void:
 	hp_bar.name = paddle_node.name
 	hp_bar.alignment = BoxContainer.ALIGN_CENTER
 	hp_bar.set("custom_constants/separation", -18)
-	for _x in MAX_HEALTH:
+	for _x in max_health:
 		var bit: TextureRect = TextureRect.new()
 		bit.texture = HP_TEXTURE
 		hp_bar.add_child(bit)
@@ -426,11 +475,11 @@ remote func create_paddle(data: Dictionary = {}) -> void:
 		spawn_rotation = paddle_node.rotation,
 		name = paddle_node.name,
 		id = data.id,
-		health = MAX_HEALTH,
+		health = max_health,
 		color = paddle_node.modulate
 	}
 	
-	# Send data to client to create paddle
+	# Send data to clients to create paddle
 	if peer_id == 1 and is_open_to_lan:
 		var new_data: Dictionary = paddle_data[paddle_node.name].duplicate(true)
 		if data.id != peer_id:
@@ -471,7 +520,7 @@ func get_inputs(paddle: String, input: Dictionary) -> Dictionary:
 	return {velocity = input_velocity * MOVE_SPEED, rotation = input_rotation, dash = dash}
 
 
-# Send client inputs their host-side paddle
+# Send client inputs to server-side paddle
 remote func inputs_to_host(paddle: String, input: Dictionary) -> void:
 	input.velocity = input.velocity.clamped(MOVE_SPEED)
 	paddle_nodes.get_node(paddle).inputs_from_client(input)
@@ -501,18 +550,19 @@ remote func hit(paddle: String) -> void:
 		if peer_id == 1:
 			paddle_nodes.get_node(paddle).position = paddle_data[paddle].spawn_position
 			paddle_nodes.get_node(paddle).rotation = paddle_data[paddle].spawn_rotation
-		paddle_data[paddle].health = MAX_HEALTH
+		paddle_data[paddle].health = max_health
 	
 	var health_bits: Array = bars.get_node(paddle).get_node(paddle).get_children()
-	for i in MAX_HEALTH:
+	for i in max_health:
 		health_bits[i].modulate.a = 1.0 if paddle_data[paddle].health > i else 0.1
 
 
 
 ##### BALL #####
 
-func create_balls() -> void:
-	for i in BALL_COUNT:
+
+func create_balls(count: int) -> void:
+	for i in count:
 		var ball_node: Node2D = BALL_SCENE.instance()
 		if get_tree().network_peer:
 			if peer_id == 1:
