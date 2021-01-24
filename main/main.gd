@@ -6,7 +6,7 @@ const CLIENT_PADDLE_SCENE: PackedScene = preload("res://paddle/clientpaddle.tscn
 const BALL_SCENE: PackedScene = preload("res://ball/ball.tscn")
 const CLIENT_BALL_SCENE: PackedScene = preload("res://ball/clientball.tscn")
 
-const VERSION: String = "0.4.0"
+const VERSION: String = "Dev Build"
 const MOVE_SPEED: int = 500
 
 var is_playing: bool = false
@@ -31,7 +31,7 @@ onready var paddle_nodes: Node2D = get_node("Paddles")
 onready var ball_nodes: Node2D = get_node("Balls")
 
 onready var message_node: Label = get_node("CanvasLayer/UI/Message")
-onready var bars: GridContainer = get_node("CanvasLayer/UI/HUD/Bars")
+onready var bars_node: GridContainer = get_node("CanvasLayer/UI/HUD/Bars")
 onready var menu_node: CenterContainer = get_node("CanvasLayer/UI/Menu")
 
 onready var main_menu_node: VBoxContainer = get_node("CanvasLayer/UI/Menu/Main")
@@ -73,8 +73,8 @@ func _ready() -> void:
 	back_button.connect("pressed", self, "toggle_menus", [true])
 	get_tree().connect("network_peer_disconnected", self, "peer_disconnected")
 	get_tree().connect("connected_to_server", self, "connected")
-	get_tree().connect("connection_failed", self, "unload_game", ["Failed to connect!"])
-	get_tree().connect("server_disconnected", self, "unload_game", ["Server disconnected!"])
+	get_tree().connect("connection_failed", self, "unload_game", ["Failed to connect"])
+	get_tree().connect("server_disconnected", self, "unload_game", ["Server disconnected"])
 	camera_node.position = camera_spawn
 	camera_node.current = true
 
@@ -132,7 +132,7 @@ func _input(_event: InputEvent) -> void:
 	
 	# Force unload the game on shortcut press
 	if is_playing and Input.is_key_pressed(KEY_ESCAPE):
-		unload_game("You left the game!")
+		unload_game("You left the game")
 	
 	# Pressing enter in the IP input "presses" join button
 	if ip_input.has_focus() and Input.is_key_pressed(KEY_ENTER):
@@ -194,7 +194,7 @@ func toggle_lan() -> void:
 func get_name() -> String:
 	var new_name: String = name_input.text
 	if new_name == "":
-		set_message("Invalid name!", 3)
+		set_message("Invalid name", 3)
 	peer_name = new_name
 	return new_name
 
@@ -251,7 +251,7 @@ func connect_to_server() -> void:
 	var ip: String = ip_input.text
 	if not ip.is_valid_ip_address():
 		if ip != "":
-			set_message("Invalid IP!", 3)
+			set_message("Invalid IP", 3)
 			return
 		ip = "127.0.0.1"
 	set_message("Trying to connect...")
@@ -271,20 +271,19 @@ func peer_disconnected(id: int) -> void:
 	for paddle in paddle_data:
 		if paddle_data[paddle].id == id:
 			if not has_sent_msg:
-				set_message(paddle_data[paddle].name + " disconnected!", 2)
+				set_message(paddle_data[paddle].name + " disconnected", 2)
 				has_sent_msg = true
 			paddles_to_clear.append(paddle)
 	for paddle in paddles_to_clear:
 		paddle_data.erase(paddle)
 		paddle_nodes.get_node(paddle).queue_free()
-		bars.get_node(paddle).queue_free()
-	bars.columns = clamp(paddle_data.size(), 1, 8)
+		bars_node.get_node(paddle).queue_free()
+	bars_node.columns = clamp(paddle_data.size(), 1, 8)
 
 
 # Client connects and sends version for checking
 func connected() -> void:
 	rpc_id(1, "check", peer_name, VERSION)
-	set_message("Waiting for response...")
 
 
 remote func check(name: String, version: String) -> void:
@@ -292,7 +291,7 @@ remote func check(name: String, version: String) -> void:
 	if version != VERSION:
 		rpc_id(id, "unload_game", "Different server version (" + VERSION + ")")
 		return
-	set_message(name + " connected!", 2)
+	set_message(name + " connected", 2)
 	rpc_id(id, "load_game", paddle_data, map_node.modulate, max_health, ball_count)
 
 
@@ -350,9 +349,9 @@ remote func unload_game(msg: String = "") -> void:
 	for ball in ball_nodes.get_children():
 		ball.queue_free()
 	ball_data.clear()
-	for bar in bars.get_children():
+	for bar in bars_node.get_children():
 		bar.queue_free()
-	bars.columns = 1
+	bars_node.columns = 1
 	map_node.modulate = Color(0, 0, 0)
 	menu_node.show()
 	author_node.show()
@@ -371,6 +370,9 @@ remotesync func update_objects(paddles: Dictionary, balls: Array) -> void:
 			var paddle_node: Node2D = paddle_nodes.get_node(paddle)
 			paddle_data[paddle].position = paddle_node.position
 			paddle_data[paddle].rotation = paddle_node.rotation
+			if paddles[paddle].id == peer_id:
+				var input_data: Dictionary = get_inputs(paddle, input_list[paddle])
+				inputs_to_host(paddle, input_data)
 		for ball in ball_nodes.get_child_count():
 			var ball_node: Node2D = ball_nodes.get_child(ball)
 			ball_data[ball].position = ball_node.position
@@ -400,7 +402,6 @@ remotesync func update_objects(paddles: Dictionary, balls: Array) -> void:
 remote func create_paddle(data: Dictionary = {}) -> void:
 	var paddle_count: int = paddle_nodes.get_child_count()
 	var paddle_node: Node2D = PADDLE_SCENE.instance()
-	paddle_node.move_speed = MOVE_SPEED
 	
 	# Change to client paddle if client
 	if peer_id != 1:
@@ -441,10 +442,6 @@ remote func create_paddle(data: Dictionary = {}) -> void:
 			keys = data.keys if data.has("keys") else -1,
 			pad = data.pad if data.has("pad") else -1
 		}
-		if peer_id == 1:
-			paddle_node.keys = input_list[paddle_node.name].keys
-			paddle_node.pad = input_list[paddle_node.name].pad
-			paddle_node.is_owned_by_server = true
 	
 	# Create HUD elements
 	var bar: VBoxContainer = VBoxContainer.new()
@@ -465,8 +462,8 @@ remote func create_paddle(data: Dictionary = {}) -> void:
 		bit.texture = HP_TEXTURE
 		hp_bar.add_child(bit)
 	bar.add_child(hp_bar)
-	bars.add_child(bar)
-	bars.columns = clamp(bars.get_child_count(), 1, 8)
+	bars_node.add_child(bar)
+	bars_node.columns = clamp(bars_node.get_child_count(), 1, 8)
 	
 	paddle_data[paddle_node.name] = {
 		position = paddle_node.position,
@@ -523,7 +520,7 @@ func get_inputs(paddle: String, input: Dictionary) -> Dictionary:
 # Send client inputs to server-side paddle
 remote func inputs_to_host(paddle: String, input: Dictionary) -> void:
 	input.velocity = input.velocity.clamped(MOVE_SPEED)
-	paddle_nodes.get_node(paddle).inputs_from_client(input)
+	paddle_nodes.get_node(paddle).inputs(input)
 
 
 remote func vibrate(paddle: String, is_destroyed: bool = false) -> void:
@@ -546,13 +543,13 @@ remote func hit(paddle: String) -> void:
 	if paddle_data[paddle].health < 1:
 		if paddle_data[paddle].id == peer_id:
 			vibrate(paddle, true)
-		set_message(paddle_data[paddle].name + " was destroyed!", 2)
+		set_message(paddle_data[paddle].name + " was destroyed", 2)
 		if peer_id == 1:
 			paddle_nodes.get_node(paddle).position = paddle_data[paddle].spawn_position
 			paddle_nodes.get_node(paddle).rotation = paddle_data[paddle].spawn_rotation
 		paddle_data[paddle].health = max_health
 	
-	var health_bits: Array = bars.get_node(paddle).get_node(paddle).get_children()
+	var health_bits: Array = bars_node.get_node(paddle).get_node(paddle).get_children()
 	for i in max_health:
 		health_bits[i].modulate.a = 1.0 if paddle_data[paddle].health > i else 0.1
 
