@@ -5,12 +5,15 @@ const PADDLE_SCENE: PackedScene = preload("res://paddle/paddle.tscn")
 const CLIENT_PADDLE_SCENE: PackedScene = preload("res://paddle/clientpaddle.tscn")
 const BALL_SCENE: PackedScene = preload("res://ball/ball.tscn")
 const CLIENT_BALL_SCENE: PackedScene = preload("res://ball/clientball.tscn")
+const MAP_SCENE: PackedScene = preload("res://map/map.tscn")
+const SMALL_MAP_SCENE: PackedScene = preload("res://map/smallmap.tscn")
 
 const VERSION: String = "Dev Build"
 const MOVE_SPEED: int = 500
 
 var is_playing: bool = false
 var is_open_to_lan: bool = true
+var using_small_map: bool = false
 var peer_id: int = 1
 
 var initial_max_health: int = 0
@@ -22,10 +25,11 @@ var paddle_data: Dictionary = {}
 var ball_data: Array = []
 var input_list: Dictionary = {}
 
+var camera_spawn: Vector2 = Vector2()
+var paddle_spawns: Array = []
+var ball_spawns: Array = []
+
 onready var map_node: Node2D = get_node("Map")
-onready var camera_spawn: Vector2 = get_node("Map/CameraSpawn").position
-onready var paddle_spawns: Array = get_node("Map/PaddleSpawns").get_children()
-onready var ball_spawns: Array = get_node("Map/BallSpawns").get_children()
 onready var camera_node: Camera2D = get_node("Camera")
 onready var paddle_nodes: Node2D = get_node("Paddles")
 onready var ball_nodes: Node2D = get_node("Balls")
@@ -44,6 +48,7 @@ onready var join_button: Button = get_node("CanvasLayer/UI/Menu/Main/Join")
 
 onready var options_menu_node: VBoxContainer = get_node("CanvasLayer/UI/Menu/Options")
 onready var open_lan_toggle: CheckBox = get_node("CanvasLayer/UI/Menu/Options/OpenLAN")
+onready var small_map_toggle: CheckBox = get_node("CanvasLayer/UI/Menu/Options/SmallMap")
 onready var health_dec_button: Button = get_node("CanvasLayer/UI/Menu/Options/HealthBar/Dec")
 onready var health_inc_button: Button = get_node("CanvasLayer/UI/Menu/Options/HealthBar/Inc")
 onready var health_node: Label = get_node("CanvasLayer/UI/Menu/Options/HealthBar/Health")
@@ -66,17 +71,18 @@ func _ready() -> void:
 	options_button.connect("pressed", self, "toggle_menus", [false])
 	join_button.connect("pressed", self, "connect_to_server")
 	open_lan_toggle.connect("pressed", self, "toggle_lan")
+	small_map_toggle.connect("pressed", self, "toggle_small_map")
 	health_dec_button.connect("pressed", self, "crement", ["health", -1])
 	health_inc_button.connect("pressed", self, "crement", ["health", 1])
 	balls_dec_button.connect("pressed", self, "crement", ["balls", -1])
 	balls_inc_button.connect("pressed", self, "crement", ["balls", 1])
 	back_button.connect("pressed", self, "toggle_menus", [true])
+	join_timer.connect("timeout", self, "unload_game", ["Connection failed"])
+	message_timer.connect("timeout", self, "set_message")
 	get_tree().connect("network_peer_disconnected", self, "peer_disconnected")
 	get_tree().connect("connected_to_server", self, "connected")
-	get_tree().connect("connection_failed", self, "unload_game", ["Failed to connect"])
+	get_tree().connect("connection_failed", self, "unload_game", ["Connection failed"])
 	get_tree().connect("server_disconnected", self, "unload_game", ["Server disconnected"])
-	camera_node.position = camera_spawn
-	camera_node.current = true
 
 
 func _physics_process(_delta: float) -> void:
@@ -190,6 +196,10 @@ func toggle_lan() -> void:
 	is_open_to_lan = not is_open_to_lan
 
 
+func toggle_small_map() -> void:
+	using_small_map = not using_small_map
+
+
 # Returns name from input, sending a message if invalid
 func get_name() -> String:
 	var new_name: String = name_input.text
@@ -211,6 +221,7 @@ func save_config() -> void:
 		name = name_input.text,
 		ip = ip_input.text,
 		is_open_to_lan = is_open_to_lan,
+		using_small_map = using_small_map,
 		health = max_health,
 		balls = ball_count
 	}
@@ -232,6 +243,9 @@ func load_config() -> void:
 	if save.has("is_open_to_lan"):
 		is_open_to_lan = save.is_open_to_lan
 		open_lan_toggle.pressed = is_open_to_lan
+	if save.has("using_small_map"):
+		using_small_map = save.using_small_map
+		small_map_toggle.pressed = using_small_map
 	if save.has("health"):
 		max_health = save.health
 	if save.has("balls"):
@@ -292,15 +306,22 @@ remote func check(name: String, version: String) -> void:
 		rpc_id(id, "unload_game", "Different server version (" + VERSION + ")")
 		return
 	set_message(name + " connected", 2)
-	rpc_id(id, "load_game", paddle_data, map_node.modulate, max_health, ball_count)
+	rpc_id(id, "load_game", paddle_data, using_small_map, map_node.modulate, max_health, ball_count)
 
 
 # Send data to client to load game
-remote func load_game(data: Dictionary, map_color: Color, health: int, balls: int) -> void:
+remote func load_game(data: Dictionary, small_map: bool, map_color: Color, health: int, balls: int) -> void:
 	save_config()
 	max_health = health
 	join_timer.stop()
 	map_node.modulate = map_color
+	if small_map:
+		map_node.add_child(SMALL_MAP_SCENE.instance())
+	else:
+		map_node.add_child(MAP_SCENE.instance())
+	camera_spawn = map_node.get_child(0).get_node("CameraSpawn").position
+	paddle_spawns = map_node.get_child(0).get_node("PaddleSpawns").get_children()
+	ball_spawns = map_node.get_child(0).get_node("BallSpawns").get_children()
 	menu_node.hide()
 	author_node.hide()
 	map_node.show()
@@ -309,6 +330,8 @@ remote func load_game(data: Dictionary, map_color: Color, health: int, balls: in
 	create_balls(balls)
 	set_message("Press A/Enter to create your paddle", 5)
 	is_playing = true
+	camera_node.position = camera_spawn
+	camera_node.current = true
 
 
 
@@ -328,9 +351,18 @@ func start_game() -> void:
 	menu_node.hide()
 	author_node.hide()
 	map_node.show()
-	is_playing = true
+	if using_small_map:
+		map_node.add_child(SMALL_MAP_SCENE.instance())
+	else:
+		map_node.add_child(MAP_SCENE.instance())
+	camera_spawn = map_node.get_child(0).get_node("CameraSpawn").position
+	paddle_spawns = map_node.get_child(0).get_node("PaddleSpawns").get_children()
+	ball_spawns = map_node.get_child(0).get_node("BallSpawns").get_children()
 	create_balls(ball_count)
 	set_message("Press A/Enter to create your paddle", 5)
+	is_playing = true
+	camera_node.position = camera_spawn
+	camera_node.current = true
 
 
 remote func unload_game(msg: String = "") -> void:
@@ -352,11 +384,12 @@ remote func unload_game(msg: String = "") -> void:
 	for bar in bars_node.get_children():
 		bar.queue_free()
 	bars_node.columns = 1
+	map_node.get_child(0).queue_free()
 	map_node.modulate = Color(0, 0, 0)
 	menu_node.show()
 	author_node.show()
 	map_node.hide()
-	camera_node.position = camera_spawn
+	camera_node.current = false
 	play_button.grab_focus()
 	toggle_buttons(false)
 
@@ -364,6 +397,7 @@ remote func unload_game(msg: String = "") -> void:
 remotesync func update_objects(paddles: Dictionary, balls: Array) -> void:
 	if not is_playing:
 		return
+	
 	# Update data with nodes on server
 	if peer_id == 1:
 		for paddle in paddles:

@@ -1,8 +1,7 @@
-[gd_scene load_steps=10 format=2]
+[gd_scene load_steps=9 format=2]
 
 [ext_resource path="res://robotomono.ttf" type="DynamicFontData" id=1]
 [ext_resource path="res://main/main.gd" type="Script" id=2]
-[ext_resource path="res://map/map.tscn" type="PackedScene" id=3]
 
 [sub_resource type="DynamicFont" id=1]
 size = 18
@@ -52,15 +51,27 @@ __meta__ = {
 "_edit_lock_": true
 }
 
-[node name="Map" parent="." instance=ExtResource( 3 )]
+[node name="Map" type="Node2D" parent="."]
 visible = false
+__meta__ = {
+"_edit_lock_": true
+}
 
 [node name="Camera" type="Camera2D" parent="."]
 smoothing_enabled = true
+__meta__ = {
+"_edit_lock_": true
+}
 
 [node name="Paddles" type="Node2D" parent="."]
+__meta__ = {
+"_edit_lock_": true
+}
 
 [node name="Balls" type="Node2D" parent="."]
+__meta__ = {
+"_edit_lock_": true
+}
 
 [node name="CanvasLayer" type="CanvasLayer" parent="."]
 
@@ -190,16 +201,10 @@ text = "Join"
 [node name="Options" type="VBoxContainer" parent="CanvasLayer/UI/Menu"]
 visible = false
 margin_left = 395.0
-margin_top = 209.0
+margin_top = 205.0
 margin_right = 629.0
-margin_bottom = 391.0
+margin_bottom = 395.0
 rect_min_size = Vector2( 234, 0 )
-
-[node name="Label" type="Label" parent="CanvasLayer/UI/Menu/Options"]
-margin_right = 234.0
-margin_bottom = 28.0
-text = "Options"
-align = 1
 
 [node name="OpenLAN" type="CheckBox" parent="CanvasLayer/UI/Menu/Options"]
 margin_top = 32.0
@@ -210,10 +215,17 @@ action_mode = 0
 text = "Open to LAN"
 align = 1
 
-[node name="HealthBar" type="HBoxContainer" parent="CanvasLayer/UI/Menu/Options"]
+[node name="SmallMap" type="CheckBox" parent="CanvasLayer/UI/Menu/Options"]
 margin_top = 72.0
 margin_right = 234.0
-margin_bottom = 106.0
+margin_bottom = 108.0
+text = "Use smaller map"
+align = 1
+
+[node name="HealthBar" type="HBoxContainer" parent="CanvasLayer/UI/Menu/Options"]
+margin_top = 112.0
+margin_right = 234.0
+margin_bottom = 146.0
 
 [node name="Label" type="Label" parent="CanvasLayer/UI/Menu/Options/HealthBar"]
 margin_top = 3.0
@@ -245,9 +257,9 @@ rect_min_size = Vector2( 28, 0 )
 text = "+"
 
 [node name="BallsBar" type="HBoxContainer" parent="CanvasLayer/UI/Menu/Options"]
-margin_top = 110.0
+margin_top = 150.0
 margin_right = 234.0
-margin_bottom = 144.0
+margin_bottom = 184.0
 
 [node name="Label" type="Label" parent="CanvasLayer/UI/Menu/Options/BallsBar"]
 margin_top = 3.0
@@ -279,9 +291,9 @@ rect_min_size = Vector2( 28, 0 )
 text = "+"
 
 [node name="Back" type="Button" parent="CanvasLayer/UI/Menu/Options"]
-margin_top = 148.0
+margin_top = 188.0
 margin_right = 234.0
-margin_bottom = 182.0
+margin_bottom = 222.0
 text = "Back"
 
 [node name="Author" type="Label" parent="CanvasLayer/UI"]
@@ -303,5 +315,3 @@ environment = SubResource( 6 )
 [node name="JoinTimer" type="Timer" parent="."]
 
 [node name="MessageTimer" type="Timer" parent="."]
-[connection signal="timeout" from="JoinTimer" to="." method="unload_game" binds= [ "Could not connect!" ]]
-[connection signal="timeout" from="MessageTimer" to="." method="set_message"]

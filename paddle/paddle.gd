@@ -8,12 +8,17 @@ var velocity: Vector2 = Vector2()
 var input_velocity: Vector2 = Vector2()
 var input_rotation: float = 0
 
+onready var back_node: Area2D = get_node("Back")
 onready var safe_timer: Timer = get_node("SafeTimer")
 onready var dash_timer: Timer = get_node("DashTimer")
 onready var dash_reset_timer: Timer = get_node("DashResetTimer")
 
 
 func _ready() -> void:
+	back_node.connect("body_entered", self, "back_collided")
+	safe_timer.connect("timeout", self, "safe_timeout")
+	dash_timer.connect("timeout", self, "dash_timeout")
+	dash_reset_timer.connect("timeout", self, "dash_reset_timeout")
 	safe_timer.start(3)
 
 
@@ -27,28 +32,28 @@ func _physics_process(delta: float) -> void:
 			collision.collider.apply_central_impulse(-collision.normal * (200 if is_dashing else 100))
 		else:
 			velocity = velocity.bounce(collision.normal)
-		get_node("/root/Main").call("vibrate", name)
+		get_node("/root/Main").vibrate(name)
 
 
-func _on_Back_body_entered(body: Node2D) -> void:
+func back_collided(body: Node2D) -> void:
 	if body.is_in_group("balls") and not is_safe:
-		get_node("/root/Main").call("hit", name)
+		get_node("/root/Main").hit(name)
 		is_safe = true
 		safe_timer.start(2)
 
 
-func _on_SafeTimer_timeout() -> void:
+func safe_timeout() -> void:
 	is_safe = false
 	safe_timer.stop()
 
 
-func _on_DashTimer_timeout() -> void:
+func dash_timeout() -> void:
 	is_dashing = false
 	dash_timer.stop()
-	dash_reset_timer.start(1)
+	dash_reset_timer.start(0.85)
 
 
-func _on_DashResetTimer_timeout():
+func dash_reset_timeout():
 	can_dash = true
 	dash_reset_timer.stop()
 
