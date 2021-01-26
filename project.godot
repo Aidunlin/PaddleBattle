@@ -15,11 +15,11 @@ _global_script_class_icons={
 
 [application]
 
-config/name="Paddle Battle"
+config/name="PaddleBattle"
 config/description="A multiplayer action game with pong-like mechanics"
 run/main_scene="res://main/main.tscn"
 config/use_custom_user_dir=true
-config/custom_user_dir_name="Paddle Battle"
+config/custom_user_dir_name="PaddleBattle"
 boot_splash/image="res://icon.png"
 boot_splash/use_filter=false
 config/icon="res://icon.png"

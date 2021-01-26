@@ -120,21 +120,21 @@ __meta__ = {
 }
 
 [node name="Main" type="VBoxContainer" parent="CanvasLayer/UI/Menu"]
-margin_left = 395.0
+margin_left = 404.0
 margin_top = 163.0
-margin_right = 629.0
+margin_right = 620.0
 margin_bottom = 436.0
 
 [node name="Title" type="Label" parent="CanvasLayer/UI/Menu/Main"]
-margin_right = 234.0
+margin_right = 216.0
 margin_bottom = 41.0
 custom_fonts/font = SubResource( 3 )
-text = "PADDLE BATTLE"
+text = "PaddleBattle"
 align = 1
 
 [node name="Version" type="Label" parent="CanvasLayer/UI/Menu/Main"]
 margin_top = 45.0
-margin_right = 234.0
+margin_right = 216.0
 margin_bottom = 75.0
 custom_fonts/font = SubResource( 4 )
 text = "NO VERSION"
@@ -142,7 +142,7 @@ align = 1
 
 [node name="NameBar" type="HBoxContainer" parent="CanvasLayer/UI/Menu/Main"]
 margin_top = 79.0
-margin_right = 234.0
+margin_right = 216.0
 margin_bottom = 117.0
 
 [node name="Label" type="Label" parent="CanvasLayer/UI/Menu/Main/NameBar"]
@@ -153,25 +153,25 @@ text = "Name:"
 
 [node name="Name" type="LineEdit" parent="CanvasLayer/UI/Menu/Main/NameBar"]
 margin_left = 59.0
-margin_right = 234.0
+margin_right = 216.0
 margin_bottom = 38.0
 size_flags_horizontal = 3
 
 [node name="Play" type="Button" parent="CanvasLayer/UI/Menu/Main"]
 margin_top = 121.0
-margin_right = 234.0
+margin_right = 216.0
 margin_bottom = 155.0
 text = "Play"
 
 [node name="Options" type="Button" parent="CanvasLayer/UI/Menu/Main"]
 margin_top = 159.0
-margin_right = 234.0
+margin_right = 216.0
 margin_bottom = 193.0
 text = "Options"
 
 [node name="IPBar" type="HBoxContainer" parent="CanvasLayer/UI/Menu/Main"]
 margin_top = 197.0
-margin_right = 234.0
+margin_right = 216.0
 margin_bottom = 235.0
 __meta__ = {
 "_edit_use_anchors_": false
@@ -185,7 +185,7 @@ text = "IP:"
 
 [node name="IP" type="LineEdit" parent="CanvasLayer/UI/Menu/Main/IPBar"]
 margin_left = 37.0
-margin_right = 234.0
+margin_right = 216.0
 margin_bottom = 38.0
 size_flags_horizontal = 3
 __meta__ = {
@@ -194,7 +194,7 @@ __meta__ = {
 
 [node name="Join" type="Button" parent="CanvasLayer/UI/Menu/Main"]
 margin_top = 239.0
-margin_right = 234.0
+margin_right = 216.0
 margin_bottom = 273.0
 text = "Join"
 
