@@ -26,11 +26,10 @@ outline_color = Color( 0, 0, 0, 1 )
 extra_spacing_bottom = 8
 font_data = ExtResource( 1 )
 
-[sub_resource type="DynamicFont" id=5]
-size = 18
+[sub_resource type="DynamicFont" id=7]
 outline_size = 2
 outline_color = Color( 0, 0, 0, 1 )
-extra_spacing_bottom = 4
+extra_spacing_top = 8
 font_data = ExtResource( 1 )
 
 [sub_resource type="Environment" id=6]
@@ -121,9 +120,9 @@ __meta__ = {
 
 [node name="Main" type="VBoxContainer" parent="CanvasLayer/UI/Menu"]
 margin_left = 404.0
-margin_top = 163.0
+margin_top = 146.0
 margin_right = 620.0
-margin_bottom = 436.0
+margin_bottom = 453.0
 
 [node name="Title" type="Label" parent="CanvasLayer/UI/Menu/Main"]
 margin_right = 216.0
@@ -198,6 +197,18 @@ margin_right = 216.0
 margin_bottom = 273.0
 text = "Join"
 
+[node name="Author" type="Label" parent="CanvasLayer/UI/Menu/Main"]
+margin_top = 277.0
+margin_right = 216.0
+margin_bottom = 307.0
+size_flags_horizontal = 3
+custom_fonts/font = SubResource( 7 )
+text = "Created by Aidunlin"
+align = 1
+__meta__ = {
+"_edit_use_anchors_": false
+}
+
 [node name="Options" type="VBoxContainer" parent="CanvasLayer/UI/Menu"]
 visible = false
 margin_left = 395.0
@@ -207,25 +218,24 @@ margin_bottom = 395.0
 rect_min_size = Vector2( 234, 0 )
 
 [node name="OpenLAN" type="CheckBox" parent="CanvasLayer/UI/Menu/Options"]
-margin_top = 32.0
 margin_right = 234.0
-margin_bottom = 68.0
+margin_bottom = 36.0
 pressed = true
 action_mode = 0
 text = "Open to LAN"
 align = 1
 
 [node name="SmallMap" type="CheckBox" parent="CanvasLayer/UI/Menu/Options"]
-margin_top = 72.0
+margin_top = 40.0
 margin_right = 234.0
-margin_bottom = 108.0
+margin_bottom = 76.0
 text = "Use smaller map"
 align = 1
 
 [node name="HealthBar" type="HBoxContainer" parent="CanvasLayer/UI/Menu/Options"]
-margin_top = 112.0
+margin_top = 80.0
 margin_right = 234.0
-margin_bottom = 146.0
+margin_bottom = 114.0
 
 [node name="Label" type="Label" parent="CanvasLayer/UI/Menu/Options/HealthBar"]
 margin_top = 3.0
@@ -257,9 +267,9 @@ rect_min_size = Vector2( 28, 0 )
 text = "+"
 
 [node name="BallsBar" type="HBoxContainer" parent="CanvasLayer/UI/Menu/Options"]
-margin_top = 150.0
+margin_top = 118.0
 margin_right = 234.0
-margin_bottom = 184.0
+margin_bottom = 152.0
 
 [node name="Label" type="Label" parent="CanvasLayer/UI/Menu/Options/BallsBar"]
 margin_top = 3.0
@@ -291,23 +301,10 @@ rect_min_size = Vector2( 28, 0 )
 text = "+"
 
 [node name="Back" type="Button" parent="CanvasLayer/UI/Menu/Options"]
-margin_top = 188.0
+margin_top = 156.0
 margin_right = 234.0
-margin_bottom = 222.0
+margin_bottom = 190.0
 text = "Back"
-
-[node name="Author" type="Label" parent="CanvasLayer/UI"]
-anchor_top = 1.0
-anchor_right = 1.0
-anchor_bottom = 1.0
-margin_top = -28.0
-size_flags_horizontal = 3
-custom_fonts/font = SubResource( 5 )
-text = "Created by Aidunlin"
-align = 1
-__meta__ = {
-"_edit_use_anchors_": false
-}
 
 [node name="WorldEnvironment" type="WorldEnvironment" parent="."]
 environment = SubResource( 6 )

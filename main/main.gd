@@ -38,7 +38,6 @@ onready var ball_nodes: Node2D = get_node("Balls")
 onready var message_node: Label = get_node("CanvasLayer/UI/Message")
 onready var bars_node: GridContainer = get_node("CanvasLayer/UI/HUD/Bars")
 onready var menu_node: CenterContainer = get_node("CanvasLayer/UI/Menu")
-onready var author_node: Label = get_node("CanvasLayer/UI/Author")
 
 onready var main_menu_node: VBoxContainer = get_node("CanvasLayer/UI/Menu/Main")
 onready var version_node: Label = get_node("CanvasLayer/UI/Menu/Main/Version")
@@ -258,7 +257,7 @@ func load_config() -> void:
 ##### CLIENT #####
 
 
-# Attempt to join LAN game
+# Attempt to join server
 func connect_to_server() -> void:
 	if get_name() == "":
 		return
@@ -278,7 +277,7 @@ func connect_to_server() -> void:
 	join_timer.start(5)
 
 
-# Unload disconnected paddle(s)
+# Unload paddle(s) from disconnected client
 func peer_disconnected(id: int) -> void:
 	var has_sent_msg: bool = false
 	var paddles_to_clear: Array = []
@@ -323,7 +322,6 @@ remote func load_game(paddles: Dictionary, small_map: bool, map_color: Color, he
 	paddle_spawns = map_node.get_child(0).get_node("PaddleSpawns").get_children()
 	ball_spawns = map_node.get_child(0).get_node("BallSpawns").get_children()
 	menu_node.hide()
-	author_node.hide()
 	map_node.show()
 	for paddle in paddles:
 		create_paddle(paddles[paddle])
@@ -349,7 +347,6 @@ func start_game() -> void:
 	randomize()
 	map_node.modulate = Color.from_hsv((randi() % 9 * 40.0) / 360.0, 1, 1)
 	menu_node.hide()
-	author_node.hide()
 	map_node.show()
 	if using_small_map:
 		map_node.add_child(SMALL_MAP_SCENE.instance())
@@ -384,10 +381,10 @@ remote func unload_game(msg: String = "") -> void:
 	for bar in bars_node.get_children():
 		bar.queue_free()
 	bars_node.columns = 1
-	map_node.get_child(0).queue_free()
+	if map_node.get_child_count() > 0:
+		map_node.get_child(0).queue_free()
 	map_node.modulate = Color(0, 0, 0)
 	menu_node.show()
-	author_node.show()
 	map_node.hide()
 	camera_node.current = false
 	play_button.grab_focus()
@@ -406,7 +403,7 @@ remotesync func update_objects(paddles: Dictionary, balls: Array) -> void:
 			paddle_data[paddle].rotation = paddle_node.rotation
 			if paddles[paddle].id == peer_id:
 				var input_data: Dictionary = get_inputs(paddle, input_list[paddle])
-				inputs_to_host(paddle, input_data)
+				inputs_to_paddle(paddle, input_data)
 		for ball in ball_nodes.get_child_count():
 			var ball_node: Node2D = ball_nodes.get_child(ball)
 			ball_data[ball].position = ball_node.position
@@ -422,7 +419,7 @@ remotesync func update_objects(paddles: Dictionary, balls: Array) -> void:
 			paddle_node.rotation = paddles[paddle].rotation
 			if paddles[paddle].id == peer_id:
 				var input_data: Dictionary = get_inputs(paddle, input_list[paddle])
-				rpc_unreliable_id(1, "inputs_to_host", paddle, input_data)
+				rpc_unreliable_id(1, "inputs_to_paddle", paddle, input_data)
 		for ball in ball_nodes.get_child_count():
 			var ball_node: Node2D = ball_nodes.get_child(ball)
 			ball_node.position = balls[ball].position
@@ -555,12 +552,15 @@ func get_inputs(paddle: String, input: Dictionary) -> Dictionary:
 
 
 # Send client inputs to server-side paddle
-remote func inputs_to_host(paddle: String, input: Dictionary) -> void:
+remote func inputs_to_paddle(paddle: String, input: Dictionary) -> void:
 	input.velocity = input.velocity.clamped(MOVE_SPEED)
 	paddle_nodes.get_node(paddle).inputs(input)
 
 
 remote func vibrate(paddle: String, is_destroyed: bool = false) -> void:
+	if not is_playing:
+		return
+	
 	if paddle_data[paddle].id == peer_id:
 		if is_destroyed:
 			Input.start_joy_vibration(input_list[paddle].pad, .2, .2, .3)
@@ -586,7 +586,7 @@ remote func hit(paddle: String) -> void:
 			paddle_nodes.get_node(paddle).rotation = paddle_data[paddle].spawn_rotation
 		paddle_data[paddle].health = max_health
 	
-	var health_bits: Array = bars_node.get_node(paddle).get_node(paddle).get_children()
+	var health_bits: Array = bars_node.get_node(paddle).get_child(1).get_children()
 	for i in max_health:
 		health_bits[i].modulate.a = 1.0 if paddle_data[paddle].health > i else 0.1
 
