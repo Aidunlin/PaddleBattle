@@ -10,6 +10,7 @@ const SMALL_MAP_SCENE: PackedScene = preload("res://map/smallmap.tscn")
 
 const VERSION: String = "Dev Build"
 const MOVE_SPEED: int = 500
+const CAMERA_ZOOM: Vector2 = Vector2(1, 1)
 
 var is_playing: bool = false
 var is_open_to_lan: bool = true
@@ -37,6 +38,7 @@ onready var ball_nodes: Node2D = get_node("Balls")
 onready var message_node: Label = get_node("CanvasLayer/UI/Message")
 onready var bars_node: GridContainer = get_node("CanvasLayer/UI/HUD/Bars")
 onready var menu_node: CenterContainer = get_node("CanvasLayer/UI/Menu")
+onready var author_node: Label = get_node("CanvasLayer/UI/Author")
 
 onready var main_menu_node: VBoxContainer = get_node("CanvasLayer/UI/Menu/Main")
 onready var version_node: Label = get_node("CanvasLayer/UI/Menu/Main/Version")
@@ -56,8 +58,6 @@ onready var balls_dec_button: Button = get_node("CanvasLayer/UI/Menu/Options/Bal
 onready var balls_inc_button: Button = get_node("CanvasLayer/UI/Menu/Options/BallsBar/Inc")
 onready var balls_node: Label = get_node("CanvasLayer/UI/Menu/Options/BallsBar/Balls")
 onready var back_button: Button = get_node("CanvasLayer/UI/Menu/Options/Back")
-
-onready var author_node: Label = get_node("CanvasLayer/UI/Author")
 
 onready var join_timer: Timer = get_node("JoinTimer")
 onready var message_timer: Timer = get_node("MessageTimer")
@@ -91,7 +91,7 @@ func _physics_process(_delta: float) -> void:
 		rpc_unreliable("update_objects", paddle_data, ball_data)
 	
 	# Modify camera to always show paddles
-	var zoom: Vector2 = Vector2(1, 1)
+	var zoom: Vector2 = CAMERA_ZOOM
 	if is_playing and paddle_nodes.get_child_count() > 0:
 		var avg: Vector2 = Vector2()
 		var max_x: float = -INF
@@ -108,7 +108,7 @@ func _physics_process(_delta: float) -> void:
 		var zoom_x: float = (2 * max(max_x - avg.x, avg.x - min_x) + OS.window_size.x / 1.5) / OS.window_size.x
 		var zoom_y: float = (2 * max(max_y - avg.y, avg.y - min_y) + OS.window_size.y / 1.5) / OS.window_size.y
 		zoom = Vector2(max(zoom_x, zoom_y), max(zoom_x, zoom_y))
-		zoom = Vector2(1, 1) if zoom < Vector2(1, 1) else zoom
+		zoom = CAMERA_ZOOM if zoom < CAMERA_ZOOM else zoom
 		camera_node.position = avg
 	camera_node.zoom = camera_node.zoom.linear_interpolate(zoom, 0.01 if camera_node.zoom > zoom else 0.1)
 
@@ -255,7 +255,7 @@ func load_config() -> void:
 
 
 
-##### NETWORK #####
+##### CLIENT #####
 
 
 # Attempt to join LAN game
@@ -310,7 +310,7 @@ remote func check(name: String, version: String) -> void:
 
 
 # Send data to client to load game
-remote func load_game(data: Dictionary, small_map: bool, map_color: Color, health: int, balls: int) -> void:
+remote func load_game(paddles: Dictionary, small_map: bool, map_color: Color, health: int, balls: int) -> void:
 	save_config()
 	max_health = health
 	join_timer.stop()
@@ -325,8 +325,8 @@ remote func load_game(data: Dictionary, small_map: bool, map_color: Color, healt
 	menu_node.hide()
 	author_node.hide()
 	map_node.show()
-	for paddle in data:
-		create_paddle(data[paddle])
+	for paddle in paddles:
+		create_paddle(paddles[paddle])
 	create_balls(balls)
 	set_message("Press A/Enter to create your paddle", 5)
 	is_playing = true
@@ -491,9 +491,11 @@ remote func create_paddle(data: Dictionary = {}) -> void:
 	hp_bar.name = paddle_node.name
 	hp_bar.alignment = BoxContainer.ALIGN_CENTER
 	hp_bar.set("custom_constants/separation", -18)
-	for _x in max_health:
+	for i in max_health:
 		var bit: TextureRect = TextureRect.new()
 		bit.texture = HP_TEXTURE
+		if data.has("health"):
+			bit.modulate.a = 1.0 if data.health > i else 0.1
 		hp_bar.add_child(bit)
 	bar.add_child(hp_bar)
 	bars_node.add_child(bar)
@@ -506,9 +508,10 @@ remote func create_paddle(data: Dictionary = {}) -> void:
 		spawn_rotation = paddle_node.rotation,
 		name = paddle_node.name,
 		id = data.id,
-		health = max_health,
 		color = paddle_node.modulate
 	}
+	
+	paddle_data[paddle_node.name].health = data.health if data.has("health") else max_health
 	
 	# Send data to clients to create paddle
 	if peer_id == 1 and is_open_to_lan:
