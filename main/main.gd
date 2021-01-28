@@ -43,7 +43,6 @@ onready var main_menu_node: VBoxContainer = get_node("CanvasLayer/UI/Menu/Main")
 onready var version_node: Label = get_node("CanvasLayer/UI/Menu/Main/Version")
 onready var name_input: LineEdit = get_node("CanvasLayer/UI/Menu/Main/NameBar/Name")
 onready var play_button: Button = get_node("CanvasLayer/UI/Menu/Main/Play")
-onready var options_button: Button = get_node("CanvasLayer/UI/Menu/Main/Options")
 onready var ip_input: LineEdit = get_node("CanvasLayer/UI/Menu/Main/IPBar/IP")
 onready var join_button: Button = get_node("CanvasLayer/UI/Menu/Main/Join")
 
@@ -56,6 +55,7 @@ onready var health_node: Label = get_node("CanvasLayer/UI/Menu/Options/HealthBar
 onready var balls_dec_button: Button = get_node("CanvasLayer/UI/Menu/Options/BallsBar/Dec")
 onready var balls_inc_button: Button = get_node("CanvasLayer/UI/Menu/Options/BallsBar/Inc")
 onready var balls_node: Label = get_node("CanvasLayer/UI/Menu/Options/BallsBar/Balls")
+onready var start_button: Button = get_node("CanvasLayer/UI/Menu/Options/Start")
 onready var back_button: Button = get_node("CanvasLayer/UI/Menu/Options/Back")
 
 onready var join_timer: Timer = get_node("JoinTimer")
@@ -66,8 +66,7 @@ func _ready() -> void:
 	version_node.text = VERSION
 	load_config()
 	play_button.grab_focus()
-	play_button.connect("pressed", self, "start_game")
-	options_button.connect("pressed", self, "toggle_menus", [false])
+	play_button.connect("pressed", self, "toggle_menus", [false])
 	join_button.connect("pressed", self, "connect_to_server")
 	open_lan_toggle.connect("pressed", self, "toggle_lan")
 	small_map_toggle.connect("pressed", self, "toggle_small_map")
@@ -75,6 +74,7 @@ func _ready() -> void:
 	health_inc_button.connect("pressed", self, "crement", ["health", 1])
 	balls_dec_button.connect("pressed", self, "crement", ["balls", -1])
 	balls_inc_button.connect("pressed", self, "crement", ["balls", 1])
+	start_button.connect("pressed", self, "start_game")
 	back_button.connect("pressed", self, "toggle_menus", [true])
 	join_timer.connect("timeout", self, "unload_game", ["Connection failed"])
 	message_timer.connect("timeout", self, "set_message")
@@ -136,12 +136,23 @@ func _input(_event: InputEvent) -> void:
 					rpc_id(1, "create_paddle", {name = peer_name, pad = pad, id = peer_id})
 	
 	# Force unload the game on shortcut press
-	if is_playing and Input.is_key_pressed(KEY_ESCAPE):
-		unload_game("You left the game")
+	if is_playing:
+		if Input.is_key_pressed(KEY_ESCAPE):
+			unload_game("You left the game")
+			return
+		
+		for pad in Input.get_connected_joypads():
+			if Input.is_joy_button_pressed(pad, JOY_START) and Input.is_joy_button_pressed(pad, JOY_SELECT):
+				unload_game("You left the game")
+				return
 	
 	# Pressing enter in the IP input "presses" join button
 	if ip_input.has_focus() and Input.is_key_pressed(KEY_ENTER):
 		connect_to_server()
+	
+	# Pressing escape while viewing options returns to main menu
+	if options_menu_node.visible and Input.is_action_just_released("ui_cancel"):
+		toggle_menus(true)
 
 
 
@@ -177,18 +188,20 @@ func crement(which: String, value: int) -> void:
 func toggle_buttons(toggle: bool) -> void:
 	name_input.editable = not toggle
 	play_button.disabled = toggle
-	options_button.disabled = toggle
 	ip_input.editable = not toggle
 	join_button.disabled = toggle
 
 
-func toggle_menus(main: bool) -> void:
-	main_menu_node.visible = main
-	options_menu_node.visible = not main
-	if main:
-		options_button.grab_focus()
+func toggle_menus(to_main: bool) -> void:
+	if not to_main:
+		if get_name() == "":
+			return
+		start_button.grab_focus()
 	else:
-		back_button.grab_focus()
+		play_button.grab_focus()
+	
+	main_menu_node.visible = to_main
+	options_menu_node.visible = not to_main
 
 
 func toggle_lan() -> void:
@@ -337,8 +350,6 @@ remote func load_game(paddles: Dictionary, small_map: bool, map_color: Color, he
 
 
 func start_game() -> void:
-	if get_name() == "":
-		return
 	var peer: NetworkedMultiplayerENet = NetworkedMultiplayerENet.new()
 	peer.create_server(8910, 7)
 	get_tree().network_peer = peer
@@ -386,6 +397,7 @@ remote func unload_game(msg: String = "") -> void:
 	map_node.modulate = Color(0, 0, 0)
 	menu_node.show()
 	map_node.hide()
+	toggle_menus(true)
 	camera_node.current = false
 	play_button.grab_focus()
 	toggle_buttons(false)
