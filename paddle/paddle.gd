@@ -1,12 +1,12 @@
 extends KinematicBody2D
 
-var is_safe: bool = true
-var is_dashing: bool = false
-var can_dash: bool = true
+var is_safe := true
+var is_dashing := false
+var can_dash := true
 
-var velocity: Vector2 = Vector2()
-var input_velocity: Vector2 = Vector2()
-var input_rotation: float = 0
+var velocity := Vector2()
+var input_velocity := Vector2()
+var input_rotation := 0
 
 onready var back_node: Area2D = get_node("Back")
 onready var safe_timer: Timer = get_node("SafeTimer")
@@ -26,7 +26,7 @@ func _physics_process(delta: float) -> void:
 	velocity = velocity.linear_interpolate(input_velocity, 0.06 if input_velocity.length() > 0 else 0.02)
 	rotation += input_rotation
 	
-	var collision: KinematicCollision2D = move_and_collide(velocity * delta, false)
+	var collision := move_and_collide(velocity * delta, false)
 	if collision:
 		if collision.collider.is_in_group("balls"):
 			collision.collider.apply_central_impulse(-collision.normal * (200 if is_dashing else 100))

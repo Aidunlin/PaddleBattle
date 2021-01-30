@@ -8,27 +8,27 @@ const CLIENT_BALL_SCENE: PackedScene = preload("res://ball/clientball.tscn")
 const MAP_SCENE: PackedScene = preload("res://map/map.tscn")
 const SMALL_MAP_SCENE: PackedScene = preload("res://map/smallmap.tscn")
 
-const VERSION: String = "Dev Build"
-const MOVE_SPEED: int = 500
-const CAMERA_ZOOM: Vector2 = Vector2(1, 1)
+const VERSION := "Dev Build"
+const MOVE_SPEED := 500
+const CAMERA_ZOOM := Vector2(1, 1)
 
-var is_playing: bool = false
-var is_open_to_lan: bool = true
-var using_small_map: bool = false
-var peer_id: int = 1
+var is_playing := false
+var is_open_to_lan := true
+var using_small_map := false
+var peer_id := 1
 
-var initial_max_health: int = 0
-var max_health: int = 3
-var ball_count: int = 10
+var initial_max_health := 0
+var max_health := 3
+var ball_count := 10
 
-var peer_name: String = ""
-var paddle_data: Dictionary = {}
-var ball_data: Array = []
-var input_list: Dictionary = {}
+var peer_name := ""
+var paddle_data := {}
+var ball_data := []
+var input_list := {}
 
-var camera_spawn: Vector2 = Vector2()
-var paddle_spawns: Array = []
-var ball_spawns: Array = []
+var camera_spawn := Vector2()
+var paddle_spawns := []
+var ball_spawns := []
 
 onready var map_node: Node2D = get_node("Map")
 onready var camera_node: Camera2D = get_node("Camera")
@@ -62,7 +62,7 @@ onready var join_timer: Timer = get_node("JoinTimer")
 onready var message_timer: Timer = get_node("MessageTimer")
 
 
-func _ready() -> void:
+func _ready():
 	version_node.text = VERSION
 	load_config()
 	play_button.grab_focus()
@@ -84,19 +84,19 @@ func _ready() -> void:
 	get_tree().connect("server_disconnected", self, "unload_game", ["Server disconnected"])
 
 
-func _physics_process(_delta: float) -> void:
+func _physics_process(_delta):
 	# Update objects over LAN
 	if is_playing and peer_id == 1:
 		rpc_unreliable("update_objects", paddle_data, ball_data)
 	
 	# Modify camera to always show paddles
-	var zoom: Vector2 = CAMERA_ZOOM
+	var zoom := CAMERA_ZOOM
 	if is_playing and paddle_nodes.get_child_count() > 0:
-		var avg: Vector2 = Vector2()
-		var max_x: float = -INF
-		var min_x: float = INF
-		var max_y: float = -INF
-		var min_y: float = INF
+		var avg := Vector2()
+		var max_x := -INF
+		var min_x := INF
+		var max_y := -INF
+		var min_y := INF
 		for paddle in paddle_nodes.get_children():
 			avg += paddle.position
 			max_x = max(paddle.position.x, max_x)
@@ -104,15 +104,15 @@ func _physics_process(_delta: float) -> void:
 			max_y = max(paddle.position.y, max_y)
 			min_y = min(paddle.position.y, min_y)
 		avg /= paddle_nodes.get_child_count()
-		var zoom_x: float = (2 * max(max_x - avg.x, avg.x - min_x) + OS.window_size.x / 1.5) / OS.window_size.x
-		var zoom_y: float = (2 * max(max_y - avg.y, avg.y - min_y) + OS.window_size.y / 1.5) / OS.window_size.y
+		var zoom_x := (2 * max(max_x - avg.x, avg.x - min_x) + OS.window_size.x / 1.5) / OS.window_size.x
+		var zoom_y := (2 * max(max_y - avg.y, avg.y - min_y) + OS.window_size.y / 1.5) / OS.window_size.y
 		zoom = Vector2(max(zoom_x, zoom_y), max(zoom_x, zoom_y))
 		zoom = CAMERA_ZOOM if zoom < CAMERA_ZOOM else zoom
 		camera_node.position = avg
 	camera_node.zoom = camera_node.zoom.linear_interpolate(zoom, 0.01 if camera_node.zoom > zoom else 0.1)
 
 
-func _input(_event: InputEvent) -> void:
+func _input(_event):
 	if not OS.is_window_focused():
 		return
 	
@@ -160,7 +160,7 @@ func _input(_event: InputEvent) -> void:
 
 
 # Set message text/visibility and timer
-func set_message(new: String = "", time: int = 0) -> void:
+func set_message(new := "", time := 0) -> void:
 	message_node.text = new
 	if time > 0:
 		message_timer.start(time)
@@ -169,14 +169,14 @@ func set_message(new: String = "", time: int = 0) -> void:
 
 
 # Check if an input device is already used
-func is_new_input(type: String, id: int) -> bool:
+func is_new_input(input_type: String, id: int) -> bool:
 	for input in input_list.values():
-		if type == "keys" and input.keys == id or type == "pad" and input.pad == id:
+		if input_type == "keys" and input.keys == id or input_type == "pad" and input.pad == id:
 			return false
 	return true
 
 
-func crement(which: String, value: int) -> void:
+func crement(which := "", value := 0) -> void:
 	if which == "health":
 		max_health = clamp(max_health + value, 1, 5)
 	elif which == "balls":
@@ -194,7 +194,7 @@ func toggle_buttons(toggle: bool) -> void:
 
 func toggle_menus(to_main: bool) -> void:
 	if not to_main:
-		if get_name() == "":
+		if get_peer_name() == "":
 			return
 		start_button.grab_focus()
 	else:
@@ -213,7 +213,7 @@ func toggle_small_map() -> void:
 
 
 # Returns name from input, sending a message if invalid
-func get_name() -> String:
+func get_peer_name() -> String:
 	var new_name: String = name_input.text
 	if new_name == "":
 		set_message("Invalid name", 3)
@@ -221,15 +221,15 @@ func get_name() -> String:
 	return new_name
 
 
-func get_key(key1: int, key2: int, keys) -> int:
+func get_key(key1: int, key2: int, keys: int) -> int:
 	return int(Input.is_key_pressed(key1 if keys == 0 else key2))
 
 
 # Save configurables to file in JSON format
 func save_config() -> void:
-	var file: File = File.new()
+	var file := File.new()
 	file.open("user://config.json", File.WRITE)
-	var save: Dictionary = {
+	var save := {
 		name = name_input.text,
 		ip = ip_input.text,
 		is_open_to_lan = is_open_to_lan,
@@ -243,7 +243,7 @@ func save_config() -> void:
 
 # Load configurables from JSON file if exists
 func load_config() -> void:
-	var file: File = File.new()
+	var file := File.new()
 	if not file.file_exists("user://config.json"):
 		return
 	file.open("user://config.json", File.READ)
@@ -262,7 +262,7 @@ func load_config() -> void:
 		max_health = save.health
 	if save.has("balls"):
 		ball_count = save.balls
-	crement("", 0)
+	crement()
 	file.close()
 
 
@@ -272,7 +272,7 @@ func load_config() -> void:
 
 # Attempt to join server
 func connect_to_server() -> void:
-	if get_name() == "":
+	if get_peer_name() == "":
 		return
 	var ip: String = ip_input.text
 	if not ip.is_valid_ip_address():
@@ -283,7 +283,7 @@ func connect_to_server() -> void:
 	set_message("Trying to connect...")
 	toggle_buttons(true)
 	initial_max_health = max_health
-	var peer: NetworkedMultiplayerENet = NetworkedMultiplayerENet.new()
+	var peer := NetworkedMultiplayerENet.new()
 	peer.create_client(ip, 8910)
 	get_tree().network_peer = peer
 	peer_id = get_tree().get_network_unique_id()
@@ -292,8 +292,8 @@ func connect_to_server() -> void:
 
 # Unload paddle(s) from disconnected client
 func peer_disconnected(id: int) -> void:
-	var has_sent_msg: bool = false
-	var paddles_to_clear: Array = []
+	var has_sent_msg := false
+	var paddles_to_clear := []
 	for paddle in paddle_data:
 		if paddle_data[paddle].id == id:
 			if not has_sent_msg:
@@ -349,7 +349,7 @@ remote func load_game(paddles: Dictionary, small_map: bool, map_color: Color, he
 
 
 func start_game() -> void:
-	var peer: NetworkedMultiplayerENet = NetworkedMultiplayerENet.new()
+	var peer := NetworkedMultiplayerENet.new()
 	peer.create_server(8910, 7)
 	get_tree().network_peer = peer
 	get_tree().refuse_new_network_connections = not is_open_to_lan
@@ -412,8 +412,7 @@ remotesync func update_objects(paddles: Dictionary, balls: Array) -> void:
 			paddle_data[paddle].position = paddle_node.position
 			paddle_data[paddle].rotation = paddle_node.rotation
 			if paddles[paddle].id == peer_id:
-				var input_data: Dictionary = get_inputs(paddle, input_list[paddle])
-				inputs_to_paddle(paddle, input_data)
+				inputs_to_paddle(paddle, get_inputs(paddle, input_list[paddle]))
 		for ball in ball_nodes.get_child_count():
 			var ball_node: RigidBody2D = ball_nodes.get_child(ball)
 			if ball_node.position.length() > 8192:
@@ -433,8 +432,7 @@ remotesync func update_objects(paddles: Dictionary, balls: Array) -> void:
 			paddle_node.position = paddles[paddle].position
 			paddle_node.rotation = paddles[paddle].rotation
 			if paddles[paddle].id == peer_id:
-				var input_data: Dictionary = get_inputs(paddle, input_list[paddle])
-				rpc_unreliable_id(1, "inputs_to_paddle", paddle, input_data)
+				rpc_unreliable_id(1, "inputs_to_paddle", paddle, get_inputs(paddle, input_list[paddle]))
 		for ball in ball_nodes.get_child_count():
 			var ball_node: Sprite = ball_nodes.get_child(ball)
 			ball_node.position = balls[ball].position
@@ -446,8 +444,8 @@ remotesync func update_objects(paddles: Dictionary, balls: Array) -> void:
 
 
 remote func create_paddle(data: Dictionary = {}) -> void:
-	var paddle_count: int = paddle_nodes.get_child_count()
-	var paddle_node: Node2D = PADDLE_SCENE.instance()
+	var paddle_count := paddle_nodes.get_child_count()
+	var paddle_node := PADDLE_SCENE.instance()
 	
 	# Change to client paddle if client
 	if peer_id != 1:
@@ -465,7 +463,7 @@ remote func create_paddle(data: Dictionary = {}) -> void:
 	if data.has("color"):
 		paddle_node.modulate = data.color
 	else:
-		var used_colors: Array = [map_node.modulate]
+		var used_colors := [map_node.modulate]
 		for paddle in paddle_data:
 			used_colors.append(paddle_data[paddle].color)
 		var new_color: Color = used_colors[0]
@@ -475,11 +473,11 @@ remote func create_paddle(data: Dictionary = {}) -> void:
 		paddle_node.modulate = new_color
 	
 	# Set name
-	var name_count: int = 1
+	var name_count := 1
 	for paddle in paddle_nodes.get_children():
 		if data.name in paddle.name:
 			name_count += 1
-	var name_suffix: String = str(name_count) if name_count > 1 else ""
+	var name_suffix := str(name_count) if name_count > 1 else ""
 	paddle_node.name = data.name + name_suffix
 	
 	# Set input
@@ -490,21 +488,21 @@ remote func create_paddle(data: Dictionary = {}) -> void:
 		}
 	
 	# Create HUD elements
-	var bar: VBoxContainer = VBoxContainer.new()
+	var bar := VBoxContainer.new()
 	bar.name = paddle_node.name
 	bar.size_flags_horizontal = VBoxContainer.SIZE_EXPAND_FILL
 	bar.modulate = paddle_node.modulate
 	bar.alignment = BoxContainer.ALIGN_CENTER
-	var label: Label = Label.new()
+	var label := Label.new()
 	label.text = paddle_node.name
 	label.align = Label.ALIGN_CENTER
 	bar.add_child(label)
-	var hp_bar: HBoxContainer = HBoxContainer.new()
+	var hp_bar := HBoxContainer.new()
 	hp_bar.name = paddle_node.name
 	hp_bar.alignment = BoxContainer.ALIGN_CENTER
 	hp_bar.set("custom_constants/separation", -18)
 	for i in max_health:
-		var bit: TextureRect = TextureRect.new()
+		var bit := TextureRect.new()
 		bit.texture = HP_TEXTURE
 		if data.has("health"):
 			bit.modulate.a = 1.0 if data.health > i else 0.1
@@ -541,10 +539,9 @@ func get_inputs(paddle: String, input: Dictionary) -> Dictionary:
 	if not OS.is_window_focused():
 		return {velocity = Vector2(), rotation = 0, dash = false}
 	
-	var paddle_node: Node2D = paddle_nodes.get_node(paddle)
-	var input_velocity: Vector2 = Vector2()
-	var input_rotation: float = 0
-	var dash: bool = false
+	var input_velocity := Vector2()
+	var input_rotation := 0.0
+	var dash := false
 	if input.keys >= 0:
 		input_velocity.x = get_key(KEY_D, KEY_RIGHT, input.keys) - get_key(KEY_A, KEY_LEFT, input.keys)
 		input_velocity.y = get_key(KEY_S, KEY_DOWN, input.keys) - get_key(KEY_W, KEY_UP, input.keys)
@@ -553,14 +550,15 @@ func get_inputs(paddle: String, input: Dictionary) -> Dictionary:
 			dash = true
 		input_rotation = deg2rad((get_key(KEY_H, KEY_KP_3, input.keys) - get_key(KEY_G, KEY_KP_2, input.keys)) * 4)
 	if input.pad >= 0:
-		var left_stick: Vector2 = Vector2(Input.get_joy_axis(input.pad, 0), Input.get_joy_axis(input.pad, 1))
-		var right_stick: Vector2 = Vector2(Input.get_joy_axis(input.pad, 2), Input.get_joy_axis(input.pad, 3))
+		var left_stick := Vector2(Input.get_joy_axis(input.pad, 0), Input.get_joy_axis(input.pad, 1))
+		var right_stick := Vector2(Input.get_joy_axis(input.pad, 2), Input.get_joy_axis(input.pad, 3))
 		if left_stick.length() > 0.2:
 			input_velocity.x = sign(left_stick.x) * pow(left_stick.x, 2)
 			input_velocity.y = sign(left_stick.y) * pow(left_stick.y, 2)
 			if Input.is_joy_button_pressed(input.pad, JOY_L2):
 				dash = true
 		if right_stick.length() > 0.7:
+			var paddle_node: Node2D = paddle_nodes.get_node(paddle)
 			input_rotation = paddle_node.get_angle_to(paddle_node.position + right_stick) * 0.1
 	
 	return {velocity = input_velocity * MOVE_SPEED, rotation = input_rotation, dash = dash}
