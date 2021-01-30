@@ -8,7 +8,7 @@ const CLIENT_BALL_SCENE: PackedScene = preload("res://ball/clientball.tscn")
 const MAP_SCENE: PackedScene = preload("res://map/map.tscn")
 const SMALL_MAP_SCENE: PackedScene = preload("res://map/smallmap.tscn")
 
-const VERSION := "Dev Build"
+const VERSION := "0.4.1"
 const MOVE_SPEED := 500
 const CAMERA_ZOOM := Vector2(1, 1)
 
@@ -118,18 +118,13 @@ func _input(_event):
 	
 	# Create paddle if sensed input
 	if is_playing and paddle_data.size() < 8:
-		if Input.is_key_pressed(KEY_ENTER) and is_new_input("keys", 0):
+		if Input.is_key_pressed(KEY_ENTER) and not -1 in input_list.values():
 			if peer_id == 1:
-				create_paddle({name = peer_name, keys = 0, id = peer_id})
+				create_paddle({name = peer_name, pad = -1, id = peer_id})
 			else:
-				rpc_id(1, "create_paddle", {name = peer_name, keys = 0, id = peer_id})
-		if Input.is_key_pressed(KEY_KP_ENTER) and is_new_input("keys", 1):
-			if peer_id == 1:
-				create_paddle({name = peer_name, keys = 1, id = peer_id})
-			else:
-				rpc_id(1, "create_paddle", {name = peer_name, keys = 1, id = peer_id})
+				rpc_id(1, "create_paddle", {name = peer_name, pad = -1, id = peer_id})
 		for pad in Input.get_connected_joypads():
-			if Input.is_joy_button_pressed(pad, 0) and is_new_input("pad", pad):
+			if Input.is_joy_button_pressed(pad, 0) and not pad in input_list.values():
 				if peer_id == 1:
 					create_paddle({name = peer_name, pad = pad, id = peer_id})
 				else:
@@ -137,11 +132,10 @@ func _input(_event):
 	
 	# Force unload the game on shortcut press
 	if is_playing:
-		if Input.is_key_pressed(KEY_ESCAPE):
+		if -1 in input_list.values() and Input.is_key_pressed(KEY_ESCAPE):
 			unload_game("You left the game")
 			return
-		
-		for pad in Input.get_connected_joypads():
+		for pad in input_list.values():
 			if Input.is_joy_button_pressed(pad, JOY_START) and Input.is_joy_button_pressed(pad, JOY_SELECT):
 				unload_game("You left the game")
 				return
@@ -166,14 +160,6 @@ func set_message(new := "", time := 0) -> void:
 		message_timer.start(time)
 	elif new != "" and not message_timer.is_stopped():
 		message_timer.stop()
-
-
-# Check if an input device is already used
-func is_new_input(input_type: String, id: int) -> bool:
-	for input in input_list.values():
-		if input_type == "keys" and input.keys == id or input_type == "pad" and input.pad == id:
-			return false
-	return true
 
 
 func crement(which := "", value := 0) -> void:
@@ -219,10 +205,6 @@ func get_peer_name() -> String:
 		set_message("Invalid name", 3)
 	peer_name = new_name
 	return new_name
-
-
-func get_key(key1: int, key2: int, keys: int) -> int:
-	return int(Input.is_key_pressed(key1 if keys == 0 else key2))
 
 
 # Save configurables to file in JSON format
@@ -292,40 +274,60 @@ func connect_to_server() -> void:
 
 # Unload paddle(s) from disconnected client
 func peer_disconnected(id: int) -> void:
-	var has_sent_msg := false
 	var paddles_to_clear := []
 	for paddle in paddle_data:
 		if paddle_data[paddle].id == id:
-			if not has_sent_msg:
-				set_message(paddle_data[paddle].name + " disconnected", 2)
-				has_sent_msg = true
 			paddles_to_clear.append(paddle)
 	for paddle in paddles_to_clear:
 		paddle_data.erase(paddle)
 		paddle_nodes.get_node(paddle).queue_free()
 		bars_node.get_node(paddle).queue_free()
 	bars_node.columns = clamp(paddle_data.size(), 1, 8)
+	set_message("Client disconnected", 2)
 
 
 # Client connects and sends version for checking
 func connected() -> void:
-	rpc_id(1, "check", peer_name, VERSION)
+	rpc_id(1, "check", VERSION)
 
 
-remote func check(name: String, version: String) -> void:
+# Server checks client version
+remote func check(version: String) -> void:
 	var id: int = get_tree().get_rpc_sender_id()
 	if version != VERSION:
 		rpc_id(id, "unload_game", "Different server version (" + VERSION + ")")
 		return
-	set_message(name + " connected", 2)
-	rpc_id(id, "load_game", paddle_data, using_small_map, map_node.modulate, max_health, ball_count)
+	set_message("Client connected", 2)
+	rpc_id(id, "start_client_game", paddle_data, using_small_map, map_node.modulate, max_health, ball_count)
 
 
-# Send data to client to load game
-remote func load_game(paddles: Dictionary, small_map: bool, map_color: Color, health: int, balls: int) -> void:
-	save_config()
-	max_health = health
+# Send data to client to start game
+remote func start_client_game(paddles: Dictionary, small_map: bool, map_color: Color, health: int, balls: int) -> void:
 	join_timer.stop()
+	load_game(small_map, map_color, balls)
+	max_health = health
+	for paddle in paddles:
+		create_paddle(paddles[paddle])
+
+
+
+##### GAME #####
+
+
+# Server-side
+func start_game() -> void:
+	var peer = NetworkedMultiplayerENet.new()
+	peer.create_server(8910, 7)
+	get_tree().network_peer = peer
+	get_tree().refuse_new_network_connections = not is_open_to_lan
+	randomize()
+	var map_color := Color.from_hsv((randi() % 9 * 40.0) / 360.0, 1, 1)
+	load_game(using_small_map, map_color, ball_count)
+
+
+# Game loading code shared by server and client
+func load_game(small_map: bool, map_color: Color, balls: int) -> void:
+	save_config()
 	menu_node.hide()
 	map_node.modulate = map_color
 	if small_map:
@@ -335,37 +337,7 @@ remote func load_game(paddles: Dictionary, small_map: bool, map_color: Color, he
 	camera_spawn = map_node.get_child(0).get_node("CameraSpawn").position
 	paddle_spawns = map_node.get_child(0).get_node("PaddleSpawns").get_children()
 	ball_spawns = map_node.get_child(0).get_node("BallSpawns").get_children()
-	for paddle in paddles:
-		create_paddle(paddles[paddle])
 	create_balls(balls)
-	set_message("Press A/Enter to create your paddle", 5)
-	is_playing = true
-	camera_node.position = camera_spawn
-	camera_node.current = true
-
-
-
-##### GAME #####
-
-
-func start_game() -> void:
-	var peer := NetworkedMultiplayerENet.new()
-	peer.create_server(8910, 7)
-	get_tree().network_peer = peer
-	get_tree().refuse_new_network_connections = not is_open_to_lan
-	save_config()
-	menu_node.hide()
-	map_node.show()
-	randomize()
-	map_node.modulate = Color.from_hsv((randi() % 9 * 40.0) / 360.0, 1, 1)
-	if using_small_map:
-		map_node.add_child(SMALL_MAP_SCENE.instance())
-	else:
-		map_node.add_child(MAP_SCENE.instance())
-	camera_spawn = map_node.get_child(0).get_node("CameraSpawn").position
-	paddle_spawns = map_node.get_child(0).get_node("PaddleSpawns").get_children()
-	ball_spawns = map_node.get_child(0).get_node("BallSpawns").get_children()
-	create_balls(ball_count)
 	set_message("Press A/Enter to create your paddle", 5)
 	is_playing = true
 	camera_node.position = camera_spawn
@@ -445,7 +417,7 @@ remotesync func update_objects(paddles: Dictionary, balls: Array) -> void:
 
 remote func create_paddle(data: Dictionary = {}) -> void:
 	var paddle_count := paddle_nodes.get_child_count()
-	var paddle_node := PADDLE_SCENE.instance()
+	var paddle_node = PADDLE_SCENE.instance()
 	
 	# Change to client paddle if client
 	if peer_id != 1:
@@ -482,10 +454,7 @@ remote func create_paddle(data: Dictionary = {}) -> void:
 	
 	# Set input
 	if peer_id == data.id:
-		input_list[paddle_node.name] = {
-			keys = data.keys if data.has("keys") else -1,
-			pad = data.pad if data.has("pad") else -1
-		}
+		input_list[paddle_node.name] = data.pad if data.has("pad") else -2
 	
 	# Create HUD elements
 	var bar := VBoxContainer.new()
@@ -527,35 +496,34 @@ remote func create_paddle(data: Dictionary = {}) -> void:
 	if peer_id == 1 and is_open_to_lan:
 		var new_data: Dictionary = paddle_data[paddle_node.name].duplicate(true)
 		if data.id != peer_id:
-			new_data.keys = data.keys if data.has("keys") else -1
-			new_data.pad = data.pad if data.has("pad") else -1
+			new_data.pad = data.pad if data.has("pad") else -2
 		rpc("create_paddle", new_data)
 	
 	paddle_nodes.add_child(paddle_node)
 	paddle_nodes.move_child(paddle_node, 0)
 
 
-func get_inputs(paddle: String, input: Dictionary) -> Dictionary:
-	if not OS.is_window_focused():
+func get_inputs(paddle: String, pad: int) -> Dictionary:
+	if pad == -2 or not OS.is_window_focused():
 		return {velocity = Vector2(), rotation = 0, dash = false}
 	
 	var input_velocity := Vector2()
-	var input_rotation := 0.0
+	var input_rotation: float = 0.0
 	var dash := false
-	if input.keys >= 0:
-		input_velocity.x = get_key(KEY_D, KEY_RIGHT, input.keys) - get_key(KEY_A, KEY_LEFT, input.keys)
-		input_velocity.y = get_key(KEY_S, KEY_DOWN, input.keys) - get_key(KEY_W, KEY_UP, input.keys)
+	if pad == -1:
+		input_velocity.x = int(Input.is_key_pressed(KEY_D)) - int(Input.is_key_pressed(KEY_A))
+		input_velocity.y = int(Input.is_key_pressed(KEY_S)) - int(Input.is_key_pressed(KEY_W))
 		input_velocity = input_velocity.normalized()
-		if bool(get_key(KEY_SHIFT, KEY_KP_1, input.keys)):
+		if int(Input.is_key_pressed(KEY_SHIFT)):
 			dash = true
-		input_rotation = deg2rad((get_key(KEY_H, KEY_KP_3, input.keys) - get_key(KEY_G, KEY_KP_2, input.keys)) * 4)
-	if input.pad >= 0:
-		var left_stick := Vector2(Input.get_joy_axis(input.pad, 0), Input.get_joy_axis(input.pad, 1))
-		var right_stick := Vector2(Input.get_joy_axis(input.pad, 2), Input.get_joy_axis(input.pad, 3))
+		input_rotation = deg2rad((int(Input.is_key_pressed(KEY_PERIOD)) - int(Input.is_key_pressed(KEY_COMMA))) * 4)
+	else:
+		var left_stick := Vector2(Input.get_joy_axis(pad, 0), Input.get_joy_axis(pad, 1))
+		var right_stick := Vector2(Input.get_joy_axis(pad, 2), Input.get_joy_axis(pad, 3))
 		if left_stick.length() > 0.2:
 			input_velocity.x = sign(left_stick.x) * pow(left_stick.x, 2)
 			input_velocity.y = sign(left_stick.y) * pow(left_stick.y, 2)
-			if Input.is_joy_button_pressed(input.pad, JOY_L2):
+			if Input.is_joy_button_pressed(pad, JOY_L2):
 				dash = true
 		if right_stick.length() > 0.7:
 			var paddle_node: Node2D = paddle_nodes.get_node(paddle)
@@ -566,7 +534,6 @@ func get_inputs(paddle: String, input: Dictionary) -> Dictionary:
 
 # Send client inputs to server-side paddle
 remote func inputs_to_paddle(paddle: String, input: Dictionary) -> void:
-	input.velocity = input.velocity.clamped(MOVE_SPEED)
 	paddle_nodes.get_node(paddle).inputs(input)
 
 
@@ -576,9 +543,9 @@ remote func vibrate(paddle: String, is_destroyed: bool = false) -> void:
 	
 	if paddle_data[paddle].id == peer_id:
 		if is_destroyed:
-			Input.start_joy_vibration(input_list[paddle].pad, .2, .2, .3)
+			Input.start_joy_vibration(input_list[paddle], .2, .2, .3)
 		else:
-			Input.start_joy_vibration(input_list[paddle].pad, .1, 0, .1)
+			Input.start_joy_vibration(input_list[paddle], .1, 0, .1)
 	
 	elif peer_id == 1 and is_open_to_lan:
 		rpc_id(paddle_data[paddle].id, "vibrate", paddle, is_destroyed)

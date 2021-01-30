@@ -6,7 +6,7 @@ var can_dash := true
 
 var velocity := Vector2()
 var input_velocity := Vector2()
-var input_rotation := 0
+var input_rotation := 0.0
 
 onready var back_node: Area2D = get_node("Back")
 onready var safe_timer: Timer = get_node("SafeTimer")
