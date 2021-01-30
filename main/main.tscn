@@ -51,7 +51,6 @@ __meta__ = {
 }
 
 [node name="Map" type="Node2D" parent="."]
-visible = false
 __meta__ = {
 "_edit_lock_": true
 }

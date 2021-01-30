@@ -104,31 +104,10 @@ rotation = 4.71239
 [node name="BallSpawns" type="Node" parent="."]
 
 [node name="BallSpawn" type="Node2D" parent="BallSpawns"]
-position = Vector2( 512, 416 )
+position = Vector2( 640, 416 )
 
 [node name="BallSpawn2" type="Node2D" parent="BallSpawns"]
-position = Vector2( 768, 416 )
+position = Vector2( 512, 416 )
 
 [node name="BallSpawn3" type="Node2D" parent="BallSpawns"]
-position = Vector2( 2304, 32 )
-
-[node name="BallSpawn4" type="Node2D" parent="BallSpawns"]
-position = Vector2( 2304, 96 )
-
-[node name="BallSpawn5" type="Node2D" parent="BallSpawns"]
-position = Vector2( 2304, 160 )
-
-[node name="BallSpawn6" type="Node2D" parent="BallSpawns"]
-position = Vector2( 2304, 224 )
-
-[node name="BallSpawn7" type="Node2D" parent="BallSpawns"]
-position = Vector2( 2304, 288 )
-
-[node name="BallSpawn8" type="Node2D" parent="BallSpawns"]
-position = Vector2( 2304, 352 )
-
-[node name="BallSpawn9" type="Node2D" parent="BallSpawns"]
-position = Vector2( 2304, 416 )
-
-[node name="BallSpawn10" type="Node2D" parent="BallSpawns"]
-position = Vector2( 2304, 480 )
+position = Vector2( 768, 416 )

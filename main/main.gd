@@ -326,6 +326,7 @@ remote func load_game(paddles: Dictionary, small_map: bool, map_color: Color, he
 	save_config()
 	max_health = health
 	join_timer.stop()
+	menu_node.hide()
 	map_node.modulate = map_color
 	if small_map:
 		map_node.add_child(SMALL_MAP_SCENE.instance())
@@ -334,8 +335,6 @@ remote func load_game(paddles: Dictionary, small_map: bool, map_color: Color, he
 	camera_spawn = map_node.get_child(0).get_node("CameraSpawn").position
 	paddle_spawns = map_node.get_child(0).get_node("PaddleSpawns").get_children()
 	ball_spawns = map_node.get_child(0).get_node("BallSpawns").get_children()
-	menu_node.hide()
-	map_node.show()
 	for paddle in paddles:
 		create_paddle(paddles[paddle])
 	create_balls(balls)
@@ -355,10 +354,10 @@ func start_game() -> void:
 	get_tree().network_peer = peer
 	get_tree().refuse_new_network_connections = not is_open_to_lan
 	save_config()
-	randomize()
-	map_node.modulate = Color.from_hsv((randi() % 9 * 40.0) / 360.0, 1, 1)
 	menu_node.hide()
 	map_node.show()
+	randomize()
+	map_node.modulate = Color.from_hsv((randi() % 9 * 40.0) / 360.0, 1, 1)
 	if using_small_map:
 		map_node.add_child(SMALL_MAP_SCENE.instance())
 	else:
@@ -396,7 +395,6 @@ remote func unload_game(msg: String = "") -> void:
 		map_node.get_child(0).queue_free()
 	map_node.modulate = Color(0, 0, 0)
 	menu_node.show()
-	map_node.hide()
 	toggle_menus(true)
 	camera_node.current = false
 	play_button.grab_focus()
@@ -410,14 +408,19 @@ remotesync func update_objects(paddles: Dictionary, balls: Array) -> void:
 	# Update data with nodes on server
 	if peer_id == 1:
 		for paddle in paddles:
-			var paddle_node: Node2D = paddle_nodes.get_node(paddle)
+			var paddle_node: KinematicBody2D = paddle_nodes.get_node(paddle)
 			paddle_data[paddle].position = paddle_node.position
 			paddle_data[paddle].rotation = paddle_node.rotation
 			if paddles[paddle].id == peer_id:
 				var input_data: Dictionary = get_inputs(paddle, input_list[paddle])
 				inputs_to_paddle(paddle, input_data)
 		for ball in ball_nodes.get_child_count():
-			var ball_node: Node2D = ball_nodes.get_child(ball)
+			var ball_node: RigidBody2D = ball_nodes.get_child(ball)
+			if ball_node.position.length() > 8192:
+				ball_node.linear_velocity = Vector2()
+				ball_node.angular_velocity = 0
+				ball_node.position = ball_spawns[ball].position
+				ball_node.rotation = 0
 			ball_data[ball].position = ball_node.position
 			ball_data[ball].rotation = ball_node.rotation
 	
@@ -426,14 +429,14 @@ remotesync func update_objects(paddles: Dictionary, balls: Array) -> void:
 		for paddle in paddles:
 			paddle_data[paddle].position = paddles[paddle].position
 			paddle_data[paddle].rotation = paddles[paddle].rotation
-			var paddle_node: Node2D = paddle_nodes.get_node(paddle)
+			var paddle_node: Sprite = paddle_nodes.get_node(paddle)
 			paddle_node.position = paddles[paddle].position
 			paddle_node.rotation = paddles[paddle].rotation
 			if paddles[paddle].id == peer_id:
 				var input_data: Dictionary = get_inputs(paddle, input_list[paddle])
 				rpc_unreliable_id(1, "inputs_to_paddle", paddle, input_data)
 		for ball in ball_nodes.get_child_count():
-			var ball_node: Node2D = ball_nodes.get_child(ball)
+			var ball_node: Sprite = ball_nodes.get_child(ball)
 			ball_node.position = balls[ball].position
 			ball_node.rotation = balls[ball].rotation
 
@@ -609,6 +612,9 @@ remote func hit(paddle: String) -> void:
 
 func create_balls(count: int) -> void:
 	for i in count:
+		if i + 1 > ball_spawns.size():
+			return
+		
 		var ball_node: Node2D = BALL_SCENE.instance()
 		if get_tree().network_peer:
 			if peer_id == 1:
