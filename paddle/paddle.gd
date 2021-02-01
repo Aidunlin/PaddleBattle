@@ -23,13 +23,19 @@ func _ready() -> void:
 
 
 func _physics_process(delta: float) -> void:
-	velocity = velocity.linear_interpolate(input_velocity, 0.06 if input_velocity.length() > 0 else 0.02)
+	if input_velocity.length() > 0:
+		velocity = velocity.linear_interpolate(input_velocity, 0.06)
+	else:
+		velocity = velocity.linear_interpolate(input_velocity, 0.02)
 	rotation += input_rotation
 	
 	var collision := move_and_collide(velocity * delta, false)
 	if collision:
 		if collision.collider.is_in_group("balls"):
-			collision.collider.apply_central_impulse(-collision.normal * (200 if is_dashing else 100))
+			if is_dashing:
+				collision.collider.apply_central_impulse(-collision.normal * 200)
+			else:
+				collision.collider.apply_central_impulse(-collision.normal * 100)
 		else:
 			velocity = velocity.bounce(collision.normal)
 		get_node("/root/Main").vibrate(name)

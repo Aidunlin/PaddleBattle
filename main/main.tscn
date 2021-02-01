@@ -119,9 +119,9 @@ __meta__ = {
 
 [node name="Main" type="VBoxContainer" parent="CanvasLayer/UI/Menu"]
 margin_left = 404.0
-margin_top = 165.0
+margin_top = 146.0
 margin_right = 620.0
-margin_bottom = 434.0
+margin_bottom = 453.0
 
 [node name="Title" type="Label" parent="CanvasLayer/UI/Menu/Main"]
 margin_right = 216.0
@@ -190,10 +190,16 @@ margin_right = 216.0
 margin_bottom = 235.0
 text = "Join"
 
-[node name="Author" type="Label" parent="CanvasLayer/UI/Menu/Main"]
+[node name="Quit" type="Button" parent="CanvasLayer/UI/Menu/Main"]
 margin_top = 239.0
 margin_right = 216.0
-margin_bottom = 269.0
+margin_bottom = 273.0
+text = "Quit"
+
+[node name="Author" type="Label" parent="CanvasLayer/UI/Menu/Main"]
+margin_top = 277.0
+margin_right = 216.0
+margin_bottom = 307.0
 size_flags_horizontal = 3
 custom_fonts/font = SubResource( 5 )
 text = "Created by Aidunlin"

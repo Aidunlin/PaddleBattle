@@ -32,6 +32,10 @@ default_bus_layout=""
 
 gdscript/warnings/return_value_discarded=false
 
+[gdnative]
+
+singletons=[  ]
+
 [input]
 
 ui_accept={
