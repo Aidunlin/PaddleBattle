@@ -475,6 +475,11 @@ remote func create_paddle(data: Dictionary = {}) -> void:
 	if name_count > 1:
 		paddle_node.name += str(name_count)
 	
+	# Connect signals
+	if peer_id == 1:
+		paddle_node.connect("vibrate", self, "vibrate", [paddle_node.name])
+		paddle_node.connect("damaged", self, "damaged", [paddle_node.name])
+	
 	# Set input
 	if peer_id == data.id:
 		if data.has("pad"):
@@ -547,6 +552,7 @@ func get_inputs(paddle: String, pad: int) -> Dictionary:
 	var input_velocity := Vector2()
 	var input_rotation: float = 0.0
 	var dash := false
+	
 	if pad == -1:
 		input_velocity.x = int(Input.is_key_pressed(KEY_D)) - int(Input.is_key_pressed(KEY_A))
 		input_velocity.y = int(Input.is_key_pressed(KEY_S)) - int(Input.is_key_pressed(KEY_W))
@@ -554,6 +560,7 @@ func get_inputs(paddle: String, pad: int) -> Dictionary:
 		if int(Input.is_key_pressed(KEY_SHIFT)):
 			dash = true
 		input_rotation = deg2rad((int(Input.is_key_pressed(KEY_PERIOD)) - int(Input.is_key_pressed(KEY_COMMA))) * 4)
+	
 	else:
 		var left_stick := Vector2(Input.get_joy_axis(pad, 0), Input.get_joy_axis(pad, 1))
 		var right_stick := Vector2(Input.get_joy_axis(pad, 2), Input.get_joy_axis(pad, 3))
@@ -578,26 +585,20 @@ remote func inputs_to_paddle(paddle: String, input: Dictionary) -> void:
 	paddle_nodes.get_node(paddle).inputs(input)
 
 
-remote func vibrate(paddle: String, is_destroyed: bool = false) -> void:
+remote func vibrate(paddle: String) -> void:
 	if not is_playing:
 		return
 	
 	if paddle_data[paddle].id == peer_id:
-		if is_destroyed:
-			Input.start_joy_vibration(input_list[paddle], .2, .2, .3)
-		else:
-			Input.start_joy_vibration(input_list[paddle], .1, 0, .1)
-	
+		Input.start_joy_vibration(input_list[paddle], 0.1, 0.1, 0.1)
 	elif peer_id == 1 and is_open_to_lan:
-		rpc_id(paddle_data[paddle].id, "vibrate", paddle, is_destroyed)
+		rpc_id(paddle_data[paddle].id, "vibrate", paddle)
 
 
 # Manage paddle health
-remote func hit(paddle: String) -> void:
+remote func damaged(paddle: String) -> void:
 	paddle_data[paddle].health -= 1
 	if paddle_data[paddle].health < 1:
-		if paddle_data[paddle].id == peer_id:
-			vibrate(paddle, true)
 		set_message(paddle_data[paddle].name + " was destroyed", 2)
 		if peer_id == 1:
 			paddle_nodes.get_node(paddle).position = paddle_data[paddle].spawn_position
@@ -612,7 +613,7 @@ remote func hit(paddle: String) -> void:
 			health_bits[i].modulate.a = 0.1
 	
 	if peer_id == 1:
-		rpc("hit", paddle)
+		rpc("damaged", paddle)
 
 
 

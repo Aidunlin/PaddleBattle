@@ -1,5 +1,8 @@
 extends KinematicBody2D
 
+signal vibrate()
+signal damaged()
+
 var is_safe := true
 var is_dashing := false
 var can_dash := true
@@ -38,12 +41,12 @@ func _physics_process(delta: float) -> void:
 				collision.collider.apply_central_impulse(-collision.normal * 100)
 		else:
 			velocity = velocity.bounce(collision.normal)
-		get_node("/root/Main").vibrate(name)
+		emit_signal("vibrate")
 
 
 func back_collided(body: Node2D) -> void:
 	if body.is_in_group("balls") and not is_safe:
-		get_node("/root/Main").hit(name)
+		emit_signal("damaged")
 		is_safe = true
 		safe_timer.start(2)
 
