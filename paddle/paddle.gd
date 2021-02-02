@@ -3,21 +3,21 @@ extends KinematicBody2D
 signal vibrate()
 signal damaged()
 
-var is_safe := true
-var is_dashing := false
-var can_dash := true
+var is_safe = true
+var is_dashing = false
+var can_dash = true
 
-var velocity := Vector2()
-var input_velocity := Vector2()
-var input_rotation := 0.0
+var velocity = Vector2()
+var input_velocity = Vector2()
+var input_rotation = 0.0
 
-onready var back_node: Area2D = get_node("Back")
-onready var safe_timer: Timer = get_node("SafeTimer")
-onready var dash_timer: Timer = get_node("DashTimer")
-onready var dash_reset_timer: Timer = get_node("DashResetTimer")
+onready var back_node = $Back
+onready var safe_timer = $SafeTimer
+onready var dash_timer = $DashTimer
+onready var dash_reset_timer = $DashResetTimer
 
 
-func _ready() -> void:
+func _ready():
 	back_node.connect("body_entered", self, "back_collided")
 	safe_timer.connect("timeout", self, "safe_timeout")
 	dash_timer.connect("timeout", self, "dash_timeout")
@@ -25,14 +25,14 @@ func _ready() -> void:
 	safe_timer.start(3)
 
 
-func _physics_process(delta: float) -> void:
+func _physics_process(delta):
 	if input_velocity.length() > 0:
 		velocity = velocity.linear_interpolate(input_velocity, 0.06)
 	else:
 		velocity = velocity.linear_interpolate(input_velocity, 0.02)
 	rotation += input_rotation
 	
-	var collision := move_and_collide(velocity * delta, false)
+	var collision = move_and_collide(velocity * delta, false)
 	if collision:
 		if collision.collider.is_in_group("balls"):
 			if is_dashing:
@@ -44,19 +44,19 @@ func _physics_process(delta: float) -> void:
 		emit_signal("vibrate")
 
 
-func back_collided(body: Node2D) -> void:
+func back_collided(body):
 	if body.is_in_group("balls") and not is_safe:
 		emit_signal("damaged")
 		is_safe = true
 		safe_timer.start(2)
 
 
-func safe_timeout() -> void:
+func safe_timeout():
 	is_safe = false
 	safe_timer.stop()
 
 
-func dash_timeout() -> void:
+func dash_timeout():
 	is_dashing = false
 	dash_timer.stop()
 	dash_reset_timer.start(0.85)
@@ -67,11 +67,10 @@ func dash_reset_timeout():
 	dash_reset_timer.stop()
 
 
-# Set client data; called from Main
-func inputs(input_data: Dictionary) -> void:
-	input_velocity = input_data.velocity
-	input_rotation = input_data.rotation
-	if input_data.dash and can_dash:
+func inputs(data):
+	input_velocity = data.velocity
+	input_rotation = data.rotation
+	if data.dash and can_dash:
 		can_dash = false
 		is_dashing = true
 		dash_timer.start(0.15)
