@@ -19,16 +19,16 @@
 0/z_index = 0
 
 [sub_resource type="RectangleShape2D" id=2]
-extents = Vector2( 1056, 64 )
+extents = Vector2( 1120, 64 )
 
 [sub_resource type="RectangleShape2D" id=3]
-extents = Vector2( 1056, 64 )
+extents = Vector2( 1120, 64 )
 
 [sub_resource type="RectangleShape2D" id=4]
-extents = Vector2( 64, 608 )
+extents = Vector2( 64, 672 )
 
 [sub_resource type="RectangleShape2D" id=5]
-extents = Vector2( 64, 608 )
+extents = Vector2( 64, 672 )
 
 [sub_resource type="RectangleShape2D" id=6]
 extents = Vector2( 288, 32 )

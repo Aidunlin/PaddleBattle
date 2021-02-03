@@ -36,7 +36,7 @@ func _physics_process(delta):
 	if collision:
 		if collision.collider.is_in_group("balls"):
 			if is_dashing:
-				collision.collider.apply_central_impulse(-collision.normal * 200)
+				collision.collider.apply_central_impulse(-collision.normal * 300)
 			else:
 				collision.collider.apply_central_impulse(-collision.normal * 100)
 		else:
@@ -59,7 +59,7 @@ func safe_timeout():
 func dash_timeout():
 	is_dashing = false
 	dash_timer.stop()
-	dash_reset_timer.start(0.85)
+	dash_reset_timer.start(0.65)
 
 
 func dash_reset_timeout():
