@@ -1,10 +1,10 @@
 extends Node
 
 const HP_TEXTURE = preload("res://main/hp.png")
+const PADDLE_TEXTURE = preload("res://paddle/paddle.png")
+const BALL_TEXTURE = preload("res://ball/ball.png")
 const PADDLE_SCENE = preload("res://paddle/paddle.tscn")
-const CLIENT_PADDLE_SCENE = preload("res://paddle/clientpaddle.tscn")
 const BALL_SCENE = preload("res://ball/ball.tscn")
-const CLIENT_BALL_SCENE = preload("res://ball/clientball.tscn")
 const MAP_SCENE = preload("res://map/map.tscn")
 const SMALL_MAP_SCENE = preload("res://map/smallmap.tscn")
 
@@ -82,7 +82,7 @@ func _ready():
 	join_timer.connect("timeout", self, "unload_game", ["Connection failed"])
 	message_timer.connect("timeout", self, "set_message")
 	get_tree().connect("network_peer_disconnected", self, "peer_disconnected")
-	get_tree().connect("connected_to_server", self, "connected")
+	get_tree().connect("connected_to_server", self, "rpc_id", [1, "check", VERSION])
 	get_tree().connect("connection_failed", self, "unload_game", ["Connection failed"])
 	get_tree().connect("server_disconnected", self, "unload_game", ["Server disconnected"])
 
@@ -293,17 +293,13 @@ func peer_disconnected(id):
 	set_message("Client disconnected", 2)
 
 
-func connected():
-	rpc_id(1, "check", VERSION)
-
-
 remote func check(version):
 	var id = get_tree().get_rpc_sender_id()
-	if version != VERSION:
+	if version == VERSION:
+		set_message("Client connected", 2)
+		rpc_id(id, "start_client_game", paddle_data, using_small_map, map_node.modulate, max_health, ball_count)
+	else:
 		rpc_id(id, "unload_game", "Different server version (" + VERSION + ")")
-		return
-	set_message("Client connected", 2)
-	rpc_id(id, "start_client_game", paddle_data, using_small_map, map_node.modulate, max_health, ball_count)
 
 
 remote func start_client_game(paddles, small_map, map_color, health, balls):
@@ -423,7 +419,8 @@ remote func create_paddle(data = {}):
 	var paddle_node = PADDLE_SCENE.instance()
 	
 	if peer_id != 1:
-		paddle_node = CLIENT_PADDLE_SCENE.instance()
+		paddle_node = Sprite.new()
+		paddle_node.texture = PADDLE_TEXTURE
 	
 	if data.has("position") and data.has("rotation"):
 		paddle_node.position = data.position
@@ -439,7 +436,6 @@ remote func create_paddle(data = {}):
 		while new_hue > 200 and new_hue < 300 or new_hue in hues:
 			randomize()
 			new_hue = randf() * 360
-			print(new_hue)
 		hues.append(new_hue)
 		paddle_node.modulate = Color.from_hsv(new_hue / 360.0, 1, 1)
 	
@@ -599,6 +595,7 @@ func create_balls(count):
 			if peer_id == 1:
 				ball_data.append({})
 			else:
-				ball_node = CLIENT_BALL_SCENE.instance()
+				ball_node = Sprite.new()
+				ball_node.texture = BALL_TEXTURE
 		ball_node.position = ball_spawns[i].position
 		ball_nodes.add_child(ball_node)
