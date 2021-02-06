@@ -1,6 +1,6 @@
 extends KinematicBody2D
 
-signal vibrate()
+signal collided()
 signal damaged()
 
 var is_safe = true
@@ -41,7 +41,7 @@ func _physics_process(delta):
 				collision.collider.apply_central_impulse(-collision.normal * 100)
 		else:
 			velocity = velocity.bounce(collision.normal)
-		emit_signal("vibrate")
+		emit_signal("collided")
 
 
 func back_collided(body):

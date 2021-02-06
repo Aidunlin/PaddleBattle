@@ -47,13 +47,13 @@ glow_bloom = 1.0
 [node name="Main" type="Node"]
 script = ExtResource( 2 )
 
-[node name="Map" type="Node2D" parent="."]
+[node name="Camera" type="Camera2D" parent="."]
+current = true
 __meta__ = {
 "_edit_lock_": true
 }
 
-[node name="Camera" type="Camera2D" parent="."]
-current = true
+[node name="Map" type="Node2D" parent="."]
 __meta__ = {
 "_edit_lock_": true
 }
