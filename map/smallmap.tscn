@@ -83,21 +83,6 @@ rotation = 1.5708
 position = Vector2( 640, 672 )
 rotation = 4.71239
 
-[node name="PaddleSpawn5" type="Node2D" parent="PaddleSpawns"]
-position = Vector2( 256, 416 )
-
-[node name="PaddleSpawn6" type="Node2D" parent="PaddleSpawns"]
-position = Vector2( 1024, 416 )
-rotation = 3.14159
-
-[node name="PaddleSpawn7" type="Node2D" parent="PaddleSpawns"]
-position = Vector2( 640, 160 )
-rotation = 1.5708
-
-[node name="PaddleSpawn8" type="Node2D" parent="PaddleSpawns"]
-position = Vector2( 640, 672 )
-rotation = 4.71239
-
 [node name="BallSpawns" type="Node" parent="."]
 
 [node name="BallSpawn" type="Node2D" parent="BallSpawns"]

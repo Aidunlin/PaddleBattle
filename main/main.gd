@@ -7,7 +7,6 @@ const PADDLE_SCENE = preload("res://paddle/paddle.tscn")
 const BALL_SCENE = preload("res://ball/ball.tscn")
 const MAP_SCENE = preload("res://map/map.tscn")
 const SMALL_MAP_SCENE = preload("res://map/smallmap.tscn")
-
 const VERSION = "Dev Build"
 const MOVE_SPEED = 500
 const CAMERA_ZOOM = Vector2(1, 1)
@@ -16,17 +15,14 @@ var is_playing = false
 var is_open_to_lan = true
 var using_small_map = false
 var peer_id = 1
-
+var peer_name = ""
 var initial_max_health = 0
 var max_health = 3
 var ball_count = 10
-
-var peer_name = ""
 var paddle_data = {}
 var ball_data = []
 var input_list = {}
 var hue_list = []
-
 var camera_spawn = Vector2()
 var paddle_spawns = []
 var ball_spawns = []
@@ -35,11 +31,9 @@ onready var camera_node = $Camera
 onready var map_parent = $Map
 onready var paddle_parent = $Paddles
 onready var ball_parent = $Balls
-
 onready var message_node = $CanvasLayer/UI/Message
 onready var bars_node = $CanvasLayer/UI/HUD/Bars
 onready var menu_node = $CanvasLayer/UI/Menu
-
 onready var main_menu = $CanvasLayer/UI/Menu/Main
 onready var version_node = $CanvasLayer/UI/Menu/Main/Version
 onready var name_input = $CanvasLayer/UI/Menu/Main/NameBar/Name
@@ -47,7 +41,6 @@ onready var play_button = $CanvasLayer/UI/Menu/Main/Play
 onready var ip_input = $CanvasLayer/UI/Menu/Main/IPBar/IP
 onready var join_button = $CanvasLayer/UI/Menu/Main/Join
 onready var quit_button = $CanvasLayer/UI/Menu/Main/Quit
-
 onready var options_menu = $CanvasLayer/UI/Menu/Options
 onready var open_lan_toggle = $CanvasLayer/UI/Menu/Options/OpenLAN
 onready var small_map_toggle = $CanvasLayer/UI/Menu/Options/SmallMap
@@ -59,14 +52,31 @@ onready var balls_inc_button = $CanvasLayer/UI/Menu/Options/BallsBar/Inc
 onready var balls_node = $CanvasLayer/UI/Menu/Options/BallsBar/Balls
 onready var start_button = $CanvasLayer/UI/Menu/Options/Start
 onready var back_button = $CanvasLayer/UI/Menu/Options/Back
-
 onready var join_timer = $JoinTimer
 onready var message_timer = $MessageTimer
 
-
 func _ready():
 	version_node.text = VERSION
-	load_config()
+	var file = File.new()
+	if file.file_exists("user://config.json"):
+		file.open("user://config.json", File.READ)
+		var save = parse_json(file.get_line())
+		if "name" in save:
+			name_input.text = save.name
+		if "ip" in save:
+			ip_input.text = save.ip
+		if "is_open_to_lan" in save:
+			is_open_to_lan = save.is_open_to_lan
+			open_lan_toggle.pressed = is_open_to_lan
+		if "using_small_map" in save:
+			using_small_map = save.using_small_map
+			small_map_toggle.pressed = using_small_map
+		if "health" in save:
+			max_health = save.health
+		if "balls" in save:
+			ball_count = save.balls
+		crement()
+		file.close()
 	play_button.grab_focus()
 	play_button.connect("pressed", self, "switch_menu", [false])
 	join_button.connect("pressed", self, "connect_to_server")
@@ -86,49 +96,34 @@ func _ready():
 	get_tree().connect("connection_failed", self, "unload_game", ["Connection failed"])
 	get_tree().connect("server_disconnected", self, "unload_game", ["Server disconnected"])
 
-
 func _physics_process(_delta):
-	if is_playing and peer_id == 1:
-		rpc_unreliable("update_objects", paddle_data, ball_data)
-	
-	var zoom = CAMERA_ZOOM
-	if is_playing and paddle_parent.get_child_count() > 0:
-		camera_node.smoothing_enabled = true
-		var avg = Vector2()
-		var max_x = -INF
-		var min_x = INF
-		var max_y = -INF
-		var min_y = INF
-		for paddle in paddle_parent.get_children():
-			avg += paddle.position
-			max_x = max(paddle.position.x, max_x)
-			min_x = min(paddle.position.x, min_x)
-			max_y = max(paddle.position.y, max_y)
-			min_y = min(paddle.position.y, min_y)
-		avg /= paddle_parent.get_child_count()
-		var zoom_x = (2 * max(max_x - avg.x, avg.x - min_x) + OS.window_size.x / 1.5) / OS.window_size.x
-		var zoom_y = (2 * max(max_y - avg.y, avg.y - min_y) + OS.window_size.y / 1.5) / OS.window_size.y
-		zoom = Vector2(max(zoom_x, zoom_y), max(zoom_x, zoom_y))
-		if zoom < CAMERA_ZOOM:
-			zoom = CAMERA_ZOOM
-		camera_node.position = avg
-	if camera_node.zoom > zoom:
-		camera_node.zoom = camera_node.zoom.linear_interpolate(zoom, 0.01)
-	else:
-		camera_node.zoom = camera_node.zoom.linear_interpolate(zoom, 0.1)
-
+	if is_playing:
+		if peer_id == 1:
+			rpc_unreliable("update_objects", paddle_data, ball_data)
+		var zoom = CAMERA_ZOOM
+		if paddle_parent.get_child_count() > 0:
+			var avg = Vector2()
+			var max_x = -INF
+			var min_x = INF
+			var max_y = -INF
+			var min_y = INF
+			for paddle in paddle_parent.get_children():
+				avg += paddle.position
+				max_x = max(paddle.position.x, max_x)
+				min_x = min(paddle.position.x, min_x)
+				max_y = max(paddle.position.y, max_y)
+				min_y = min(paddle.position.y, min_y)
+			avg /= paddle_parent.get_child_count()
+			var zoom_x = (2 * max(max_x - avg.x, avg.x - min_x) + OS.window_size.x / 1.5) / OS.window_size.x
+			var zoom_y = (2 * max(max_y - avg.y, avg.y - min_y) + OS.window_size.y / 1.5) / OS.window_size.y
+			zoom = Vector2(max(zoom_x, zoom_y), max(zoom_x, zoom_y))
+			if zoom < CAMERA_ZOOM:
+				zoom = CAMERA_ZOOM
+			camera_node.position = avg
+		camera_node.zoom = camera_node.zoom.linear_interpolate(zoom, 0.05)
 
 func _input(_event):
-	if not OS.is_window_focused():
-		return
-		
-	if ip_input.has_focus() and Input.is_key_pressed(KEY_ENTER):
-		connect_to_server()
-	
-	if options_menu.visible and Input.is_action_just_released("ui_cancel"):
-		switch_menu(true)
-	
-	if is_playing and paddle_data.size() < 8:
+	if is_playing and OS.is_window_focused():
 		if Input.is_key_pressed(KEY_ENTER) and not -1 in input_list.values():
 			var data = {
 				"name": peer_name,
@@ -150,8 +145,6 @@ func _input(_event):
 					create_paddle(data)
 				else:
 					rpc_id(1, "create_paddle", data)
-	
-	if is_playing:
 		if -1 in input_list.values() and Input.is_key_pressed(KEY_ESCAPE):
 			unload_game("You left the game")
 		for pad in input_list.values():
@@ -159,10 +152,7 @@ func _input(_event):
 				unload_game("You left the game")
 				break
 
-
-
-##### HELPERS #####
-
+##### -------------------- HELPERS -------------------- #####
 
 func set_message(new = "", time = 0):
 	message_node.text = new
@@ -170,7 +160,6 @@ func set_message(new = "", time = 0):
 		message_timer.start(time)
 	elif new != "" and not message_timer.is_stopped():
 		message_timer.stop()
-
 
 func crement(which = "", value = 0):
 	if which == "health":
@@ -180,84 +169,37 @@ func crement(which = "", value = 0):
 	health_node.text = str(max_health)
 	balls_node.text = str(ball_count)
 
-
 func toggle_buttons(toggle):
 	name_input.editable = not toggle
 	play_button.disabled = toggle
 	ip_input.editable = not toggle
 	join_button.disabled = toggle
 
-
 func switch_menu(to_main):
-	if not to_main:
+	if to_main:
+		play_button.grab_focus()
+	else:
 		if get_peer_name() == "":
 			return
 		start_button.grab_focus()
-	else:
-		play_button.grab_focus()
-	
 	main_menu.visible = to_main
 	options_menu.visible = not to_main
-
 
 func toggle_lan():
 	is_open_to_lan = not is_open_to_lan
 
-
 func toggle_small_map():
 	using_small_map = not using_small_map
-
 
 func get_peer_name():
 	var new_name = name_input.text
 	if new_name == "":
 		set_message("Invalid name", 3)
-	peer_name = new_name
+	else:
+		peer_name = new_name
 	return new_name
 
-
-func save_config():
-	var file = File.new()
-	file.open("user://config.json", File.WRITE)
-	var save = {
-		"name": name_input.text,
-		"ip": ip_input.text,
-		"is_open_to_lan": is_open_to_lan,
-		"using_small_map": using_small_map,
-		"health": max_health,
-		"balls": ball_count,
-	}
-	file.store_line(to_json(save))
-	file.close()
-
-
-func load_config():
-	var file = File.new()
-	if not file.file_exists("user://config.json"):
-		return
-	file.open("user://config.json", File.READ)
-	var save = parse_json(file.get_line())
-	if "name" in save:
-		name_input.text = save.name
-	if "ip" in save:
-		ip_input.text = save.ip
-	if "is_open_to_lan" in save:
-		is_open_to_lan = save.is_open_to_lan
-		open_lan_toggle.pressed = is_open_to_lan
-	if "using_small_map" in save:
-		using_small_map = save.using_small_map
-		small_map_toggle.pressed = using_small_map
-	if "health" in save:
-		max_health = save.health
-	if "balls" in save:
-		ball_count = save.balls
-	crement()
-	file.close()
-
-
-
-##### CLIENT #####
-
+##### -------------------- CLIENT -------------------- #####
 
 func connect_to_server():
 	if get_peer_name() == "":
@@ -277,7 +219,6 @@ func connect_to_server():
 	peer_id = get_tree().get_network_unique_id()
 	join_timer.start(5)
 
-
 func peer_disconnected(id):
 	var paddles_to_clear = []
 	for paddle in paddle_data:
@@ -290,7 +231,6 @@ func peer_disconnected(id):
 	bars_node.columns = max(paddle_data.size(), 1)
 	set_message("Client disconnected", 2)
 
-
 remote func check(version):
 	var id = get_tree().get_rpc_sender_id()
 	if version == VERSION:
@@ -300,7 +240,6 @@ remote func check(version):
 	else:
 		rpc_id(id, "unload_game", "Different server version (" + VERSION + ")")
 
-
 remote func start_client_game(paddles, small_map, map_color, health, balls):
 	join_timer.stop()
 	load_game(small_map, map_color, balls)
@@ -308,14 +247,11 @@ remote func start_client_game(paddles, small_map, map_color, health, balls):
 	for paddle in paddles:
 		create_paddle(paddles[paddle])
 
-
-
-##### GAME #####
-
+##### -------------------- GAME -------------------- #####
 
 func start_game():
 	var peer = NetworkedMultiplayerENet.new()
-	peer.create_server(8910, 7)
+	peer.create_server(8910)
 	get_tree().network_peer = peer
 	get_tree().refuse_new_network_connections = not is_open_to_lan
 	var new_hue = 250
@@ -325,9 +261,19 @@ func start_game():
 	hue_list.append(new_hue)
 	load_game(using_small_map, Color.from_hsv(new_hue / 360.0, 1, 1), ball_count)
 
-
 func load_game(small_map, map_color, balls):
-	save_config()
+	var file = File.new()
+	file.open("user://config.json", File.WRITE)
+	var save = {
+		"name": name_input.text,
+		"ip": ip_input.text,
+		"is_open_to_lan": is_open_to_lan,
+		"using_small_map": using_small_map,
+		"health": max_health,
+		"balls": ball_count,
+	}
+	file.store_line(to_json(save))
+	file.close()
 	map_parent.modulate = map_color
 	if small_map:
 		map_parent.add_child(SMALL_MAP_SCENE.instance())
@@ -337,11 +283,21 @@ func load_game(small_map, map_color, balls):
 	paddle_spawns = map_parent.get_child(0).get_node("PaddleSpawns").get_children()
 	ball_spawns = map_parent.get_child(0).get_node("BallSpawns").get_children()
 	camera_node.position = camera_spawn
-	create_balls(balls)
+	for i in balls:
+		if i + 1 > ball_spawns.size():
+			break
+		var ball_node = BALL_SCENE.instance()
+		if get_tree().network_peer:
+			if peer_id == 1:
+				ball_data.append({})
+			else:
+				ball_node = Sprite.new()
+				ball_node.texture = BALL_TEXTURE
+		ball_node.position = ball_spawns[i].position
+		ball_parent.add_child(ball_node)
 	set_message("Press A/Enter to create your paddle", 5)
 	menu_node.hide()
 	is_playing = true
-
 
 remote func unload_game(msg = ""):
 	is_playing = false
@@ -355,7 +311,7 @@ remote func unload_game(msg = ""):
 	hue_list.clear()
 	camera_node.position = Vector2()
 	camera_node.smoothing_enabled = false
-	map_parent.modulate = Color(0, 0, 0)
+	map_parent.modulate = Color(1, 1, 1)
 	if map_parent.get_child_count() > 0:
 		map_parent.get_child(0).queue_free()
 	for paddle in paddle_parent.get_children():
@@ -367,70 +323,60 @@ remote func unload_game(msg = ""):
 	for bar in bars_node.get_children():
 		bar.queue_free()
 	bars_node.columns = 1
-	switch_menu(true)
-	toggle_buttons(false)
 	menu_node.show()
+	toggle_buttons(false)
+	switch_menu(true)
 	set_message(msg, 3)
 
-
 remotesync func update_objects(paddles, balls):
-	if not is_playing:
-		return
-	
-	if peer_id == 1:
-		for paddle in paddles:
-			var paddle_node = paddle_parent.get_node(paddle)
-			paddle_data[paddle].position = paddle_node.position
-			paddle_data[paddle].rotation = paddle_node.rotation
-			if paddles[paddle].id == peer_id:
-				inputs_to_paddle(paddle, get_inputs(paddle, input_list[paddle]))
-		for ball_index in ball_parent.get_child_count():
-			var ball_node = ball_parent.get_child(ball_index)
-			if ball_node.position.length() > 4096:
-				ball_node.queue_free()
-				var new_ball_node = BALL_SCENE.instance()
-				new_ball_node.position = ball_spawns[ball_index].position
-				ball_parent.add_child(new_ball_node)
-			ball_data[ball_index].position = ball_node.position
-			ball_data[ball_index].rotation = ball_node.rotation
-	
-	else:
-		for paddle in paddles:
-			paddle_data[paddle].position = paddles[paddle].position
-			paddle_data[paddle].rotation = paddles[paddle].rotation
-			var paddle_node = paddle_parent.get_node(paddle)
-			paddle_node.position = paddles[paddle].position
-			paddle_node.rotation = paddles[paddle].rotation
-			if paddles[paddle].id == peer_id:
-				rpc_unreliable_id(1, "inputs_to_paddle", paddle, get_inputs(paddle, input_list[paddle]))
-		for ball_index in ball_parent.get_child_count():
-			var ball_node = ball_parent.get_child(ball_index)
-			ball_node.position = balls[ball_index].position
-			ball_node.rotation = balls[ball_index].rotation
+	if is_playing:
+		if peer_id == 1:
+			for paddle in paddles:
+				var paddle_node = paddle_parent.get_node(paddle)
+				paddle_data[paddle].position = paddle_node.position
+				paddle_data[paddle].rotation = paddle_node.rotation
+				if paddles[paddle].id == peer_id:
+					inputs_to_paddle(paddle, get_inputs(paddle))
+			for ball_index in ball_parent.get_child_count():
+				var ball_node = ball_parent.get_child(ball_index)
+				if ball_node.position.length() > 4096:
+					ball_node.queue_free()
+					var new_ball_node = BALL_SCENE.instance()
+					new_ball_node.position = ball_spawns[ball_index].position
+					ball_parent.add_child(new_ball_node)
+				ball_data[ball_index].position = ball_node.position
+				ball_data[ball_index].rotation = ball_node.rotation
+		else:
+			for paddle in paddles:
+				paddle_data[paddle].position = paddles[paddle].position
+				paddle_data[paddle].rotation = paddles[paddle].rotation
+				var paddle_node = paddle_parent.get_node(paddle)
+				paddle_node.position = paddles[paddle].position
+				paddle_node.rotation = paddles[paddle].rotation
+				if paddles[paddle].id == peer_id:
+					rpc_unreliable_id(1, "inputs_to_paddle", paddle, get_inputs(paddle))
+			for ball_index in ball_parent.get_child_count():
+				var ball_node = ball_parent.get_child(ball_index)
+				ball_node.position = balls[ball_index].position
+				ball_node.rotation = balls[ball_index].rotation
 
-
-
-##### PADDLE #####
-
+##### -------------------- PADDLE -------------------- #####
 
 remote func create_paddle(data = {}):
+	camera_node.smoothing_enabled = true
 	var paddle_node = PADDLE_SCENE.instance()
 	var paddle_count = paddle_parent.get_child_count()
-	
-	if paddle_count > 8:
+	if paddle_count == paddle_spawns.size():
 		return
-	
 	if peer_id != 1:
 		paddle_node = Sprite.new()
 		paddle_node.texture = PADDLE_TEXTURE
-	
 	if "position" in data and "rotation" in data:
 		paddle_node.position = data.position
 		paddle_node.rotation = data.rotation
 	else:
 		paddle_node.position = paddle_spawns[paddle_count].position
 		paddle_node.rotation = paddle_spawns[paddle_count].rotation
-	
 	if "color" in data:
 		paddle_node.modulate = data.color
 	else:
@@ -440,7 +386,6 @@ remote func create_paddle(data = {}):
 			new_hue = randf() * 360
 		hue_list.append(new_hue)
 		paddle_node.modulate = Color.from_hsv(new_hue / 360.0, 1, 1)
-	
 	var name_count = 1
 	for paddle in paddle_parent.get_children():
 		if data.name in paddle.name:
@@ -449,14 +394,11 @@ remote func create_paddle(data = {}):
 	if name_count > 1:
 		new_name += str(name_count)
 	paddle_node.name = new_name
-	
 	if peer_id == 1:
 		paddle_node.connect("collided", self, "vibrate", [new_name])
 		paddle_node.connect("damaged", self, "damage", [new_name])
-	
 	if peer_id == data.id and "pad" in data:
 		input_list[new_name] = data.pad
-	
 	var bar = VBoxContainer.new()
 	bar.name = new_name
 	bar.size_flags_horizontal = VBoxContainer.SIZE_EXPAND_FILL
@@ -472,16 +414,12 @@ remote func create_paddle(data = {}):
 	for i in max_health:
 		var bit = TextureRect.new()
 		bit.texture = HP_TEXTURE
-		if "health" in data:
-			if data.health > i:
-				bit.modulate.a = 1.0
-			else:
-				bit.modulate.a = 0.1
+		if "health" in data and data.health <= i:
+			bit.modulate.a = 0.1
 		hp_bar.add_child(bit)
 	bar.add_child(hp_bar)
 	bars_node.add_child(bar)
-	bars_node.columns = max(1, paddle_count + 1)
-	
+	bars_node.columns = paddle_count + 1
 	paddle_data[new_name] = {
 		"position": paddle_node.position,
 		"rotation": paddle_node.rotation,
@@ -489,38 +427,33 @@ remote func create_paddle(data = {}):
 		"id": data.id,
 		"color": paddle_node.modulate,
 	}
-	
 	if "health" in data:
 		paddle_data[new_name].health = data.health
 	else:
 		paddle_data[new_name].health = max_health
-	
 	if peer_id == 1 and is_open_to_lan:
 		var new_data = paddle_data[new_name].duplicate(true)
 		if data.id != peer_id and "pad" in data:
 			new_data.pad = data.pad
 		rpc("create_paddle", new_data)
-	
 	paddle_parent.add_child(paddle_node)
 
-
-func get_inputs(paddle, pad):
+func get_inputs(paddle):
+	var pad = input_list[paddle]
 	var input = {
 		"velocity": Vector2(),
 		"rotation": 0.0,
 		"dash": false
 	}
-	
 	if not OS.is_window_focused():
 		return input
-	
 	if pad == -1:
 		input.velocity.x = int(Input.is_key_pressed(KEY_D)) - int(Input.is_key_pressed(KEY_A))
 		input.velocity.y = int(Input.is_key_pressed(KEY_S)) - int(Input.is_key_pressed(KEY_W))
 		input.velocity = input.velocity.normalized() * MOVE_SPEED
-		input.dash = Input.is_key_pressed(KEY_SHIFT)
+		if input.velocity.length() > 0:
+			input.dash = Input.is_key_pressed(KEY_SHIFT)
 		input.rotation = deg2rad((int(Input.is_key_pressed(KEY_PERIOD)) - int(Input.is_key_pressed(KEY_COMMA))) * 4)
-	
 	else:
 		var left_stick = Vector2(Input.get_joy_axis(pad, 0), Input.get_joy_axis(pad, 1))
 		var right_stick = Vector2(Input.get_joy_axis(pad, 2), Input.get_joy_axis(pad, 3))
@@ -530,23 +463,17 @@ func get_inputs(paddle, pad):
 		if right_stick.length() > 0.7:
 			var paddle_node = paddle_parent.get_node(paddle)
 			input.rotation = paddle_node.get_angle_to(paddle_node.position + right_stick) * 0.1
-	
 	return input
-
 
 remote func inputs_to_paddle(paddle, input):
 	paddle_parent.get_node(paddle).inputs(input)
 
-
 remote func vibrate(paddle):
-	if not is_playing:
-		return
-	
-	if paddle_data[paddle].id == peer_id:
-		Input.start_joy_vibration(input_list[paddle], 0.1, 0.1, 0.1)
-	elif peer_id == 1 and is_open_to_lan:
-		rpc_id(paddle_data[paddle].id, "vibrate", paddle)
-
+	if is_playing:
+		if paddle_data[paddle].id == peer_id:
+			Input.start_joy_vibration(input_list[paddle], 0.1, 0.1, 0.1)
+		elif peer_id == 1 and is_open_to_lan:
+			rpc_id(paddle_data[paddle].id, "vibrate", paddle)
 
 remote func damage(paddle):
 	paddle_data[paddle].health -= 1
@@ -557,33 +484,11 @@ remote func damage(paddle):
 			paddle_node.position = paddle_spawns[paddle_node.get_index()].position
 			paddle_node.rotation = paddle_spawns[paddle_node.get_index()].rotation
 		paddle_data[paddle].health = max_health
-	
 	var health_bits = bars_node.get_node(paddle).get_child(1).get_children()
 	for i in max_health:
 		if paddle_data[paddle].health > i:
 			health_bits[i].modulate.a = 1.0
 		else:
 			health_bits[i].modulate.a = 0.1
-	
 	if peer_id == 1:
 		rpc("damage", paddle)
-
-
-
-##### BALL #####
-
-
-func create_balls(count):
-	for i in count:
-		if i + 1 > ball_spawns.size():
-			return
-		
-		var ball_node = BALL_SCENE.instance()
-		if get_tree().network_peer:
-			if peer_id == 1:
-				ball_data.append({})
-			else:
-				ball_node = Sprite.new()
-				ball_node.texture = BALL_TEXTURE
-		ball_node.position = ball_spawns[i].position
-		ball_parent.add_child(ball_node)
