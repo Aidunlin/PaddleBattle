@@ -29,14 +29,6 @@ config/icon="res://icon.png"
 
 default_bus_layout=""
 
-[debug]
-
-gdscript/warnings/return_value_discarded=false
-
-[gdnative]
-
-singletons=[  ]
-
 [input]
 
 ui_accept={
@@ -120,7 +112,4 @@ common/physics_fps=120
 
 [rendering]
 
-quality/2d/use_nvidia_rect_flicker_workaround=true
-quality/2d/use_pixel_snap=true
 environment/default_clear_color=Color( 0.0627451, 0.0627451, 0.0627451, 1 )
-quality/filters/msaa=2

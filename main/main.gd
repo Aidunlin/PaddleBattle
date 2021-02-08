@@ -1,5 +1,9 @@
+# This contains almost everything code-wise. Bad practice? Maybe.
+# I suggest you fold all lines to get a general view of things.
+
 extends Node
 
+# Preloading is pog
 const HP_TEXTURE = preload("res://main/hp.png")
 const PADDLE_TEXTURE = preload("res://paddle/paddle.png")
 const BALL_TEXTURE = preload("res://ball/ball.png")
@@ -27,6 +31,7 @@ var camera_spawn = Vector2()
 var paddle_spawns = []
 var ball_spawns = []
 
+# Onready go brrrr
 onready var camera_node = $Camera
 onready var map_parent = $Map
 onready var paddle_parent = $Paddles
@@ -55,6 +60,7 @@ onready var back_button = $CanvasLayer/UI/Menu/Options/Back
 onready var join_timer = $JoinTimer
 onready var message_timer = $MessageTimer
 
+# Load config, connect button and network signals
 func _ready():
 	version_node.text = VERSION
 	var file = File.new()
@@ -96,6 +102,7 @@ func _ready():
 	get_tree().connect("connection_failed", self, "unload_game", ["Connection failed"])
 	get_tree().connect("server_disconnected", self, "unload_game", ["Server disconnected"])
 
+# Update objects, modify camera
 func _physics_process(_delta):
 	if is_playing:
 		if peer_id == 1:
@@ -122,29 +129,14 @@ func _physics_process(_delta):
 			camera_node.position = avg
 		camera_node.zoom = camera_node.zoom.linear_interpolate(zoom, 0.05)
 
+# Handle various inputs (except movement)
 func _input(_event):
 	if is_playing and OS.is_window_focused():
 		if Input.is_key_pressed(KEY_ENTER) and not -1 in input_list.values():
-			var data = {
-				"name": peer_name,
-				"id": peer_id,
-				"pad": -1,
-			}
-			if peer_id == 1:
-				create_paddle(data)
-			else:
-				rpc_id(1, "create_paddle", data)
+			new_paddle_from_input(-1)
 		for pad in Input.get_connected_joypads():
 			if Input.is_joy_button_pressed(pad, 0) and not pad in input_list.values():
-				var data = {
-					"name": peer_name,
-					"id": peer_id,
-					"pad": pad,
-				}
-				if peer_id == 1:
-					create_paddle(data)
-				else:
-					rpc_id(1, "create_paddle", data)
+				new_paddle_from_input(pad)
 		if -1 in input_list.values() and Input.is_key_pressed(KEY_ESCAPE):
 			unload_game("You left the game")
 		for pad in input_list.values():
@@ -153,7 +145,21 @@ func _input(_event):
 				break
 
 ##### -------------------- HELPERS -------------------- #####
+##### These helpers are used throughout the script, and even by each other
 
+# Create a new paddle from input
+func new_paddle_from_input(pad):
+	var data = {
+		"name": peer_name,
+		"id": peer_id,
+		"pad": pad,
+	}
+	if peer_id == 1:
+		create_paddle(data)
+	else:
+		rpc_id(1, "create_paddle", data)
+
+# Update message and timer
 func set_message(new = "", time = 0):
 	message_node.text = new
 	if time > 0:
@@ -161,6 +167,7 @@ func set_message(new = "", time = 0):
 	elif new != "" and not message_timer.is_stopped():
 		message_timer.stop()
 
+# Increment or decrement option
 func crement(which = "", value = 0):
 	if which == "health":
 		max_health = int(clamp(max_health + value, 1, 5))
@@ -169,56 +176,57 @@ func crement(which = "", value = 0):
 	health_node.text = str(max_health)
 	balls_node.text = str(ball_count)
 
-func toggle_buttons(toggle):
+# Enable/disable inputs
+func toggle_inputs(toggle):
 	name_input.editable = not toggle
 	play_button.disabled = toggle
 	ip_input.editable = not toggle
 	join_button.disabled = toggle
 
+# Switch menu, grab focus of button
 func switch_menu(to_main):
 	if to_main:
 		play_button.grab_focus()
 	else:
-		if get_peer_name() == "":
+		if name_input.text == "":
+			set_message("Invalid name", 3)
 			return
 		start_button.grab_focus()
 	main_menu.visible = to_main
 	options_menu.visible = not to_main
 
+# Self-explanatory
 func toggle_lan():
 	is_open_to_lan = not is_open_to_lan
 
+# Self-explanatory
 func toggle_small_map():
 	using_small_map = not using_small_map
 
-func get_peer_name():
-	var new_name = name_input.text
-	if new_name == "":
+##### -------------------- CLIENT -------------------- #####
+##### These functions specifically manage clients
+
+# Check name/ip, attempt connection
+func connect_to_server():
+	if name_input.text == "":
 		set_message("Invalid name", 3)
 	else:
-		peer_name = new_name
-	return new_name
+		var ip = ip_input.text
+		if not ip.is_valid_ip_address():
+			if ip != "":
+				set_message("Invalid IP", 3)
+				return
+			ip = "127.0.0.1"
+		set_message("Trying to connect...")
+		toggle_inputs(true)
+		initial_max_health = max_health
+		var peer = NetworkedMultiplayerENet.new()
+		peer.create_client(ip, 8910)
+		get_tree().network_peer = peer
+		peer_id = get_tree().get_network_unique_id()
+		join_timer.start(5)
 
-##### -------------------- CLIENT -------------------- #####
-
-func connect_to_server():
-	if get_peer_name() == "":
-		return
-	var ip = ip_input.text
-	if not ip.is_valid_ip_address():
-		if ip != "":
-			set_message("Invalid IP", 3)
-			return
-		ip = "127.0.0.1"
-	set_message("Trying to connect...")
-	toggle_buttons(true)
-	initial_max_health = max_health
-	var peer = NetworkedMultiplayerENet.new()
-	peer.create_client(ip, 8910)
-	get_tree().network_peer = peer
-	peer_id = get_tree().get_network_unique_id()
-	join_timer.start(5)
-
+# Clear client info on disconnect
 func peer_disconnected(id):
 	var paddles_to_clear = []
 	for paddle in paddle_data:
@@ -231,15 +239,17 @@ func peer_disconnected(id):
 	bars_node.columns = max(paddle_data.size(), 1)
 	set_message("Client disconnected", 2)
 
+# Check client version
 remote func check(version):
 	var id = get_tree().get_rpc_sender_id()
 	if version == VERSION:
 		set_message("Client connected", 2)
-		rpc_id(id, "start_client_game", paddle_data, using_small_map, map_parent.modulate,
-				max_health, ball_count)
+		rpc_id(id, "start_client_game", paddle_data, using_small_map,
+				map_parent.modulate, max_health, ball_count)
 	else:
 		rpc_id(id, "unload_game", "Different server version (" + VERSION + ")")
 
+# Start game (as client)
 remote func start_client_game(paddles, small_map, map_color, health, balls):
 	join_timer.stop()
 	load_game(small_map, map_color, balls)
@@ -248,7 +258,9 @@ remote func start_client_game(paddles, small_map, map_color, health, balls):
 		create_paddle(paddles[paddle])
 
 ##### -------------------- GAME -------------------- #####
+##### Functions for starting, stopping, and updating game sessions
 
+# Start game (as server)
 func start_game():
 	var peer = NetworkedMultiplayerENet.new()
 	peer.create_server(8910)
@@ -261,6 +273,7 @@ func start_game():
 	hue_list.append(new_hue)
 	load_game(using_small_map, Color.from_hsv(new_hue / 360.0, 1, 1), ball_count)
 
+# Save config, load map, spawn balls (used by server and client)
 func load_game(small_map, map_color, balls):
 	var file = File.new()
 	file.open("user://config.json", File.WRITE)
@@ -299,7 +312,8 @@ func load_game(small_map, map_color, balls):
 	menu_node.hide()
 	is_playing = true
 
-remote func unload_game(msg = ""):
+# Self-explanatory
+remote func unload_game(msg):
 	is_playing = false
 	if get_tree().has_network_peer():
 		if peer_id != 1:
@@ -324,10 +338,11 @@ remote func unload_game(msg = ""):
 		bar.queue_free()
 	bars_node.columns = 1
 	menu_node.show()
-	toggle_buttons(false)
+	toggle_inputs(false)
 	switch_menu(true)
 	set_message(msg, 3)
 
+# Update paddles and balls (used by server and client)
 remotesync func update_objects(paddles, balls):
 	if is_playing:
 		if peer_id == 1:
@@ -361,8 +376,10 @@ remotesync func update_objects(paddles, balls):
 				ball_node.rotation = balls[ball_index].rotation
 
 ##### -------------------- PADDLE -------------------- #####
+##### Manages paddle creation and handles inputs/damage
 
-remote func create_paddle(data = {}):
+# Create paddle, hud, and data (server first, then send to clients)
+remote func create_paddle(data):
 	camera_node.smoothing_enabled = true
 	var paddle_node = PADDLE_SCENE.instance()
 	var paddle_count = paddle_parent.get_child_count()
@@ -438,6 +455,7 @@ remote func create_paddle(data = {}):
 		rpc("create_paddle", new_data)
 	paddle_parent.add_child(paddle_node)
 
+# Get input data for paddle on this peer
 func get_inputs(paddle):
 	var pad = input_list[paddle]
 	var input = {
@@ -465,9 +483,11 @@ func get_inputs(paddle):
 			input.rotation = paddle_node.get_angle_to(paddle_node.position + right_stick) * 0.1
 	return input
 
+# Send input data to paddle (as server)
 remote func inputs_to_paddle(paddle, input):
 	paddle_parent.get_node(paddle).inputs(input)
 
+# Vibrate controller (server first, or send to correct client)
 remote func vibrate(paddle):
 	if is_playing:
 		if paddle_data[paddle].id == peer_id:
@@ -475,6 +495,7 @@ remote func vibrate(paddle):
 		elif peer_id == 1 and is_open_to_lan:
 			rpc_id(paddle_data[paddle].id, "vibrate", paddle)
 
+# Manage health and respawning (server first, then send to clients)
 remote func damage(paddle):
 	paddle_data[paddle].health -= 1
 	if paddle_data[paddle].health < 1:

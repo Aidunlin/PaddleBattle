@@ -1,3 +1,5 @@
+# This is code for server-side paddles
+
 extends KinematicBody2D
 
 signal collided()
@@ -55,6 +57,7 @@ func dash_reset_timeout():
 	can_dash = true
 	dash_reset_timer.stop()
 
+# Set inputs from main script
 func inputs(data):
 	input_velocity = data.velocity
 	input_rotation = data.rotation

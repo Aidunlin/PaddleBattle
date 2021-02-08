@@ -53,20 +53,11 @@ __meta__ = {
 "_edit_lock_": true
 }
 
-[node name="Map" type="Node2D" parent="."]
-__meta__ = {
-"_edit_lock_": true
-}
+[node name="Map" type="Node" parent="."]
 
-[node name="Paddles" type="Node2D" parent="."]
-__meta__ = {
-"_edit_lock_": true
-}
+[node name="Paddles" type="Node" parent="."]
 
-[node name="Balls" type="Node2D" parent="."]
-__meta__ = {
-"_edit_lock_": true
-}
+[node name="Balls" type="Node" parent="."]
 
 [node name="CanvasLayer" type="CanvasLayer" parent="."]
 
