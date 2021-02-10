@@ -26,7 +26,6 @@ var ball_count = 10
 var paddle_data = {}
 var ball_data = []
 var input_list = {}
-var hue_list = []
 var camera_spawn = Vector2()
 var paddle_spawns = []
 var ball_spawns = []
@@ -267,12 +266,7 @@ func start_game():
 	peer.create_server(8910)
 	get_tree().network_peer = peer
 	get_tree().refuse_new_network_connections = not is_open_to_lan
-	var new_hue = 250
-	while new_hue > 200 and new_hue < 300:
-		randomize()
-		new_hue = randf() * 360
-	hue_list.append(new_hue)
-	load_game(using_small_map, Color.from_hsv(new_hue / 360.0, 1, 1), ball_count)
+	load_game(using_small_map, Color.from_hsv(randf(), 0.8, 1), ball_count)
 
 # Save config, load map, spawn balls (used by server and client)
 func load_game(small_map, map_color, balls):
@@ -323,7 +317,6 @@ remote func unload_game(msg):
 		peer_id = 1
 	join_timer.stop()
 	input_list.clear()
-	hue_list.clear()
 	camera_node.position = Vector2()
 	camera_node.smoothing_enabled = false
 	map_parent.modulate = Color(1, 1, 1)
@@ -398,12 +391,7 @@ remote func create_paddle(data):
 	if "color" in data:
 		paddle_node.modulate = data.color
 	else:
-		var new_hue = 250
-		while new_hue > 200 and new_hue < 300 or new_hue in hue_list:
-			randomize()
-			new_hue = randf() * 360
-		hue_list.append(new_hue)
-		paddle_node.modulate = Color.from_hsv(new_hue / 360.0, 1, 1)
+		paddle_node.modulate = Color.from_hsv(randf(), 0.8, 1)
 	var name_count = 1
 	for paddle in paddle_parent.get_children():
 		if data.name in paddle.name:
