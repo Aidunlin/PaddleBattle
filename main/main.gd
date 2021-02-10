@@ -26,6 +26,7 @@ var ball_count = 10
 var paddle_data = {}
 var ball_data = []
 var input_list = {}
+var used_inputs = []
 var camera_spawn = Vector2()
 var paddle_spawns = []
 var ball_spawns = []
@@ -148,15 +149,17 @@ func _input(_event):
 
 # Create a new paddle from input
 func new_paddle_from_input(pad):
-	var data = {
-		"name": peer_name,
-		"id": peer_id,
-		"pad": pad,
-	}
-	if peer_id == 1:
-		create_paddle(data)
-	else:
-		rpc_id(1, "create_paddle", data)
+	if not pad in used_inputs:
+		var data = {
+			"name": peer_name,
+			"id": peer_id,
+			"pad": pad,
+		}
+		used_inputs.append(pad)
+		if peer_id == 1:
+			create_paddle(data)
+		else:
+			rpc_id(1, "create_paddle", data)
 
 # Update message and timer
 func set_message(new = "", time = 0):
@@ -210,6 +213,7 @@ func connect_to_server():
 	if name_input.text == "":
 		set_message("Invalid name", 3)
 	else:
+		peer_name = name_input.text
 		var ip = ip_input.text
 		if not ip.is_valid_ip_address():
 			if ip != "":
@@ -317,6 +321,7 @@ remote func unload_game(msg):
 		peer_id = 1
 	join_timer.stop()
 	input_list.clear()
+	used_inputs.clear()
 	camera_node.position = Vector2()
 	camera_node.smoothing_enabled = false
 	map_parent.modulate = Color(1, 1, 1)
