@@ -262,6 +262,7 @@ remote func start_client_game(paddles, small_map, map_color, health, balls):
 
 # Start game (as server)
 func start_game():
+	peer_name = name_input.text
 	var peer = NetworkedMultiplayerENet.new()
 	peer.create_server(8910)
 	get_tree().network_peer = peer
@@ -427,7 +428,7 @@ remote func create_paddle(data):
 	bar.add_child(label)
 	var hp_bar = HBoxContainer.new()
 	hp_bar.alignment = BoxContainer.ALIGN_CENTER
-	hp_bar.set("custom_constants/separation", -18)
+	hp_bar.set("custom_constants/separation", -20)
 	for i in max_health:
 		var bit = TextureRect.new()
 		bit.texture = HP_TEXTURE
