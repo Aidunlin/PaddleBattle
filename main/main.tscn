@@ -1,38 +1,99 @@
-[gd_scene load_steps=9 format=2]
+[gd_scene load_steps=11 format=2]
 
 [ext_resource path="res://main/robotomono.ttf" type="DynamicFontData" id=1]
 [ext_resource path="res://main/main.gd" type="Script" id=2]
 
-[sub_resource type="DynamicFont" id=1]
-size = 18
-outline_size = 2
-outline_color = Color( 0, 0, 0, 1 )
-extra_spacing_top = 2
-extra_spacing_bottom = 2
-font_data = ExtResource( 1 )
+[sub_resource type="StyleBoxFlat" id=1]
+bg_color = Color( 0, 0, 0, 0 )
 
-[sub_resource type="Theme" id=2]
-default_font = SubResource( 1 )
+[sub_resource type="StyleBoxFlat" id=2]
+bg_color = Color( 0, 0, 0, 0.427451 )
+corner_radius_top_left = 2
+corner_radius_top_right = 2
+corner_radius_bottom_right = 2
+corner_radius_bottom_left = 2
 
 [sub_resource type="DynamicFont" id=3]
-size = 30
-outline_size = 2
 outline_color = Color( 0, 0, 0, 1 )
+extra_spacing_top = 4
+extra_spacing_bottom = 4
 font_data = ExtResource( 1 )
 
-[sub_resource type="DynamicFont" id=4]
-outline_size = 2
-outline_color = Color( 0, 0, 0, 1 )
-extra_spacing_bottom = 8
-font_data = ExtResource( 1 )
+[sub_resource type="StyleBoxFlat" id=4]
+bg_color = Color( 0, 0, 0, 0 )
+border_width_bottom = 1
 
 [sub_resource type="DynamicFont" id=5]
+size = 20
 outline_size = 2
 outline_color = Color( 0, 0, 0, 1 )
-extra_spacing_top = 8
+extra_spacing_top = 4
+extra_spacing_bottom = 4
 font_data = ExtResource( 1 )
 
-[sub_resource type="Environment" id=6]
+[sub_resource type="Theme" id=6]
+default_font = SubResource( 5 )
+Button/colors/font_color = Color( 0.878431, 0.878431, 0.878431, 1 )
+Button/colors/font_color_disabled = Color( 0.901961, 0.901961, 0.901961, 0.2 )
+Button/colors/font_color_hover = Color( 0.941176, 0.941176, 0.941176, 1 )
+Button/colors/font_color_pressed = Color( 1, 1, 1, 1 )
+Button/constants/hseparation = 2
+Button/fonts/font = null
+Button/styles/disabled = SubResource( 1 )
+Button/styles/focus = null
+Button/styles/hover = SubResource( 1 )
+Button/styles/normal = SubResource( 1 )
+Button/styles/pressed = SubResource( 2 )
+CheckButton/colors/font_color = Color( 0.88, 0.88, 0.88, 1 )
+CheckButton/colors/font_color_disabled = Color( 0.9, 0.9, 0.9, 0.2 )
+CheckButton/colors/font_color_hover = Color( 0.94, 0.94, 0.94, 1 )
+CheckButton/colors/font_color_hover_pressed = Color( 1, 1, 1, 1 )
+CheckButton/colors/font_color_pressed = Color( 1, 1, 1, 1 )
+CheckButton/constants/check_vadjust = 0
+CheckButton/constants/hseparation = 4
+CheckButton/fonts/font = SubResource( 3 )
+CheckButton/icons/off = null
+CheckButton/icons/off_disabled = null
+CheckButton/icons/on = null
+CheckButton/icons/on_disabled = null
+CheckButton/styles/disabled = null
+CheckButton/styles/focus = null
+CheckButton/styles/hover = null
+CheckButton/styles/hover_pressed = null
+CheckButton/styles/normal = SubResource( 1 )
+CheckButton/styles/pressed = SubResource( 1 )
+Label/colors/font_color = Color( 1, 1, 1, 1 )
+Label/colors/font_color_shadow = Color( 0, 0, 0, 0 )
+Label/colors/font_outline_modulate = Color( 1, 1, 1, 1 )
+Label/constants/line_spacing = 3
+Label/constants/shadow_as_outline = 0
+Label/constants/shadow_offset_x = 1
+Label/constants/shadow_offset_y = 1
+Label/fonts/font = null
+Label/styles/normal = null
+LineEdit/colors/clear_button_color = Color( 0.88, 0.88, 0.88, 1 )
+LineEdit/colors/clear_button_color_pressed = Color( 1, 1, 1, 1 )
+LineEdit/colors/cursor_color = Color( 0.94, 0.94, 0.94, 1 )
+LineEdit/colors/font_color = Color( 0.88, 0.88, 0.88, 1 )
+LineEdit/colors/font_color_selected = Color( 0, 0, 0, 1 )
+LineEdit/colors/font_color_uneditable = Color( 0.88, 0.88, 0.88, 0.5 )
+LineEdit/colors/selection_color = Color( 0.49, 0.49, 0.49, 1 )
+LineEdit/constants/minimum_spaces = 12
+LineEdit/fonts/font = SubResource( 3 )
+LineEdit/icons/clear = null
+LineEdit/styles/focus = null
+LineEdit/styles/normal = SubResource( 4 )
+LineEdit/styles/read_only = SubResource( 4 )
+
+[sub_resource type="DynamicFont" id=7]
+size = 26
+outline_size = 2
+outline_color = Color( 0, 0, 0, 1 )
+extra_spacing_top = 4
+extra_spacing_bottom = 4
+font_data = ExtResource( 1 )
+
+[sub_resource type="Environment" id=8]
 background_mode = 4
 auto_exposure_scale = 0.18
 auto_exposure_speed = 32.0
@@ -67,7 +128,7 @@ __meta__ = {
 [node name="UI" type="Control" parent="CanvasLayer"]
 anchor_right = 1.0
 anchor_bottom = 1.0
-theme = SubResource( 2 )
+theme = SubResource( 6 )
 __meta__ = {
 "_edit_lock_": true,
 "_edit_use_anchors_": false
@@ -99,6 +160,9 @@ margin_left = 30.0
 margin_top = 30.0
 margin_right = 994.0
 margin_bottom = 570.0
+__meta__ = {
+"_edit_lock_": true
+}
 
 [node name="Menu" type="CenterContainer" parent="CanvasLayer/UI"]
 anchor_right = 1.0
@@ -109,70 +173,66 @@ __meta__ = {
 }
 
 [node name="Main" type="VBoxContainer" parent="CanvasLayer/UI/Menu"]
-margin_left = 404.0
-margin_top = 146.0
-margin_right = 620.0
-margin_bottom = 453.0
+margin_left = 416.0
+margin_top = 133.0
+margin_right = 608.0
+margin_bottom = 466.0
+custom_constants/separation = 4
 
 [node name="Title" type="Label" parent="CanvasLayer/UI/Menu/Main"]
-margin_right = 216.0
-margin_bottom = 41.0
-custom_fonts/font = SubResource( 3 )
+margin_right = 192.0
+margin_bottom = 44.0
+custom_fonts/font = SubResource( 7 )
 text = "PaddleBattle"
 align = 1
 
 [node name="Version" type="Label" parent="CanvasLayer/UI/Menu/Main"]
-margin_top = 45.0
-margin_right = 216.0
-margin_bottom = 75.0
-custom_fonts/font = SubResource( 4 )
+margin_top = 48.0
+margin_right = 192.0
+margin_bottom = 78.0
+custom_fonts/font = SubResource( 3 )
 text = "NO VERSION"
 align = 1
 
-[node name="NameBar" type="HBoxContainer" parent="CanvasLayer/UI/Menu/Main"]
-margin_top = 79.0
-margin_right = 216.0
+[node name="Play" type="Button" parent="CanvasLayer/UI/Menu/Main"]
+margin_top = 82.0
+margin_right = 192.0
 margin_bottom = 117.0
+text = "Play"
 
-[node name="Label" type="Label" parent="CanvasLayer/UI/Menu/Main/NameBar"]
-margin_top = 5.0
-margin_right = 55.0
-margin_bottom = 33.0
-text = "Name:"
+[node name="NameWrap" type="VBoxContainer" parent="CanvasLayer/UI/Menu/Main"]
+margin_top = 121.0
+margin_right = 192.0
+margin_bottom = 186.0
 
-[node name="Name" type="LineEdit" parent="CanvasLayer/UI/Menu/Main/NameBar"]
-margin_left = 59.0
-margin_right = 216.0
-margin_bottom = 38.0
-size_flags_horizontal = 3
+[node name="Label" type="Label" parent="CanvasLayer/UI/Menu/Main/NameWrap"]
+margin_right = 192.0
+margin_bottom = 30.0
+custom_fonts/font = SubResource( 3 )
+text = "Name"
+
+[node name="Name" type="LineEdit" parent="CanvasLayer/UI/Menu/Main/NameWrap"]
+margin_top = 34.0
+margin_right = 192.0
+margin_bottom = 65.0
 caret_blink = true
 caret_blink_speed = 0.5
 
-[node name="Play" type="Button" parent="CanvasLayer/UI/Menu/Main"]
-margin_top = 121.0
-margin_right = 216.0
-margin_bottom = 155.0
-text = "Play"
+[node name="IPWrap" type="VBoxContainer" parent="CanvasLayer/UI/Menu/Main"]
+margin_top = 190.0
+margin_right = 192.0
+margin_bottom = 255.0
 
-[node name="IPBar" type="HBoxContainer" parent="CanvasLayer/UI/Menu/Main"]
-margin_top = 159.0
-margin_right = 216.0
-margin_bottom = 197.0
-__meta__ = {
-"_edit_use_anchors_": false
-}
+[node name="Label" type="Label" parent="CanvasLayer/UI/Menu/Main/IPWrap"]
+margin_right = 192.0
+margin_bottom = 30.0
+custom_fonts/font = SubResource( 3 )
+text = "IP"
 
-[node name="Label" type="Label" parent="CanvasLayer/UI/Menu/Main/IPBar"]
-margin_top = 5.0
-margin_right = 33.0
-margin_bottom = 33.0
-text = "IP:"
-
-[node name="IP" type="LineEdit" parent="CanvasLayer/UI/Menu/Main/IPBar"]
-margin_left = 37.0
-margin_right = 216.0
-margin_bottom = 38.0
-size_flags_horizontal = 3
+[node name="IP" type="LineEdit" parent="CanvasLayer/UI/Menu/Main/IPWrap"]
+margin_top = 34.0
+margin_right = 192.0
+margin_bottom = 65.0
 caret_blink = true
 caret_blink_speed = 0.5
 __meta__ = {
@@ -180,134 +240,142 @@ __meta__ = {
 }
 
 [node name="Join" type="Button" parent="CanvasLayer/UI/Menu/Main"]
-margin_top = 201.0
-margin_right = 216.0
-margin_bottom = 235.0
+margin_top = 259.0
+margin_right = 192.0
+margin_bottom = 294.0
 text = "Join"
 
 [node name="Quit" type="Button" parent="CanvasLayer/UI/Menu/Main"]
-margin_top = 239.0
-margin_right = 216.0
-margin_bottom = 273.0
+margin_top = 298.0
+margin_right = 192.0
+margin_bottom = 333.0
 text = "Quit"
-
-[node name="Author" type="Label" parent="CanvasLayer/UI/Menu/Main"]
-margin_top = 277.0
-margin_right = 216.0
-margin_bottom = 307.0
-size_flags_horizontal = 3
-custom_fonts/font = SubResource( 5 )
-text = "Created by Aidunlin"
-align = 1
-__meta__ = {
-"_edit_use_anchors_": false
-}
 
 [node name="Options" type="VBoxContainer" parent="CanvasLayer/UI/Menu"]
 visible = false
-margin_left = 412.0
-margin_top = 186.0
-margin_right = 612.0
-margin_bottom = 414.0
+margin_left = 403.0
+margin_top = 142.0
+margin_right = 621.0
+margin_bottom = 458.0
+custom_constants/separation = 4
 
-[node name="OpenLAN" type="CheckBox" parent="CanvasLayer/UI/Menu/Options"]
-margin_right = 200.0
-margin_bottom = 36.0
+[node name="HealthWrap" type="VBoxContainer" parent="CanvasLayer/UI/Menu/Options"]
+margin_right = 218.0
+margin_bottom = 69.0
+
+[node name="Label" type="Label" parent="CanvasLayer/UI/Menu/Options/HealthWrap"]
+margin_right = 218.0
+margin_bottom = 30.0
+custom_fonts/font = SubResource( 3 )
+text = "Health"
+
+[node name="Buttons" type="HBoxContainer" parent="CanvasLayer/UI/Menu/Options/HealthWrap"]
+margin_top = 34.0
+margin_right = 218.0
+margin_bottom = 69.0
+
+[node name="Dec" type="Button" parent="CanvasLayer/UI/Menu/Options/HealthWrap/Buttons"]
+margin_right = 70.0
+margin_bottom = 35.0
+size_flags_horizontal = 3
+text = "-"
+
+[node name="Health" type="Label" parent="CanvasLayer/UI/Menu/Options/HealthWrap/Buttons"]
+margin_left = 74.0
+margin_top = 2.0
+margin_right = 144.0
+margin_bottom = 32.0
+size_flags_horizontal = 3
+custom_fonts/font = SubResource( 3 )
+align = 1
+
+[node name="Inc" type="Button" parent="CanvasLayer/UI/Menu/Options/HealthWrap/Buttons"]
+margin_left = 148.0
+margin_right = 218.0
+margin_bottom = 35.0
+size_flags_horizontal = 3
+text = "+"
+
+[node name="HSeparator" type="HSeparator" parent="CanvasLayer/UI/Menu/Options"]
+margin_top = 73.0
+margin_right = 218.0
+margin_bottom = 77.0
+
+[node name="BallsWrap" type="VBoxContainer" parent="CanvasLayer/UI/Menu/Options"]
+margin_top = 81.0
+margin_right = 218.0
+margin_bottom = 150.0
+
+[node name="Label" type="Label" parent="CanvasLayer/UI/Menu/Options/BallsWrap"]
+margin_right = 218.0
+margin_bottom = 30.0
+custom_fonts/font = SubResource( 3 )
+text = "Balls"
+
+[node name="Buttons" type="HBoxContainer" parent="CanvasLayer/UI/Menu/Options/BallsWrap"]
+margin_top = 34.0
+margin_right = 218.0
+margin_bottom = 69.0
+
+[node name="Dec" type="Button" parent="CanvasLayer/UI/Menu/Options/BallsWrap/Buttons"]
+margin_right = 70.0
+margin_bottom = 35.0
+size_flags_horizontal = 3
+text = "-"
+
+[node name="Balls" type="Label" parent="CanvasLayer/UI/Menu/Options/BallsWrap/Buttons"]
+margin_left = 74.0
+margin_top = 2.0
+margin_right = 144.0
+margin_bottom = 32.0
+size_flags_horizontal = 3
+custom_fonts/font = SubResource( 3 )
+align = 1
+
+[node name="Inc" type="Button" parent="CanvasLayer/UI/Menu/Options/BallsWrap/Buttons"]
+margin_left = 148.0
+margin_right = 218.0
+margin_bottom = 35.0
+size_flags_horizontal = 3
+text = "+"
+
+[node name="HSeparator2" type="HSeparator" parent="CanvasLayer/UI/Menu/Options"]
+margin_top = 154.0
+margin_right = 218.0
+margin_bottom = 158.0
+
+[node name="OpenLAN" type="CheckButton" parent="CanvasLayer/UI/Menu/Options"]
+margin_top = 162.0
+margin_right = 218.0
+margin_bottom = 194.0
 pressed = true
-action_mode = 0
 text = "Open to LAN"
-align = 1
 
-[node name="SmallMap" type="CheckBox" parent="CanvasLayer/UI/Menu/Options"]
-margin_top = 40.0
-margin_right = 200.0
-margin_bottom = 76.0
-rect_min_size = Vector2( 200, 0 )
+[node name="SmallMap" type="CheckButton" parent="CanvasLayer/UI/Menu/Options"]
+margin_top = 198.0
+margin_right = 218.0
+margin_bottom = 230.0
 text = "Use smaller map"
-align = 1
 
-[node name="HealthBar" type="HBoxContainer" parent="CanvasLayer/UI/Menu/Options"]
-margin_top = 80.0
-margin_right = 200.0
-margin_bottom = 114.0
-
-[node name="Label" type="Label" parent="CanvasLayer/UI/Menu/Options/HealthBar"]
-margin_top = 3.0
-margin_right = 104.0
-margin_bottom = 31.0
-size_flags_horizontal = 3
-text = "Health:"
-
-[node name="Dec" type="Button" parent="CanvasLayer/UI/Menu/Options/HealthBar"]
-margin_left = 108.0
-margin_right = 136.0
-margin_bottom = 34.0
-rect_min_size = Vector2( 28, 0 )
-text = "-"
-
-[node name="Health" type="Label" parent="CanvasLayer/UI/Menu/Options/HealthBar"]
-margin_left = 140.0
-margin_top = 3.0
-margin_right = 168.0
-margin_bottom = 31.0
-rect_min_size = Vector2( 28, 0 )
-align = 1
-
-[node name="Inc" type="Button" parent="CanvasLayer/UI/Menu/Options/HealthBar"]
-margin_left = 172.0
-margin_right = 200.0
-margin_bottom = 34.0
-rect_min_size = Vector2( 28, 0 )
-text = "+"
-
-[node name="BallsBar" type="HBoxContainer" parent="CanvasLayer/UI/Menu/Options"]
-margin_top = 118.0
-margin_right = 200.0
-margin_bottom = 152.0
-
-[node name="Label" type="Label" parent="CanvasLayer/UI/Menu/Options/BallsBar"]
-margin_top = 3.0
-margin_right = 104.0
-margin_bottom = 31.0
-size_flags_horizontal = 3
-text = "Balls:"
-
-[node name="Dec" type="Button" parent="CanvasLayer/UI/Menu/Options/BallsBar"]
-margin_left = 108.0
-margin_right = 136.0
-margin_bottom = 34.0
-rect_min_size = Vector2( 28, 0 )
-text = "-"
-
-[node name="Balls" type="Label" parent="CanvasLayer/UI/Menu/Options/BallsBar"]
-margin_left = 140.0
-margin_top = 3.0
-margin_right = 168.0
-margin_bottom = 31.0
-rect_min_size = Vector2( 28, 0 )
-align = 1
-
-[node name="Inc" type="Button" parent="CanvasLayer/UI/Menu/Options/BallsBar"]
-margin_left = 172.0
-margin_right = 200.0
-margin_bottom = 34.0
-rect_min_size = Vector2( 28, 0 )
-text = "+"
+[node name="HSeparator3" type="HSeparator" parent="CanvasLayer/UI/Menu/Options"]
+margin_top = 234.0
+margin_right = 218.0
+margin_bottom = 238.0
 
 [node name="Start" type="Button" parent="CanvasLayer/UI/Menu/Options"]
-margin_top = 156.0
-margin_right = 200.0
-margin_bottom = 190.0
+margin_top = 242.0
+margin_right = 218.0
+margin_bottom = 277.0
 text = "Start"
 
 [node name="Back" type="Button" parent="CanvasLayer/UI/Menu/Options"]
-margin_top = 194.0
-margin_right = 200.0
-margin_bottom = 228.0
+margin_top = 281.0
+margin_right = 218.0
+margin_bottom = 316.0
 text = "Back"
 
 [node name="WorldEnvironment" type="WorldEnvironment" parent="."]
-environment = SubResource( 6 )
+environment = SubResource( 8 )
 
 [node name="JoinTimer" type="Timer" parent="."]
 

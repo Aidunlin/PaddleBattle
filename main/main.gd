@@ -44,20 +44,20 @@ onready var bars_node = $CanvasLayer/UI/HUD/Bars
 onready var menu_node = $CanvasLayer/UI/Menu
 onready var main_menu = $CanvasLayer/UI/Menu/Main
 onready var version_node = $CanvasLayer/UI/Menu/Main/Version
-onready var name_input = $CanvasLayer/UI/Menu/Main/NameBar/Name
 onready var play_button = $CanvasLayer/UI/Menu/Main/Play
-onready var ip_input = $CanvasLayer/UI/Menu/Main/IPBar/IP
+onready var name_input = $CanvasLayer/UI/Menu/Main/NameWrap/Name
+onready var ip_input = $CanvasLayer/UI/Menu/Main/IPWrap/IP
 onready var join_button = $CanvasLayer/UI/Menu/Main/Join
 onready var quit_button = $CanvasLayer/UI/Menu/Main/Quit
 onready var options_menu = $CanvasLayer/UI/Menu/Options
+onready var health_dec_button = $CanvasLayer/UI/Menu/Options/HealthWrap/Buttons/Dec
+onready var health_node = $CanvasLayer/UI/Menu/Options/HealthWrap/Buttons/Health
+onready var health_inc_button = $CanvasLayer/UI/Menu/Options/HealthWrap/Buttons/Inc
+onready var balls_dec_button = $CanvasLayer/UI/Menu/Options/BallsWrap/Buttons/Dec
+onready var balls_node = $CanvasLayer/UI/Menu/Options/BallsWrap/Buttons/Balls
+onready var balls_inc_button = $CanvasLayer/UI/Menu/Options/BallsWrap/Buttons/Inc
 onready var open_lan_toggle = $CanvasLayer/UI/Menu/Options/OpenLAN
 onready var small_map_toggle = $CanvasLayer/UI/Menu/Options/SmallMap
-onready var health_dec_button = $CanvasLayer/UI/Menu/Options/HealthBar/Dec
-onready var health_inc_button = $CanvasLayer/UI/Menu/Options/HealthBar/Inc
-onready var health_node = $CanvasLayer/UI/Menu/Options/HealthBar/Health
-onready var balls_dec_button = $CanvasLayer/UI/Menu/Options/BallsBar/Dec
-onready var balls_inc_button = $CanvasLayer/UI/Menu/Options/BallsBar/Inc
-onready var balls_node = $CanvasLayer/UI/Menu/Options/BallsBar/Balls
 onready var start_button = $CanvasLayer/UI/Menu/Options/Start
 onready var back_button = $CanvasLayer/UI/Menu/Options/Back
 onready var join_timer = $JoinTimer
@@ -165,6 +165,13 @@ func set_message(new = "", time = 0):
 	elif new != "" and not message_timer.is_stopped():
 		message_timer.stop()
 
+# Self-explanatory
+func save_config():
+	var file = File.new()
+	file.open("user://config.json", File.WRITE)
+	file.store_line(to_json(config))
+	file.close()
+
 # Increment or decrement option
 func crement(which, value = 0):
 	if which == "health":
@@ -184,10 +191,12 @@ func toggle_inputs(toggle):
 # Switch menu, grab focus of button
 func switch_menu(to_main):
 	if to_main:
+		save_config()
 		play_button.grab_focus()
 	else:
 		if name_input.text == "":
 			set_message("Invalid name", 3)
+			name_input.grab_focus()
 			return
 		start_button.grab_focus()
 	main_menu.visible = to_main
@@ -208,23 +217,23 @@ func toggle_small_map():
 func connect_to_server():
 	if name_input.text == "":
 		set_message("Invalid name", 3)
+		name_input.grab_focus()
 	else:
 		config.peer_name = name_input.text
-		var ip = ip_input.text
-		if not ip.is_valid_ip_address():
-			if ip != "":
-				set_message("Invalid IP", 3)
-				return
-			ip = "127.0.0.1"
-		config.ip = ip
-		set_message("Trying to connect...")
-		toggle_inputs(true)
-		initial_max_health = config.max_health
-		var peer = NetworkedMultiplayerENet.new()
-		peer.create_client(ip, 8910)
-		get_tree().network_peer = peer
-		peer_id = get_tree().get_network_unique_id()
-		join_timer.start(5)
+		if ip_input.text.is_valid_ip_address():
+			config.ip = ip_input.text
+			set_message("Trying to connect...")
+			toggle_inputs(true)
+			initial_max_health = config.max_health
+			var peer = NetworkedMultiplayerENet.new()
+			peer.create_client(config.ip, 8910)
+			get_tree().network_peer = peer
+			peer_id = get_tree().get_network_unique_id()
+			join_timer.start(5)
+		else:
+			set_message("Invalid IP", 3)
+			ip_input.grab_focus()
+			return
 
 # Clear client info on disconnect
 func peer_disconnected(id):
@@ -271,10 +280,7 @@ func start_game():
 
 # Save config, load map, spawn balls (used by server and client)
 func load_game(small_map, map_color, balls):
-	var file = File.new()
-	file.open("user://config.json", File.WRITE)
-	file.store_line(to_json(config))
-	file.close()
+	save_config()
 	map_parent.modulate = map_color
 	if small_map:
 		map_parent.add_child(SMALL_MAP_SCENE.instance())
