@@ -15,14 +15,17 @@ const VERSION = "Dev Build"
 const MOVE_SPEED = 500
 const CAMERA_ZOOM = Vector2(1, 1)
 
+var config = {
+	"peer_name": "",
+	"ip": "",
+	"is_open_to_lan": true,
+	"using_small_map": false,
+	"max_health": 3,
+	"ball_count": 10,
+}
 var is_playing = false
-var is_open_to_lan = true
-var using_small_map = false
 var peer_id = 1
-var peer_name = ""
 var initial_max_health = 0
-var max_health = 3
-var ball_count = 10
 var paddle_data = {}
 var ball_data = []
 var input_list = {}
@@ -66,23 +69,16 @@ func _ready():
 	var file = File.new()
 	if file.file_exists("user://config.json"):
 		file.open("user://config.json", File.READ)
-		var save = parse_json(file.get_line())
-		if "name" in save:
-			name_input.text = save.name
-		if "ip" in save:
-			ip_input.text = save.ip
-		if "is_open_to_lan" in save:
-			is_open_to_lan = save.is_open_to_lan
-			open_lan_toggle.pressed = is_open_to_lan
-		if "using_small_map" in save:
-			using_small_map = save.using_small_map
-			small_map_toggle.pressed = using_small_map
-		if "health" in save:
-			max_health = save.health
-		if "balls" in save:
-			ball_count = save.balls
-		crement()
+		var config_from_file = parse_json(file.get_line())
+		for key in config_from_file:
+			config[key] = config_from_file[key]
 		file.close()
+	name_input.text = config.peer_name
+	ip_input.text = config.ip
+	open_lan_toggle.pressed = config.is_open_to_lan
+	small_map_toggle.pressed = config.using_small_map
+	health_node.text = str(config.max_health)
+	balls_node.text = str(config.ball_count)
 	play_button.grab_focus()
 	play_button.connect("pressed", self, "switch_menu", [false])
 	join_button.connect("pressed", self, "connect_to_server")
@@ -151,7 +147,7 @@ func _input(_event):
 func new_paddle_from_input(pad):
 	if not pad in used_inputs:
 		var data = {
-			"name": peer_name,
+			"name": config.peer_name,
 			"id": peer_id,
 			"pad": pad,
 		}
@@ -170,13 +166,13 @@ func set_message(new = "", time = 0):
 		message_timer.stop()
 
 # Increment or decrement option
-func crement(which = "", value = 0):
+func crement(which, value = 0):
 	if which == "health":
-		max_health = int(clamp(max_health + value, 1, 5))
+		config.max_health = int(clamp(config.max_health + value, 1, 5))
+		health_node.text = str(config.max_health)
 	elif which == "balls":
-		ball_count = int(clamp(ball_count + value, 1, 10))
-	health_node.text = str(max_health)
-	balls_node.text = str(ball_count)
+		config.ball_count = int(clamp(config.ball_count + value, 1, 10))
+		balls_node.text = str(config.ball_count)
 
 # Enable/disable inputs
 func toggle_inputs(toggle):
@@ -199,11 +195,11 @@ func switch_menu(to_main):
 
 # Self-explanatory
 func toggle_lan():
-	is_open_to_lan = not is_open_to_lan
+	config.is_open_to_lan = not config.is_open_to_lan
 
 # Self-explanatory
 func toggle_small_map():
-	using_small_map = not using_small_map
+	config.using_small_map = not config.using_small_map
 
 ##### -------------------- CLIENT -------------------- #####
 ##### These functions specifically manage clients
@@ -213,16 +209,17 @@ func connect_to_server():
 	if name_input.text == "":
 		set_message("Invalid name", 3)
 	else:
-		peer_name = name_input.text
+		config.peer_name = name_input.text
 		var ip = ip_input.text
 		if not ip.is_valid_ip_address():
 			if ip != "":
 				set_message("Invalid IP", 3)
 				return
 			ip = "127.0.0.1"
+		config.ip = ip
 		set_message("Trying to connect...")
 		toggle_inputs(true)
-		initial_max_health = max_health
+		initial_max_health = config.max_health
 		var peer = NetworkedMultiplayerENet.new()
 		peer.create_client(ip, 8910)
 		get_tree().network_peer = peer
@@ -247,8 +244,8 @@ remote func check(version):
 	var id = get_tree().get_rpc_sender_id()
 	if version == VERSION:
 		set_message("Client connected", 2)
-		rpc_id(id, "start_client_game", paddle_data, using_small_map,
-				map_parent.modulate, max_health, ball_count)
+		rpc_id(id, "start_client_game", paddle_data, config.using_small_map,
+				map_parent.modulate, config.max_health, config.ball_count)
 	else:
 		rpc_id(id, "unload_game", "Different server version (" + VERSION + ")")
 
@@ -256,7 +253,7 @@ remote func check(version):
 remote func start_client_game(paddles, small_map, map_color, health, balls):
 	join_timer.stop()
 	load_game(small_map, map_color, balls)
-	max_health = health
+	config.max_health = health
 	for paddle in paddles:
 		create_paddle(paddles[paddle])
 
@@ -265,26 +262,18 @@ remote func start_client_game(paddles, small_map, map_color, health, balls):
 
 # Start game (as server)
 func start_game():
-	peer_name = name_input.text
+	config.peer_name = name_input.text
 	var peer = NetworkedMultiplayerENet.new()
 	peer.create_server(8910)
 	get_tree().network_peer = peer
-	get_tree().refuse_new_network_connections = not is_open_to_lan
-	load_game(using_small_map, Color.from_hsv(randf(), 0.8, 1), ball_count)
+	get_tree().refuse_new_network_connections = not config.is_open_to_lan
+	load_game(config.using_small_map, Color.from_hsv(randf(), 0.8, 1), config.ball_count)
 
 # Save config, load map, spawn balls (used by server and client)
 func load_game(small_map, map_color, balls):
 	var file = File.new()
 	file.open("user://config.json", File.WRITE)
-	var save = {
-		"name": name_input.text,
-		"ip": ip_input.text,
-		"is_open_to_lan": is_open_to_lan,
-		"using_small_map": using_small_map,
-		"health": max_health,
-		"balls": ball_count,
-	}
-	file.store_line(to_json(save))
+	file.store_line(to_json(config))
 	file.close()
 	map_parent.modulate = map_color
 	if small_map:
@@ -316,7 +305,7 @@ remote func unload_game(msg):
 	is_playing = false
 	if get_tree().has_network_peer():
 		if peer_id != 1:
-			max_health = initial_max_health
+			config.max_health = initial_max_health
 		get_tree().set_deferred("network_peer", null)
 		peer_id = 1
 	join_timer.stop()
@@ -387,6 +376,14 @@ remote func create_paddle(data):
 	if peer_id != 1:
 		paddle_node = Sprite.new()
 		paddle_node.texture = PADDLE_TEXTURE
+	var name_count = 1
+	for paddle in paddle_parent.get_children():
+		if data.name in paddle.name:
+			name_count += 1
+	var new_name = data.name
+	if name_count > 1:
+		new_name += str(name_count)
+	paddle_node.name = new_name
 	if "position" in data and "rotation" in data:
 		paddle_node.position = data.position
 		paddle_node.rotation = data.rotation
@@ -397,14 +394,6 @@ remote func create_paddle(data):
 		paddle_node.modulate = data.color
 	else:
 		paddle_node.modulate = Color.from_hsv(randf(), 0.8, 1)
-	var name_count = 1
-	for paddle in paddle_parent.get_children():
-		if data.name in paddle.name:
-			name_count += 1
-	var new_name = data.name
-	if name_count > 1:
-		new_name += str(name_count)
-	paddle_node.name = new_name
 	if peer_id == 1:
 		paddle_node.connect("collided", self, "vibrate", [new_name])
 		paddle_node.connect("damaged", self, "damage", [new_name])
@@ -422,7 +411,7 @@ remote func create_paddle(data):
 	var hp_bar = HBoxContainer.new()
 	hp_bar.alignment = BoxContainer.ALIGN_CENTER
 	hp_bar.set("custom_constants/separation", -20)
-	for i in max_health:
+	for i in config.max_health:
 		var bit = TextureRect.new()
 		bit.texture = HP_TEXTURE
 		if "health" in data and data.health <= i:
@@ -432,17 +421,17 @@ remote func create_paddle(data):
 	bars_node.add_child(bar)
 	bars_node.columns = paddle_count + 1
 	paddle_data[new_name] = {
+		"id": data.id,
+		"name": new_name,
 		"position": paddle_node.position,
 		"rotation": paddle_node.rotation,
-		"name": new_name,
-		"id": data.id,
 		"color": paddle_node.modulate,
 	}
 	if "health" in data:
 		paddle_data[new_name].health = data.health
 	else:
-		paddle_data[new_name].health = max_health
-	if peer_id == 1 and is_open_to_lan:
+		paddle_data[new_name].health = config.max_health
+	if peer_id == 1 and config.is_open_to_lan:
 		var new_data = paddle_data[new_name].duplicate(true)
 		if data.id != peer_id and "pad" in data:
 			new_data.pad = data.pad
@@ -486,7 +475,7 @@ remote func vibrate(paddle):
 	if is_playing:
 		if paddle_data[paddle].id == peer_id:
 			Input.start_joy_vibration(input_list[paddle], 0.1, 0.1, 0.1)
-		elif peer_id == 1 and is_open_to_lan:
+		elif peer_id == 1 and config.is_open_to_lan:
 			rpc_id(paddle_data[paddle].id, "vibrate", paddle)
 
 # Manage health and respawning (server first, then send to clients)
@@ -498,9 +487,9 @@ remote func damage(paddle):
 			var paddle_node = paddle_parent.get_node(paddle)
 			paddle_node.position = paddle_spawns[paddle_node.get_index()].position
 			paddle_node.rotation = paddle_spawns[paddle_node.get_index()].rotation
-		paddle_data[paddle].health = max_health
+		paddle_data[paddle].health = config.max_health
 	var health_bits = bars_node.get_node(paddle).get_child(1).get_children()
-	for i in max_health:
+	for i in config.max_health:
 		if paddle_data[paddle].health > i:
 			health_bits[i].modulate.a = 1.0
 		else:
