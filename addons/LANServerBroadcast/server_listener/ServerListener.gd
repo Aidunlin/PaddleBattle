@@ -11,7 +11,7 @@ var knownServers = {}
 
 # Number of seconds to wait when a server hasn't been heard from
 # before calling remove_server
-export (int) var server_cleanup_threshold: int = 3
+export (int) var server_cleanup_threshold: int = 2
 
 func _init():
 	cleanUpTimer.wait_time = server_cleanup_threshold

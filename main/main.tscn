@@ -1,8 +1,9 @@
-[gd_scene load_steps=7 format=2]
+[gd_scene load_steps=8 format=2]
 
 [ext_resource path="res://main/robotomono.ttf" type="DynamicFontData" id=1]
 [ext_resource path="res://main/main.gd" type="Script" id=2]
 [ext_resource path="res://main/main.tres" type="Theme" id=3]
+[ext_resource path="res://addons/LANServerBroadcast/server_listener/ServerListener.gd" type="Script" id=4]
 
 [sub_resource type="DynamicFont" id=1]
 size = 30
@@ -277,9 +278,9 @@ text = "Back"
 [node name="Join" type="VBoxContainer" parent="CanvasLayer/UI/Menu"]
 visible = false
 margin_left = 385.0
-margin_top = 216.0
+margin_top = 234.0
 margin_right = 639.0
-margin_bottom = 383.0
+margin_bottom = 366.0
 
 [node name="Label" type="Label" parent="CanvasLayer/UI/Menu/Join"]
 margin_right = 254.0
@@ -296,37 +297,19 @@ margin_bottom = 42.0
 [node name="List" type="VBoxContainer" parent="CanvasLayer/UI/Menu/Join"]
 margin_top = 46.0
 margin_right = 254.0
-margin_bottom = 81.0
+margin_bottom = 46.0
 size_flags_horizontal = 3
 size_flags_vertical = 3
 
-[node name="Session" type="HBoxContainer" parent="CanvasLayer/UI/Menu/Join/List"]
-margin_right = 254.0
-margin_bottom = 35.0
-custom_constants/separation = 8
-
-[node name="Label" type="Label" parent="CanvasLayer/UI/Menu/Join/List/Session"]
-margin_right = 190.0
-margin_bottom = 34.0
-size_flags_horizontal = 3
-custom_fonts/font = SubResource( 2 )
-text = "Session list WIP"
-
-[node name="Button" type="Button" parent="CanvasLayer/UI/Menu/Join/List/Session"]
-margin_left = 198.0
-margin_right = 254.0
-margin_bottom = 35.0
-text = "Join"
-
 [node name="HSeparator2" type="HSeparator" parent="CanvasLayer/UI/Menu/Join"]
-margin_top = 85.0
+margin_top = 50.0
 margin_right = 254.0
-margin_bottom = 89.0
+margin_bottom = 54.0
 
 [node name="IPWrap" type="HBoxContainer" parent="CanvasLayer/UI/Menu/Join"]
-margin_top = 93.0
+margin_top = 58.0
 margin_right = 254.0
-margin_bottom = 128.0
+margin_bottom = 93.0
 
 [node name="Label" type="Label" parent="CanvasLayer/UI/Menu/Join/IPWrap"]
 margin_right = 30.0
@@ -353,9 +336,9 @@ margin_bottom = 35.0
 text = "Join"
 
 [node name="Back" type="Button" parent="CanvasLayer/UI/Menu/Join"]
-margin_top = 132.0
+margin_top = 97.0
 margin_right = 254.0
-margin_bottom = 167.0
+margin_bottom = 132.0
 text = "Back"
 
 [node name="WorldEnvironment" type="WorldEnvironment" parent="."]
@@ -364,3 +347,6 @@ environment = SubResource( 3 )
 [node name="JoinTimer" type="Timer" parent="."]
 
 [node name="MessageTimer" type="Timer" parent="."]
+
+[node name="ServerListener" type="Node" parent="."]
+script = ExtResource( 4 )
