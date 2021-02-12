@@ -354,7 +354,6 @@ func load_game(small_map, map_color, balls):
 
 # Self-explanatory
 remote func unload_game(msg):
-	broadcast_socket.close()
 	is_playing = false
 	if get_tree().has_network_peer():
 		if peer_id != 1:
@@ -381,6 +380,7 @@ remote func unload_game(msg):
 	menu_node.show()
 	switch_menu(current_menu)
 	set_message(msg, 3)
+	refresh_servers()
 
 # Update paddles and balls (used by server and client)
 remotesync func update_objects(paddles, balls):

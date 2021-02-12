@@ -17,6 +17,8 @@ extra_spacing_bottom = 6
 font_data = ExtResource( 1 )
 
 [sub_resource type="StyleBoxFlat" id=4]
+content_margin_left = 6.0
+content_margin_right = 6.0
 bg_color = Color( 0.172549, 0.164706, 0.196078, 0.286275 )
 border_width_bottom = 1
 
