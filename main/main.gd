@@ -34,8 +34,9 @@ var camera_spawn = Vector2()
 var paddle_spawns = []
 var ball_spawns = []
 var current_menu = "main"
-var server_advertiser = null
-var session_list = []
+var broadcast_socket = PacketPeerUDP.new()
+var listen_socket = PacketPeerUDP.new()
+var server_list = {}
 
 # Onready go brrrr
 onready var camera_node = $Camera
@@ -64,12 +65,12 @@ onready var start_button = $CanvasLayer/UI/Menu/Options/Start
 onready var options_back_button = $CanvasLayer/UI/Menu/Options/Back
 onready var join_menu = $CanvasLayer/UI/Menu/Join
 onready var session_parent = $CanvasLayer/UI/Menu/Join/List
+onready var refresh_button = $CanvasLayer/UI/Menu/Join/Refresh
 onready var ip_input = $CanvasLayer/UI/Menu/Join/IPWrap/IP
 onready var join_ip_button = $CanvasLayer/UI/Menu/Join/IPWrap/Join
 onready var join_back_button = $CanvasLayer/UI/Menu/Join/Back
 onready var join_timer = $JoinTimer
 onready var message_timer = $MessageTimer
-onready var server_listener = $ServerListener
 
 # Load config, connect button and network signals
 func _ready():
@@ -99,22 +100,24 @@ func _ready():
 	small_map_toggle.connect("pressed", self, "toggle_small_map")
 	start_button.connect("pressed", self, "start_game")
 	options_back_button.connect("pressed", self, "switch_menu", ["main"])
+	refresh_button.connect("pressed", self, "refresh_servers")
 	join_ip_button.connect("pressed", self, "connect_to_server", [ip_input.text])
 	join_back_button.connect("pressed", self, "switch_menu", ["main"])
 	join_timer.connect("timeout", self, "unload_game", ["Connection failed"])
 	message_timer.connect("timeout", self, "set_message")
-	server_listener.connect("new_server", self, "new_server")
-	server_listener.connect("remove_server", self, "remove_server")
 	get_tree().connect("network_peer_disconnected", self, "peer_disconnected")
 	get_tree().connect("connected_to_server", self, "rpc_id", [1, "check", VERSION])
 	get_tree().connect("connection_failed", self, "unload_game", ["Connection failed"])
 	get_tree().connect("server_disconnected", self, "unload_game", ["Server disconnected"])
+	listen_socket.listen(8191)
 
 # Update objects, modify camera
 func _physics_process(_delta):
 	if is_playing:
 		if peer_id == 1:
 			rpc_unreliable("update_objects", paddle_data, ball_data)
+			if config.is_open_to_lan:
+				broadcast_socket.put_packet(config.peer_name.to_ascii())
 		var zoom = CAMERA_ZOOM
 		if paddle_parent.get_child_count() > 0:
 			var avg = Vector2()
@@ -219,6 +222,7 @@ func switch_menu(to):
 		join_menu.visible = true
 		join_back_button.grab_focus()
 	current_menu = to
+	refresh_servers()
 
 # Self-explanatory
 func toggle_lan():
@@ -231,30 +235,31 @@ func toggle_small_map():
 ##### -------------------- CLIENT -------------------- #####
 ##### These functions specifically manage clients
 
-# Add detected server to list
-func new_server(server_info):
-	var new_session = HBoxContainer.new()
-	new_session.set("custom_constants/separation", 8)
-	var new_label = Label.new()
-	new_label.text = server_info.name
-	new_label.size_flags_horizontal = Label.SIZE_EXPAND_FILL
-	new_label.add_font_override("font", load("res://main/main.tscn::2"))
-	var new_button = Button.new()
-	new_button.text = "Join"
-	new_button.connect("pressed", self, "connect_to_server", [server_info.ip])
-	new_session.add_child(new_label)
-	new_session.add_child(new_button)
-	session_parent.add_child(new_session)
-	session_list.append(server_info)
-
-# Remove old server from list
-func remove_server(ip):
-	for session_index in session_list.size():
-		if session_list[session_index].ip == ip:
-			#session_parent.get_child(session_index).get_child(1).disconnect("pressed", self, "connect_to_server")
-			session_parent.get_child(session_index).queue_free()
-			session_list.remove(session_index)
-			break
+# Clear server list and get available servers
+func refresh_servers():
+	server_list.clear()
+	for server in session_parent.get_children():
+		server.queue_free()
+	while listen_socket.get_available_packet_count() > 0:
+		var ip = listen_socket.get_packet_ip()
+		var port = listen_socket.get_packet_port()
+		var data = listen_socket.get_packet()
+		if ip != "" and port > 0 and not server_list.has(ip):
+			var server_name = data.get_string_from_ascii()
+			server_list[ip] = server_name
+			var new_session = HBoxContainer.new()
+			new_session.name = ip
+			new_session.set("custom_constants/separation", 8)
+			var new_label = Label.new()
+			new_label.text = server_name
+			new_label.size_flags_horizontal = Label.SIZE_EXPAND_FILL
+			new_label.add_font_override("font", load("res://main/main.tscn::2"))
+			var new_button = Button.new()
+			new_button.text = "Join"
+			new_button.connect("pressed", self, "connect_to_server", [ip])
+			new_session.add_child(new_label)
+			new_session.add_child(new_button)
+			session_parent.add_child(new_session)
 
 # Check ip, attempt connection
 func connect_to_server(ip):
@@ -314,10 +319,9 @@ func start_game():
 	peer.create_server(8910)
 	get_tree().network_peer = peer
 	get_tree().refuse_new_network_connections = not config.is_open_to_lan
-	server_advertiser = ServerAdvertiser.new()
-	server_advertiser.serverInfo["name"] = config.peer_name
-	server_advertiser.serverInfo["port"] = 8910
-	add_child(server_advertiser)
+	if config.is_open_to_lan:
+		broadcast_socket.set_broadcast_enabled(true)
+		broadcast_socket.set_dest_address("255.255.255.255", 8191)
 	load_game(config.using_small_map, Color.from_hsv(randf(), 0.8, 1), config.ball_count)
 
 # Save config, load map, spawn balls (used by server and client)
@@ -350,8 +354,7 @@ func load_game(small_map, map_color, balls):
 
 # Self-explanatory
 remote func unload_game(msg):
-	if server_advertiser != null:
-		server_advertiser.queue_free()
+	broadcast_socket.close()
 	is_playing = false
 	if get_tree().has_network_peer():
 		if peer_id != 1:
