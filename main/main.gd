@@ -33,6 +33,7 @@ var used_inputs = []
 var camera_spawn = Vector2()
 var paddle_spawns = []
 var ball_spawns = []
+var current_menu = "main"
 
 # Onready go brrrr
 onready var camera_node = $Camera
@@ -40,26 +41,30 @@ onready var map_parent = $Map
 onready var paddle_parent = $Paddles
 onready var ball_parent = $Balls
 onready var message_node = $CanvasLayer/UI/Message
-onready var bars_node = $CanvasLayer/UI/HUD/Bars
+onready var bar_parent = $CanvasLayer/UI/HUD/Bars
 onready var menu_node = $CanvasLayer/UI/Menu
 onready var main_menu = $CanvasLayer/UI/Menu/Main
 onready var version_node = $CanvasLayer/UI/Menu/Main/Version
 onready var play_button = $CanvasLayer/UI/Menu/Main/Play
 onready var name_input = $CanvasLayer/UI/Menu/Main/NameWrap/Name
-onready var ip_input = $CanvasLayer/UI/Menu/Main/IPWrap/IP
 onready var join_button = $CanvasLayer/UI/Menu/Main/Join
 onready var quit_button = $CanvasLayer/UI/Menu/Main/Quit
 onready var options_menu = $CanvasLayer/UI/Menu/Options
-onready var health_dec_button = $CanvasLayer/UI/Menu/Options/HealthWrap/Buttons/Dec
-onready var health_node = $CanvasLayer/UI/Menu/Options/HealthWrap/Buttons/Health
-onready var health_inc_button = $CanvasLayer/UI/Menu/Options/HealthWrap/Buttons/Inc
-onready var balls_dec_button = $CanvasLayer/UI/Menu/Options/BallsWrap/Buttons/Dec
-onready var balls_node = $CanvasLayer/UI/Menu/Options/BallsWrap/Buttons/Balls
-onready var balls_inc_button = $CanvasLayer/UI/Menu/Options/BallsWrap/Buttons/Inc
+onready var health_dec_button = $CanvasLayer/UI/Menu/Options/HealthWrap/Dec
+onready var health_node = $CanvasLayer/UI/Menu/Options/HealthWrap/Health
+onready var health_inc_button = $CanvasLayer/UI/Menu/Options/HealthWrap/Inc
+onready var balls_dec_button = $CanvasLayer/UI/Menu/Options/BallsWrap/Dec
+onready var balls_node = $CanvasLayer/UI/Menu/Options/BallsWrap/Balls
+onready var balls_inc_button = $CanvasLayer/UI/Menu/Options/BallsWrap/Inc
 onready var open_lan_toggle = $CanvasLayer/UI/Menu/Options/OpenLAN
 onready var small_map_toggle = $CanvasLayer/UI/Menu/Options/SmallMap
 onready var start_button = $CanvasLayer/UI/Menu/Options/Start
-onready var back_button = $CanvasLayer/UI/Menu/Options/Back
+onready var options_back_button = $CanvasLayer/UI/Menu/Options/Back
+onready var join_menu = $CanvasLayer/UI/Menu/Join
+onready var session_parent = $CanvasLayer/UI/Menu/Join/List
+onready var ip_input = $CanvasLayer/UI/Menu/Join/IPWrap/IP
+onready var join_ip_button = $CanvasLayer/UI/Menu/Join/IPWrap/Join
+onready var join_back_button = $CanvasLayer/UI/Menu/Join/Back
 onready var join_timer = $JoinTimer
 onready var message_timer = $MessageTimer
 
@@ -80,17 +85,19 @@ func _ready():
 	health_node.text = str(config.max_health)
 	balls_node.text = str(config.ball_count)
 	play_button.grab_focus()
-	play_button.connect("pressed", self, "switch_menu", [false])
-	join_button.connect("pressed", self, "connect_to_server")
+	play_button.connect("pressed", self, "switch_menu", ["options"])
+	join_button.connect("pressed", self, "switch_menu", ["join"])
 	quit_button.connect("pressed", get_tree(), "quit")
-	open_lan_toggle.connect("pressed", self, "toggle_lan")
-	small_map_toggle.connect("pressed", self, "toggle_small_map")
 	health_dec_button.connect("pressed", self, "crement", ["health", -1])
 	health_inc_button.connect("pressed", self, "crement", ["health", 1])
 	balls_dec_button.connect("pressed", self, "crement", ["balls", -1])
 	balls_inc_button.connect("pressed", self, "crement", ["balls", 1])
+	open_lan_toggle.connect("pressed", self, "toggle_lan")
+	small_map_toggle.connect("pressed", self, "toggle_small_map")
 	start_button.connect("pressed", self, "start_game")
-	back_button.connect("pressed", self, "switch_menu", [true])
+	options_back_button.connect("pressed", self, "switch_menu", ["main"])
+	join_ip_button.connect("pressed", self, "connect_to_server", [ip_input.text])
+	join_back_button.connect("pressed", self, "switch_menu", ["main"])
 	join_timer.connect("timeout", self, "unload_game", ["Connection failed"])
 	message_timer.connect("timeout", self, "set_message")
 	get_tree().connect("network_peer_disconnected", self, "peer_disconnected")
@@ -181,26 +188,32 @@ func crement(which, value = 0):
 		config.ball_count = int(clamp(config.ball_count + value, 1, 10))
 		balls_node.text = str(config.ball_count)
 
-# Enable/disable inputs
-func toggle_inputs(toggle):
-	name_input.editable = not toggle
-	play_button.disabled = toggle
-	ip_input.editable = not toggle
-	join_button.disabled = toggle
-
 # Switch menu, grab focus of button
-func switch_menu(to_main):
-	if to_main:
-		save_config()
-		play_button.grab_focus()
-	else:
+func switch_menu(to):
+	main_menu.visible = false
+	options_menu.visible = false
+	join_menu.visible = false
+	if to == "main":
+		main_menu.visible = true
+		if current_menu == "options":
+			play_button.grab_focus()
+		elif current_menu == "join":
+			join_button.grab_focus()
+	elif to == "options":
 		if name_input.text == "":
 			set_message("Invalid name", 3)
 			name_input.grab_focus()
 			return
+		options_menu.visible = true
 		start_button.grab_focus()
-	main_menu.visible = to_main
-	options_menu.visible = not to_main
+	elif to == "join":
+		if name_input.text == "":
+			set_message("Invalid name", 3)
+			name_input.grab_focus()
+			return
+		join_menu.visible = true
+		join_back_button.grab_focus()
+	current_menu = to
 
 # Self-explanatory
 func toggle_lan():
@@ -214,26 +227,21 @@ func toggle_small_map():
 ##### These functions specifically manage clients
 
 # Check name/ip, attempt connection
-func connect_to_server():
-	if name_input.text == "":
-		set_message("Invalid name", 3)
-		name_input.grab_focus()
+func connect_to_server(ip):
+	config.peer_name = name_input.text
+	if ip.is_valid_ip_address():
+		config.ip = ip
+		set_message("Trying to connect...")
+		initial_max_health = config.max_health
+		var peer = NetworkedMultiplayerENet.new()
+		peer.create_client(ip, 8910)
+		get_tree().network_peer = peer
+		peer_id = get_tree().get_network_unique_id()
+		join_timer.start(5)
 	else:
-		config.peer_name = name_input.text
-		if ip_input.text.is_valid_ip_address():
-			config.ip = ip_input.text
-			set_message("Trying to connect...")
-			toggle_inputs(true)
-			initial_max_health = config.max_health
-			var peer = NetworkedMultiplayerENet.new()
-			peer.create_client(config.ip, 8910)
-			get_tree().network_peer = peer
-			peer_id = get_tree().get_network_unique_id()
-			join_timer.start(5)
-		else:
-			set_message("Invalid IP", 3)
-			ip_input.grab_focus()
-			return
+		set_message("Invalid IP", 3)
+		ip_input.grab_focus()
+		return
 
 # Clear client info on disconnect
 func peer_disconnected(id):
@@ -244,8 +252,8 @@ func peer_disconnected(id):
 	for paddle in paddles_to_clear:
 		paddle_data.erase(paddle)
 		paddle_parent.get_node(paddle).queue_free()
-		bars_node.get_node(paddle).queue_free()
-	bars_node.columns = max(paddle_data.size(), 1)
+		bar_parent.get_node(paddle).queue_free()
+	bar_parent.columns = max(paddle_data.size(), 1)
 	set_message("Client disconnected", 2)
 
 # Check client version
@@ -328,12 +336,11 @@ remote func unload_game(msg):
 	for ball in ball_parent.get_children():
 		ball.queue_free()
 	ball_data.clear()
-	for bar in bars_node.get_children():
+	for bar in bar_parent.get_children():
 		bar.queue_free()
-	bars_node.columns = 1
+	bar_parent.columns = 1
 	menu_node.show()
-	toggle_inputs(false)
-	switch_menu(true)
+	switch_menu(current_menu)
 	set_message(msg, 3)
 
 # Update paddles and balls (used by server and client)
@@ -424,8 +431,8 @@ remote func create_paddle(data):
 			bit.modulate.a = 0.1
 		hp_bar.add_child(bit)
 	bar.add_child(hp_bar)
-	bars_node.add_child(bar)
-	bars_node.columns = paddle_count + 1
+	bar_parent.add_child(bar)
+	bar_parent.columns = paddle_count + 1
 	paddle_data[new_name] = {
 		"id": data.id,
 		"name": new_name,
@@ -494,7 +501,7 @@ remote func damage(paddle):
 			paddle_node.position = paddle_spawns[paddle_node.get_index()].position
 			paddle_node.rotation = paddle_spawns[paddle_node.get_index()].rotation
 		paddle_data[paddle].health = config.max_health
-	var health_bits = bars_node.get_node(paddle).get_child(1).get_children()
+	var health_bits = bar_parent.get_node(paddle).get_child(1).get_children()
 	for i in config.max_health:
 		if paddle_data[paddle].health > i:
 			health_bits[i].modulate.a = 1.0
