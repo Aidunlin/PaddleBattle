@@ -29,6 +29,10 @@ config/icon="res://main/icon.png"
 
 default_bus_layout=""
 
+[autoload]
+
+Game="*res://main/game.gd"
+
 [input]
 
 ui_accept={

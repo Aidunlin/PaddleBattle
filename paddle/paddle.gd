@@ -1,5 +1,3 @@
-# This is code for server-side paddles
-
 extends KinematicBody2D
 
 signal collided()
