@@ -59,8 +59,8 @@ onready var health_inc_button = $CanvasLayer/UI/Menu/Options/HealthWrap/Inc
 onready var balls_dec_button = $CanvasLayer/UI/Menu/Options/BallsWrap/Dec
 onready var balls_node = $CanvasLayer/UI/Menu/Options/BallsWrap/Balls
 onready var balls_inc_button = $CanvasLayer/UI/Menu/Options/BallsWrap/Inc
-onready var open_lan_toggle = $CanvasLayer/UI/Menu/Options/OpenLAN
-onready var small_map_toggle = $CanvasLayer/UI/Menu/Options/SmallMap
+onready var open_lan_toggle = $CanvasLayer/UI/Menu/Options/OpenLANWrap/OpenLAN
+onready var small_map_toggle = $CanvasLayer/UI/Menu/Options/SmallMapWrap/SmallMap
 onready var start_button = $CanvasLayer/UI/Menu/Options/Start
 onready var options_back_button = $CanvasLayer/UI/Menu/Options/Back
 onready var join_menu = $CanvasLayer/UI/Menu/Join
@@ -84,8 +84,10 @@ func _ready():
 		file.close()
 	name_input.text = config.peer_name
 	ip_input.text = config.ip
-	open_lan_toggle.pressed = config.is_open_to_lan
-	small_map_toggle.pressed = config.using_small_map
+	if config.is_open_to_lan:
+		open_lan_toggle.text = "ON"
+	if config.using_small_map:
+		small_map_toggle.text = "ON"
 	health_node.text = str(config.max_health)
 	balls_node.text = str(config.ball_count)
 	play_button.grab_focus()
@@ -180,13 +182,6 @@ func set_message(new = "", time = 0):
 	elif new != "" and not message_timer.is_stopped():
 		message_timer.stop()
 
-# Self-explanatory
-func save_config():
-	var file = File.new()
-	file.open("user://config.json", File.WRITE)
-	file.store_line(to_json(config))
-	file.close()
-
 # Increment or decrement option
 func crement(which, value = 0):
 	if which == "health":
@@ -224,13 +219,29 @@ func switch_menu(to):
 	current_menu = to
 	refresh_servers()
 
+func toggle_inputs(disable):
+	refresh_button.disabled = disable
+	for session in session_parent.get_children():
+		session.get_child(1).disabled = disable
+	ip_input.editable = not disable
+	join_ip_button.disabled = disable
+	join_back_button.disabled = disable
+
 # Self-explanatory
 func toggle_lan():
 	config.is_open_to_lan = not config.is_open_to_lan
+	if config.is_open_to_lan:
+		open_lan_toggle.text = "ON"
+	else:
+		open_lan_toggle.text = "OFF"
 
 # Self-explanatory
 func toggle_small_map():
 	config.using_small_map = not config.using_small_map
+	if config.using_small_map:
+		small_map_toggle.text = "ON"
+	else:
+		small_map_toggle.text = "OFF"
 
 ##### -------------------- CLIENT -------------------- #####
 ##### These functions specifically manage clients
@@ -273,6 +284,7 @@ func connect_to_server(ip):
 		get_tree().network_peer = peer
 		peer_id = get_tree().get_network_unique_id()
 		join_timer.start(5)
+		toggle_inputs(true)
 	else:
 		set_message("Invalid IP", 3)
 		ip_input.grab_focus()
@@ -303,6 +315,7 @@ remote func check(version):
 
 # Start game (as client)
 remote func start_client_game(paddles, small_map, map_color, health, balls):
+	toggle_inputs(false)
 	join_timer.stop()
 	load_game(small_map, map_color, balls)
 	config.max_health = health
@@ -326,7 +339,10 @@ func start_game():
 
 # Save config, load map, spawn balls (used by server and client)
 func load_game(small_map, map_color, balls):
-	save_config()
+	var file = File.new()
+	file.open("user://config.json", File.WRITE)
+	file.store_line(to_json(config))
+	file.close()
 	map_parent.modulate = map_color
 	if small_map:
 		map_parent.add_child(SMALL_MAP_SCENE.instance())
@@ -378,6 +394,7 @@ remote func unload_game(msg):
 		bar.queue_free()
 	bar_parent.columns = 1
 	menu_node.show()
+	toggle_inputs(false)
 	switch_menu(current_menu)
 	set_message(msg, 3)
 	refresh_servers()
