@@ -1,7 +1,7 @@
 [gd_scene load_steps=6 format=2]
 
-[ext_resource path="res://main/robotomono.ttf" type="DynamicFontData" id=1]
-[ext_resource path="res://main/main.tres" type="Theme" id=2]
+[ext_resource path="res://ui/robotomono.ttf" type="DynamicFontData" id=1]
+[ext_resource path="res://ui/ui.tres" type="Theme" id=2]
 [ext_resource path="res://ui/ui.gd" type="Script" id=3]
 
 [sub_resource type="DynamicFont" id=1]
@@ -206,6 +206,7 @@ margin_left = 86.0
 margin_right = 122.0
 margin_bottom = 35.0
 rect_min_size = Vector2( 36, 0 )
+focus_neighbour_right = NodePath("../Inc")
 text = "-"
 
 [node name="Balls" type="Label" parent="Menu/Options/BallsWrap"]
