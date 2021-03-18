@@ -7,7 +7,7 @@ With that being said, I hope you find enjoyment in PaddleBattle. Any feedback, b
 
 ## How to play
 
-Head over to the [releases page](https://github.com/Aidunlin/PaddleBattle/releases) and download the latest zip. Extract and run the exe (some releases have a .pck file, be sure to keep it in the same directory).
+Head over to the [releases page](https://github.com/Aidunlin/PaddleBattle/releases) to download and extract the latest source code zip. As of 0.4.1, you'll need a [standard Godot 3.2.3 binary](https://downloads.tuxfamily.org/godotengine/3.2.3/) for your platform. After extracting, place the Godot executable in the same directory as the source code and run it. If you want to open the Godot editor, simply drag and drop the project.godot file onto the Godot binary.
 
 Controls as of 0.4.1:
 * Controller (A to join) - Left stick to move, right stick to rotate, left trigger to dash
