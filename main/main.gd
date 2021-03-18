@@ -105,9 +105,11 @@ func refresh_servers():
 
 # Check ip, attempt connection
 func connect_to_server(ip):
+	if ip == "":
+		ip = ui_node.ip_input.text
 	Game.config.peer_name = ui_node.name_input.text
+	Game.config.ip = ip
 	if ip.is_valid_ip_address():
-		Game.config.ip = ip
 		ui_node.set_message("Trying to connect...")
 		initial_max_health = Game.config.max_health
 		var peer = NetworkedMultiplayerENet.new()
@@ -119,6 +121,7 @@ func connect_to_server(ip):
 	else:
 		ui_node.set_message("Invalid IP", 3)
 		ui_node.ip_input.grab_focus()
+	Game.save_config()
 
 # Clear client info on disconnect
 func peer_disconnected(id):
@@ -169,10 +172,7 @@ func start_game():
 
 # Save config, load map, spawn balls (used by server and client)
 func load_game(small_map, map_color, balls):
-	var file = File.new()
-	file.open("user://config.json", File.WRITE)
-	file.store_line(to_json(Game.config))
-	file.close()
+	Game.save_config()
 	map_parent.modulate = map_color
 	if small_map:
 		map_parent.add_child(SMALL_MAP_SCENE.instance())
@@ -198,7 +198,6 @@ func load_game(small_map, map_color, balls):
 	ui_node.menu_node.hide()
 	is_playing = true
 
-# Self-explanatory
 remote func unload_game(msg):
 	is_playing = false
 	if get_tree().has_network_peer():

@@ -61,7 +61,7 @@ func _ready():
 	start_button.connect("pressed", self, "emit_signal", ["start_game"])
 	options_back_button.connect("pressed", self, "switch_menu", ["main"])
 	refresh_button.connect("pressed", self, "emit_signal", ["refresh_servers"])
-	join_ip_button.connect("pressed", self, "emit_signal", ["connect_to_server", ip_input.text])
+	join_ip_button.connect("pressed", self, "emit_signal", ["connect_to_server", ""])
 	join_back_button.connect("pressed", self, "switch_menu", ["main"])
 	message_timer.connect("timeout", self, "set_message")
 

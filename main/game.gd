@@ -11,7 +11,7 @@ var config = {
 	"ball_count": 10,
 }
 
-func _enter_tree():
+func load_config():
 	var file = File.new()
 	if file.file_exists("user://config.json"):
 		file.open("user://config.json", File.READ)
@@ -19,3 +19,12 @@ func _enter_tree():
 		for key in config_from_file:
 			Game.config[key] = config_from_file[key]
 		file.close()
+
+func save_config():
+	var file = File.new()
+	file.open("user://config.json", File.WRITE)
+	file.store_line(to_json(Game.config))
+	file.close()
+
+func _enter_tree():
+	load_config()
