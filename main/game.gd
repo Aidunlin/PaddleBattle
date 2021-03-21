@@ -1,6 +1,6 @@
 extends Node
 
-const VERSION = "Dev Build"
+const VERSION = "0.5.0"
 
 var config = {
 	"peer_name": "",

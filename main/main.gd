@@ -33,7 +33,7 @@ onready var join_timer = $JoinTimer
 # Load config, connect UI and network signals
 func _ready():
 	join_timer.connect("timeout", self, "unload_game", ["Connection failed"])
-	ui_node.connect("start_game", self, "start_game")
+	ui_node.connect("start_game", self, "start_server_game")
 	ui_node.connect("connect_to_server", self, "connect_to_server")
 	ui_node.connect("refresh_servers", self, "refresh_servers")
 	get_tree().connect("network_peer_disconnected", self, "peer_disconnected")
@@ -146,7 +146,6 @@ remote func check(version):
 	else:
 		rpc_id(id, "unload_game", "Different server version (" + Game.VERSION + ")")
 
-# Start game (as client)
 remote func start_client_game(paddles, small_map, map_color, health, balls):
 	ui_node.toggle_inputs(false)
 	join_timer.stop()
@@ -158,8 +157,7 @@ remote func start_client_game(paddles, small_map, map_color, health, balls):
 ##### -------------------- GAME -------------------- #####
 ##### Functions for starting, stopping, and updating game sessions
 
-# Start game (as server)
-func start_game():
+func start_server_game():
 	Game.config.peer_name = ui_node.name_input.text
 	var peer = NetworkedMultiplayerENet.new()
 	peer.create_server(8910)
