@@ -97,6 +97,7 @@ func switch_menu(to):
 		if name_input.text == "":
 			set_message("Invalid name", 3)
 			name_input.grab_focus()
+			main_menu.visible = true
 			return
 		options_menu.visible = true
 		start_button.grab_focus()
@@ -104,6 +105,7 @@ func switch_menu(to):
 		if name_input.text == "":
 			set_message("Invalid name", 3)
 			name_input.grab_focus()
+			main_menu.visible = true
 			return
 		join_menu.visible = true
 		join_back_button.grab_focus()
