@@ -1,6 +1,6 @@
 extends Node
 
-const VERSION = "0.5.0"
+const VERSION = "Dev Build"
 
 var config = {
 	"peer_name": "",
@@ -10,6 +10,9 @@ var config = {
 	"max_health": 3,
 	"ball_count": 10,
 }
+
+func _enter_tree():
+	load_config()
 
 func load_config():
 	var file = File.new()
@@ -25,6 +28,3 @@ func save_config():
 	file.open("user://config.json", File.WRITE)
 	file.store_line(to_json(Game.config))
 	file.close()
-
-func _enter_tree():
-	load_config()

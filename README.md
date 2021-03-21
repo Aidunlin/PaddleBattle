@@ -19,6 +19,6 @@ Your objective is to bounce balls off of the enemy paddle's back side, causing t
 
 ## How to play over LAN
 
-0.4.0 introduces online multiplayer. By enabling the Open to LAN option and pressing play, you will act as the host. Others can connect to you by simply joining through the session list or directly typing in your IP address. This works without any additional setup over your local network (including VPNs like Hamachi or Tunngle), but if you want to play with people who are outside of your network, you have to port forward (use 8910).
+0.4.0 introduces online multiplayer. By enabling the Open to LAN option and pressing play, you will act as the host. Others can connect to you by simply joining through the server list or directly typing in your IP address. This works without any additional setup over your local network (including VPNs like Hamachi or Tunngle), but if you want to play with people who are outside of your network, you have to port forward (use 8910).
 
 Regardless of whether you are on the host machine or a client machine, you can have multiple people playing on your device as long as there is room available. For example, 2 people on the same computer can play with 3 people on a different computer. Each additional player on the same device will have the same in-game name followed by a number to differentiate between them. If you want to leave (if you are on a client) or end the game (if you are on the host), you can do so by pressing escape or both start and select.

@@ -147,7 +147,7 @@ custom_constants/separation = 4
 margin_right = 202.0
 margin_bottom = 34.0
 custom_fonts/font = SubResource( 2 )
-text = "Create Session"
+text = "Create Server"
 align = 1
 
 [node name="HSeparator" type="HSeparator" parent="Menu/Options"]
@@ -295,7 +295,7 @@ margin_bottom = 385.0
 margin_right = 254.0
 margin_bottom = 34.0
 custom_fonts/font = SubResource( 2 )
-text = "Join Session"
+text = "Join Server"
 align = 1
 
 [node name="HSeparator" type="HSeparator" parent="Menu/Join"]

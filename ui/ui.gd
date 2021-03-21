@@ -30,7 +30,7 @@ onready var small_map_toggle = $Menu/Options/SmallMapWrap/SmallMap
 onready var start_button = $Menu/Options/Start
 onready var options_back_button = $Menu/Options/Back
 onready var join_menu = $Menu/Join
-onready var session_parent = $Menu/Join/List
+onready var server_parent = $Menu/Join/List
 onready var refresh_button = $Menu/Join/Refresh
 onready var ip_input = $Menu/Join/IPWrap/IP
 onready var join_ip_button = $Menu/Join/IPWrap/Join
@@ -82,7 +82,6 @@ func crement(which, value = 0):
 		Game.config.ball_count = int(clamp(Game.config.ball_count + value, 1, 10))
 		balls_node.text = str(Game.config.ball_count)
 
-# Switch menu, grab focus of button
 func switch_menu(to):
 	main_menu.visible = false
 	options_menu.visible = false
@@ -112,16 +111,14 @@ func switch_menu(to):
 	current_menu = to
 	emit_signal("refresh_servers")
 
-# Self-explanatory
 func toggle_inputs(disable):
 	refresh_button.disabled = disable
-	for session in session_parent.get_children():
-		session.get_child(1).disabled = disable
+	for server_node in server_parent.get_children():
+		server_node.get_child(1).disabled = disable
 	ip_input.editable = not disable
 	join_ip_button.disabled = disable
 	join_back_button.disabled = disable
 
-# Self-explanatory
 func toggle_lan():
 	Game.config.is_open_to_lan = not Game.config.is_open_to_lan
 	if Game.config.is_open_to_lan:
@@ -129,7 +126,6 @@ func toggle_lan():
 	else:
 		open_lan_toggle.text = "OFF"
 
-# Self-explanatory
 func toggle_small_map():
 	Game.config.using_small_map = not Game.config.using_small_map
 	if Game.config.using_small_map:
@@ -137,20 +133,19 @@ func toggle_small_map():
 	else:
 		small_map_toggle.text = "OFF"
 
-# Create new server UI
-func new_server(ip, server_name):
-	var new_session = HBoxContainer.new()
-	new_session.name = ip
-	new_session.set("custom_constants/separation", 8)
+func create_new_server(ip, server_name):
+	var new_server = HBoxContainer.new()
+	new_server.name = ip
+	new_server.set("custom_constants/separation", 8)
 	var new_label = Label.new()
 	new_label.text = server_name
 	new_label.size_flags_horizontal = Label.SIZE_EXPAND_FILL
 	var new_button = Button.new()
 	new_button.text = "Join"
 	new_button.connect("pressed", self, "emit_signal", ["connect_to_server", ip])
-	new_session.add_child(new_label)
-	new_session.add_child(new_button)
-	session_parent.add_child(new_session)
+	new_server.add_child(new_label)
+	new_server.add_child(new_button)
+	server_parent.add_child(new_server)
 
 # Create HUD for new player
 func create_bar(data, count):
@@ -185,7 +180,6 @@ func update_bar(paddle, health):
 		else:
 			bars[paddle].get_child(i).modulate.a = 0.1
 
-# Self-explanatory
 func reset(msg):
 	bars.clear()
 	bar_parent.columns = 1
