@@ -37,7 +37,6 @@ onready var join_ip_button = $Menu/Join/IPWrap/Join
 onready var join_back_button = $Menu/Join/Back
 onready var message_timer = $MessageTimer
 
-# Update UI with config data, connect buttons
 func _ready():
 	version_node.text = Game.VERSION
 	name_input.text = Game.config.peer_name
@@ -65,7 +64,6 @@ func _ready():
 	join_back_button.connect("pressed", self, "switch_menu", ["main"])
 	message_timer.connect("timeout", self, "set_message")
 
-# Update message and timer
 func set_message(new = "", time = 0):
 	message_node.text = new
 	if time > 0:
@@ -73,7 +71,6 @@ func set_message(new = "", time = 0):
 	elif new != "" and not message_timer.is_stopped():
 		message_timer.stop()
 
-# Increment or decrement option
 func crement(which, value = 0):
 	if which == "health":
 		Game.config.max_health = int(clamp(Game.config.max_health + value, 1, 5))
@@ -147,7 +144,6 @@ func create_new_server(ip, server_name):
 	new_server.add_child(new_button)
 	server_parent.add_child(new_server)
 
-# Create HUD for new player
 func create_bar(data, count):
 	var bar = VBoxContainer.new()
 	bar.name = data.name
@@ -172,7 +168,6 @@ func create_bar(data, count):
 	bar_parent.columns = count + 1
 	bars[data.name] = hp_bar
 
-# Update health bar
 func update_bar(paddle, health):
 	for i in Game.config.max_health:
 		if health > i:

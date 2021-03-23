@@ -1,3 +1,5 @@
+# AutoLoaded Singleton
+
 extends Node
 
 const VERSION = "Dev Build"

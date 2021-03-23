@@ -7,7 +7,6 @@ const BALL_SCENE = preload("res://ball/ball.tscn")
 const MAP_SCENE = preload("res://map/map.tscn")
 const SMALL_MAP_SCENE = preload("res://map/smallmap.tscn")
 const MOVE_SPEED = 500
-const CAMERA_ZOOM = Vector2(1, 1)
 
 var is_playing = false
 var initial_max_health = 0
@@ -26,52 +25,30 @@ onready var ball_parent = $Balls
 onready var ui_node = $CanvasLayer/UI
 onready var join_timer = $JoinTimer
 
-# Load config, connect UI and network signals
 func _ready():
-	join_timer.connect("timeout", self, "unload_game", ["Connection failed"])
+	get_tree().connect("network_peer_disconnected", self, "peer_disconnected")
+	get_tree().connect("connected_to_server", self,"rpc_id", [1, "check_client", Game.VERSION])
+	get_tree().connect("connection_failed", self, "unload_game", ["Connection failed"])
+	get_tree().connect("server_disconnected", self, "unload_game", ["Server disconnected"])
 	ui_node.connect("start_game", self, "start_server_game")
 	ui_node.connect("connect_to_server", self, "connect_to_server")
 	ui_node.connect("refresh_servers", self, "refresh_servers")
-	get_tree().connect("network_peer_disconnected", self, "peer_disconnected")
-	get_tree().connect("connected_to_server", self, "rpc_id", [1, "check", Game.VERSION])
-	get_tree().connect("connection_failed", self, "unload_game", ["Connection failed"])
-	get_tree().connect("server_disconnected", self, "unload_game", ["Server disconnected"])
+	join_timer.connect("timeout", self, "unload_game", ["Connection failed"])
 
-# Update objects, modify camera
 func _physics_process(_delta):
 	if is_playing:
 		if Network.peer_id == 1:
 			rpc_unreliable("update_objects", paddle_data, ball_data)
 			Network.broadcast_server()
-		var zoom = CAMERA_ZOOM
-		if paddle_parent.get_child_count() > 0:
-			var avg = Vector2()
-			var max_x = -INF
-			var min_x = INF
-			var max_y = -INF
-			var min_y = INF
-			for paddle in paddle_parent.get_children():
-				avg += paddle.position
-				max_x = max(paddle.position.x, max_x)
-				min_x = min(paddle.position.x, min_x)
-				max_y = max(paddle.position.y, max_y)
-				min_y = min(paddle.position.y, min_y)
-			avg /= paddle_parent.get_child_count()
-			var zoom_x = (2 * max(max_x - avg.x, avg.x - min_x) + OS.window_size.x / 1.5) / OS.window_size.x
-			var zoom_y = (2 * max(max_y - avg.y, avg.y - min_y) + OS.window_size.y / 1.5) / OS.window_size.y
-			zoom = Vector2(max(zoom_x, zoom_y), max(zoom_x, zoom_y))
-			if zoom < CAMERA_ZOOM:
-				zoom = CAMERA_ZOOM
-			camera_node.position = avg
-		camera_node.zoom = camera_node.zoom.linear_interpolate(zoom, 0.05)
+		camera_node.modify(paddle_parent.get_children())
 
 func _input(_event):
 	if is_playing and OS.is_window_focused():
 		if Input.is_key_pressed(KEY_ENTER) and not -1 in input_list.values():
-			new_paddle_from_input(-1)
+			create_paddle_from_input(-1)
 		for pad in Input.get_connected_joypads():
 			if Input.is_joy_button_pressed(pad, 0) and not pad in input_list.values():
-				new_paddle_from_input(pad)
+				create_paddle_from_input(pad)
 		if -1 in input_list.values() and Input.is_key_pressed(KEY_ESCAPE):
 			unload_game("You left the game")
 		for pad in input_list.values():
@@ -114,8 +91,7 @@ func peer_disconnected(id):
 	ui_node.bar_parent.columns = max(paddle_data.size(), 1)
 	ui_node.set_message("Client disconnected", 2)
 
-# Check client version
-remote func check(version):
+remote func check_client(version):
 	var id = get_tree().get_rpc_sender_id()
 	if version == Game.VERSION:
 		ui_node.set_message("Client connected", 2)
@@ -135,10 +111,10 @@ remote func start_client_game(paddles, small_map, map_color, health, balls):
 func start_server_game():
 	Game.config.peer_name = ui_node.name_input.text
 	Network.setup_server()
-	load_game(Game.config.using_small_map, Color.from_hsv(randf(), 0.8, 1), Game.config.ball_count)
+	var map_color = Color.from_hsv(randf(), 0.8, 1)
+	load_game(Game.config.using_small_map, map_color, Game.config.ball_count)
 
-# Save config, load map, spawn balls
-func load_game(small_map, map_color, balls):
+func load_game(small_map, map_color, ball_count):
 	Game.save_config()
 	map_parent.modulate = map_color
 	if small_map:
@@ -149,9 +125,7 @@ func load_game(small_map, map_color, balls):
 	paddle_spawns = map_parent.get_child(0).get_node("PaddleSpawns").get_children()
 	ball_spawns = map_parent.get_child(0).get_node("BallSpawns").get_children()
 	camera_node.position = camera_spawn
-	for i in balls:
-		if i + 1 > ball_spawns.size():
-			break
+	for i in min(ball_count, ball_spawns.size()):
 		var ball_node = BALL_SCENE.instance()
 		if get_tree().network_peer:
 			if Network.peer_id == 1:
@@ -174,8 +148,7 @@ remote func unload_game(msg):
 	join_timer.stop()
 	input_list.clear()
 	used_inputs.clear()
-	camera_node.position = Vector2()
-	camera_node.smoothing_enabled = false
+	camera_node.position = camera_spawn
 	map_parent.modulate = Color(1, 1, 1)
 	if map_parent.get_child_count() > 0:
 		map_parent.get_child(0).queue_free()
@@ -190,7 +163,6 @@ remote func unload_game(msg):
 	ui_node.reset(msg)
 	refresh_servers()
 
-# Update paddles and balls (used by server and client)
 remotesync func update_objects(paddles, balls):
 	if is_playing:
 		if Network.peer_id == 1:
@@ -198,8 +170,8 @@ remotesync func update_objects(paddles, balls):
 				var paddle_node = paddle_parent.get_node(paddle)
 				paddle_data[paddle].position = paddle_node.position
 				paddle_data[paddle].rotation = paddle_node.rotation
-				if paddles[paddle].id == Network.peer_id:
-					inputs_to_paddle(paddle, get_inputs(paddle))
+				if Network.peer_id == paddles[paddle].id:
+					set_paddle_inputs(paddle, get_paddle_inputs(paddle))
 			for ball_index in ball_parent.get_child_count():
 				var ball_node = ball_parent.get_child(ball_index)
 				if ball_node.position.length() > 4096:
@@ -216,14 +188,14 @@ remotesync func update_objects(paddles, balls):
 				var paddle_node = paddle_parent.get_node(paddle)
 				paddle_node.position = paddles[paddle].position
 				paddle_node.rotation = paddles[paddle].rotation
-				if paddles[paddle].id == Network.peer_id:
-					rpc_unreliable_id(1, "inputs_to_paddle", paddle, get_inputs(paddle))
+				if Network.peer_id == paddles[paddle].id:
+					rpc_unreliable_id(1, "set_paddle_inputs", paddle, get_paddle_inputs(paddle))
 			for ball_index in ball_parent.get_child_count():
 				var ball_node = ball_parent.get_child(ball_index)
 				ball_node.position = balls[ball_index].position
 				ball_node.rotation = balls[ball_index].rotation
 
-func new_paddle_from_input(pad):
+func create_paddle_from_input(pad):
 	if not pad in used_inputs:
 		var data = {
 			"name": Game.config.peer_name,
@@ -236,98 +208,91 @@ func new_paddle_from_input(pad):
 		else:
 			rpc_id(1, "create_paddle", data)
 
-# Create paddle, hud, and data (server first, then send to clients)
 remote func create_paddle(data):
-	camera_node.smoothing_enabled = true
-	var paddle_node = PADDLE_SCENE.instance()
 	var paddle_count = paddle_parent.get_child_count()
-	if paddle_count == paddle_spawns.size():
-		return
-	if Network.peer_id != 1:
-		paddle_node = Sprite.new()
-		paddle_node.texture = PADDLE_TEXTURE
-	var name_count = 1
-	for paddle in paddle_parent.get_children():
-		if data.name in paddle.name:
-			name_count += 1
-	var new_name = data.name
-	if name_count > 1:
-		new_name += str(name_count)
-	paddle_node.name = new_name
-	if "position" in data and "rotation" in data:
-		paddle_node.position = data.position
-		paddle_node.rotation = data.rotation
-	else:
-		paddle_node.position = paddle_spawns[paddle_count].position
-		paddle_node.rotation = paddle_spawns[paddle_count].rotation
-	if "color" in data:
-		paddle_node.modulate = data.color
-	else:
-		paddle_node.modulate = Color.from_hsv(randf(), 0.8, 1)
-	if Network.peer_id == 1:
-		paddle_node.connect("collided", self, "vibrate", [new_name])
-		paddle_node.connect("damaged", self, "damage", [new_name])
-	if Network.peer_id == data.id and "pad" in data:
-		input_list[new_name] = data.pad
-	paddle_data[new_name] = {
-		"id": data.id,
-		"name": new_name,
-		"position": paddle_node.position,
-		"rotation": paddle_node.rotation,
-		"color": paddle_node.modulate,
-	}
-	if "health" in data:
-		paddle_data[new_name].health = data.health
-	else:
-		paddle_data[new_name].health = Game.config.max_health
-	ui_node.create_bar(paddle_data[new_name], paddle_count)
-	if Network.peer_id == 1 and Game.config.is_open_to_lan:
-		var new_data = paddle_data[new_name].duplicate(true)
-		if data.id != Network.peer_id and "pad" in data:
-			new_data.pad = data.pad
-		rpc("create_paddle", new_data)
-	paddle_parent.add_child(paddle_node)
+	if paddle_count < paddle_spawns.size():
+		var paddle_node = PADDLE_SCENE.instance()
+		if Network.peer_id != 1:
+			paddle_node = Sprite.new()
+			paddle_node.texture = PADDLE_TEXTURE
+		var name_count = 1
+		for paddle in paddle_parent.get_children():
+			if data.name in paddle.name:
+				name_count += 1
+		var new_name = data.name
+		if name_count > 1:
+			new_name += str(name_count)
+		paddle_node.name = new_name
+		if "position" in data and "rotation" in data:
+			paddle_node.position = data.position
+			paddle_node.rotation = data.rotation
+		else:
+			paddle_node.position = paddle_spawns[paddle_count].position
+			paddle_node.rotation = paddle_spawns[paddle_count].rotation
+		if "color" in data:
+			paddle_node.modulate = data.color
+		else:
+			paddle_node.modulate = Color.from_hsv(randf(), 0.8, 1)
+		if Network.peer_id == 1:
+			paddle_node.connect("collided", self, "vibrate", [new_name])
+			paddle_node.connect("damaged", self, "damage", [new_name])
+		if Network.peer_id == data.id and "pad" in data:
+			input_list[new_name] = data.pad
+		paddle_data[new_name] = {
+			"id": data.id,
+			"name": new_name,
+			"position": paddle_node.position,
+			"rotation": paddle_node.rotation,
+			"color": paddle_node.modulate,
+		}
+		if "health" in data:
+			paddle_data[new_name].health = data.health
+		else:
+			paddle_data[new_name].health = Game.config.max_health
+		ui_node.create_bar(paddle_data[new_name], paddle_count)
+		if Network.peer_id == 1 and Game.config.is_open_to_lan:
+			var new_data = paddle_data[new_name].duplicate(true)
+			if Network.peer_id != data.id and "pad" in data:
+				new_data.pad = data.pad
+			rpc("create_paddle", new_data)
+		paddle_parent.add_child(paddle_node)
 
-func get_inputs(paddle):
+func get_paddle_inputs(paddle):
 	var pad = input_list[paddle]
-	var input = {
+	var inputs = {
 		"velocity": Vector2(),
 		"rotation": 0.0,
 		"dash": false
 	}
-	if not OS.is_window_focused():
-		return input
-	if pad == -1:
-		input.velocity.x = int(Input.is_key_pressed(KEY_D)) - int(Input.is_key_pressed(KEY_A))
-		input.velocity.y = int(Input.is_key_pressed(KEY_S)) - int(Input.is_key_pressed(KEY_W))
-		input.velocity = input.velocity.normalized() * MOVE_SPEED
-		if input.velocity.length() > 0:
-			input.dash = Input.is_key_pressed(KEY_SHIFT)
-		input.rotation = deg2rad((int(Input.is_key_pressed(KEY_PERIOD)) - int(Input.is_key_pressed(KEY_COMMA))) * 4)
-	else:
-		var left_stick = Vector2(Input.get_joy_axis(pad, 0), Input.get_joy_axis(pad, 1))
-		var right_stick = Vector2(Input.get_joy_axis(pad, 2), Input.get_joy_axis(pad, 3))
-		if left_stick.length() > 0.2:
-			input.velocity = left_stick * MOVE_SPEED
-			input.dash = Input.is_joy_button_pressed(pad, JOY_L2)
-		if right_stick.length() > 0.7:
-			var paddle_node = paddle_parent.get_node(paddle)
-			input.rotation = paddle_node.get_angle_to(paddle_node.position + right_stick) * 0.1
-	return input
+	if OS.is_window_focused():
+		if pad == -1:
+			inputs.velocity.x = int(Input.is_key_pressed(KEY_D)) - int(Input.is_key_pressed(KEY_A))
+			inputs.velocity.y = int(Input.is_key_pressed(KEY_S)) - int(Input.is_key_pressed(KEY_W))
+			inputs.velocity = inputs.velocity.normalized() * MOVE_SPEED
+			if inputs.velocity.length() > 0:
+				inputs.dash = Input.is_key_pressed(KEY_SHIFT)
+			inputs.rotation = deg2rad((int(Input.is_key_pressed(KEY_PERIOD)) - int(Input.is_key_pressed(KEY_COMMA))) * 4)
+		else:
+			var left_stick = Vector2(Input.get_joy_axis(pad, 0), Input.get_joy_axis(pad, 1))
+			var right_stick = Vector2(Input.get_joy_axis(pad, 2), Input.get_joy_axis(pad, 3))
+			if left_stick.length() > 0.2:
+				inputs.velocity = left_stick * MOVE_SPEED
+				inputs.dash = Input.is_joy_button_pressed(pad, JOY_L2)
+			if right_stick.length() > 0.7:
+				var paddle_node = paddle_parent.get_node(paddle)
+				inputs.rotation = paddle_node.get_angle_to(paddle_node.position + right_stick) * 0.1
+	return inputs
 
-# Send input data to paddle (as server)
-remote func inputs_to_paddle(paddle, input):
-	paddle_parent.get_node(paddle).inputs(input)
+remote func set_paddle_inputs(paddle, inputs):
+	paddle_parent.get_node(paddle).set_inputs(inputs)
 
-# Vibrate controller (server first, or send to correct client)
 remote func vibrate(paddle):
 	if is_playing:
-		if paddle_data[paddle].id == Network.peer_id:
+		if Network.peer_id == paddle_data[paddle].id:
 			Input.start_joy_vibration(input_list[paddle], 0.1, 0.1, 0.1)
 		elif Network.peer_id == 1 and Game.config.is_open_to_lan:
 			rpc_id(paddle_data[paddle].id, "vibrate", paddle)
 
-# Manage health and respawning (server first, then send to clients)
 remote func damage(paddle):
 	paddle_data[paddle].health -= 1
 	if paddle_data[paddle].health < 1:

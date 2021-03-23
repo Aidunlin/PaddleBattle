@@ -55,11 +55,10 @@ func dash_reset_timeout():
 	can_dash = true
 	dash_reset_timer.stop()
 
-# Set inputs from main script
-func inputs(data):
-	input_velocity = data.velocity
-	input_rotation = data.rotation
-	if data.dash and can_dash:
+func set_inputs(inputs):
+	input_velocity = inputs.velocity
+	input_rotation = inputs.rotation
+	if inputs.dash and can_dash:
 		can_dash = false
 		is_dashing = true
 		dash_timer.start(0.15)

@@ -1,3 +1,5 @@
+# AutoLoaded Singleton
+
 extends Node
 
 const SERVER_PORT = 8910
