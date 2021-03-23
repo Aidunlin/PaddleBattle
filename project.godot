@@ -32,6 +32,7 @@ default_bus_layout=""
 [autoload]
 
 Game="*res://main/game.gd"
+Network="*res://main/network.gd"
 
 [input]
 

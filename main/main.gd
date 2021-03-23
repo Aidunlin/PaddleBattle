@@ -23,7 +23,6 @@ onready var camera_node = $Camera
 onready var map_parent = $Map
 onready var paddle_parent = $Paddles
 onready var ball_parent = $Balls
-onready var network_node = $Network
 onready var ui_node = $CanvasLayer/UI
 onready var join_timer = $JoinTimer
 
@@ -41,9 +40,9 @@ func _ready():
 # Update objects, modify camera
 func _physics_process(_delta):
 	if is_playing:
-		if network_node.peer_id == 1:
+		if Network.peer_id == 1:
 			rpc_unreliable("update_objects", paddle_data, ball_data)
-			network_node.broadcast_server()
+			Network.broadcast_server()
 		var zoom = CAMERA_ZOOM
 		if paddle_parent.get_child_count() > 0:
 			var avg = Vector2()
@@ -83,7 +82,7 @@ func _input(_event):
 func refresh_servers():
 	for server in ui_node.server_parent.get_children():
 		server.queue_free()
-	var servers = network_node.get_servers()
+	var servers = Network.get_servers()
 	for ip in servers.keys():
 		ui_node.create_new_server(ip, servers[ip])
 
@@ -95,7 +94,7 @@ func connect_to_server(ip):
 	if ip.is_valid_ip_address():
 		ui_node.set_message("Trying to connect...")
 		initial_max_health = Game.config.max_health
-		network_node.setup_client(ip)
+		Network.setup_client(ip)
 		join_timer.start(3)
 		ui_node.toggle_inputs(true)
 	else:
@@ -135,7 +134,7 @@ remote func start_client_game(paddles, small_map, map_color, health, balls):
 
 func start_server_game():
 	Game.config.peer_name = ui_node.name_input.text
-	network_node.setup_server()
+	Network.setup_server()
 	load_game(Game.config.using_small_map, Color.from_hsv(randf(), 0.8, 1), Game.config.ball_count)
 
 # Save config, load map, spawn balls
@@ -155,7 +154,7 @@ func load_game(small_map, map_color, balls):
 			break
 		var ball_node = BALL_SCENE.instance()
 		if get_tree().network_peer:
-			if network_node.peer_id == 1:
+			if Network.peer_id == 1:
 				ball_data.append({})
 			else:
 				ball_node = Sprite.new()
@@ -169,9 +168,9 @@ func load_game(small_map, map_color, balls):
 remote func unload_game(msg):
 	is_playing = false
 	if get_tree().has_network_peer():
-		if network_node.peer_id != 1:
+		if Network.peer_id != 1:
 			Game.config.max_health = initial_max_health
-		network_node.reset()
+		Network.reset()
 	join_timer.stop()
 	input_list.clear()
 	used_inputs.clear()
@@ -194,12 +193,12 @@ remote func unload_game(msg):
 # Update paddles and balls (used by server and client)
 remotesync func update_objects(paddles, balls):
 	if is_playing:
-		if network_node.peer_id == 1:
+		if Network.peer_id == 1:
 			for paddle in paddles:
 				var paddle_node = paddle_parent.get_node(paddle)
 				paddle_data[paddle].position = paddle_node.position
 				paddle_data[paddle].rotation = paddle_node.rotation
-				if paddles[paddle].id == network_node.peer_id:
+				if paddles[paddle].id == Network.peer_id:
 					inputs_to_paddle(paddle, get_inputs(paddle))
 			for ball_index in ball_parent.get_child_count():
 				var ball_node = ball_parent.get_child(ball_index)
@@ -217,7 +216,7 @@ remotesync func update_objects(paddles, balls):
 				var paddle_node = paddle_parent.get_node(paddle)
 				paddle_node.position = paddles[paddle].position
 				paddle_node.rotation = paddles[paddle].rotation
-				if paddles[paddle].id == network_node.peer_id:
+				if paddles[paddle].id == Network.peer_id:
 					rpc_unreliable_id(1, "inputs_to_paddle", paddle, get_inputs(paddle))
 			for ball_index in ball_parent.get_child_count():
 				var ball_node = ball_parent.get_child(ball_index)
@@ -228,11 +227,11 @@ func new_paddle_from_input(pad):
 	if not pad in used_inputs:
 		var data = {
 			"name": Game.config.peer_name,
-			"id": network_node.peer_id,
+			"id": Network.peer_id,
 			"pad": pad,
 		}
 		used_inputs.append(pad)
-		if network_node.peer_id == 1:
+		if Network.peer_id == 1:
 			create_paddle(data)
 		else:
 			rpc_id(1, "create_paddle", data)
@@ -244,7 +243,7 @@ remote func create_paddle(data):
 	var paddle_count = paddle_parent.get_child_count()
 	if paddle_count == paddle_spawns.size():
 		return
-	if network_node.peer_id != 1:
+	if Network.peer_id != 1:
 		paddle_node = Sprite.new()
 		paddle_node.texture = PADDLE_TEXTURE
 	var name_count = 1
@@ -265,10 +264,10 @@ remote func create_paddle(data):
 		paddle_node.modulate = data.color
 	else:
 		paddle_node.modulate = Color.from_hsv(randf(), 0.8, 1)
-	if network_node.peer_id == 1:
+	if Network.peer_id == 1:
 		paddle_node.connect("collided", self, "vibrate", [new_name])
 		paddle_node.connect("damaged", self, "damage", [new_name])
-	if network_node.peer_id == data.id and "pad" in data:
+	if Network.peer_id == data.id and "pad" in data:
 		input_list[new_name] = data.pad
 	paddle_data[new_name] = {
 		"id": data.id,
@@ -282,9 +281,9 @@ remote func create_paddle(data):
 	else:
 		paddle_data[new_name].health = Game.config.max_health
 	ui_node.create_bar(paddle_data[new_name], paddle_count)
-	if network_node.peer_id == 1 and Game.config.is_open_to_lan:
+	if Network.peer_id == 1 and Game.config.is_open_to_lan:
 		var new_data = paddle_data[new_name].duplicate(true)
-		if data.id != network_node.peer_id and "pad" in data:
+		if data.id != Network.peer_id and "pad" in data:
 			new_data.pad = data.pad
 		rpc("create_paddle", new_data)
 	paddle_parent.add_child(paddle_node)
@@ -323,9 +322,9 @@ remote func inputs_to_paddle(paddle, input):
 # Vibrate controller (server first, or send to correct client)
 remote func vibrate(paddle):
 	if is_playing:
-		if paddle_data[paddle].id == network_node.peer_id:
+		if paddle_data[paddle].id == Network.peer_id:
 			Input.start_joy_vibration(input_list[paddle], 0.1, 0.1, 0.1)
-		elif network_node.peer_id == 1 and Game.config.is_open_to_lan:
+		elif Network.peer_id == 1 and Game.config.is_open_to_lan:
 			rpc_id(paddle_data[paddle].id, "vibrate", paddle)
 
 # Manage health and respawning (server first, then send to clients)
@@ -333,11 +332,11 @@ remote func damage(paddle):
 	paddle_data[paddle].health -= 1
 	if paddle_data[paddle].health < 1:
 		ui_node.set_message(paddle_data[paddle].name + " was destroyed", 2)
-		if network_node.peer_id == 1:
+		if Network.peer_id == 1:
 			var paddle_node = paddle_parent.get_node(paddle)
 			paddle_node.position = paddle_spawns[paddle_node.get_index()].position
 			paddle_node.rotation = paddle_spawns[paddle_node.get_index()].rotation
 		paddle_data[paddle].health = Game.config.max_health
 	ui_node.update_bar(paddle, paddle_data[paddle].health)
-	if network_node.peer_id == 1:
+	if Network.peer_id == 1:
 		rpc("damage", paddle)
