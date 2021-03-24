@@ -4,6 +4,7 @@ extends Node
 
 const VERSION = "Dev Build"
 
+var is_playing = false
 var config = {
 	"peer_name": "",
 	"ip": "",

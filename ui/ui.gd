@@ -1,8 +1,7 @@
 extends Control
 
-signal start_game()
-signal connect_to_server()
-signal refresh_servers()
+signal start_requested()
+signal connect_requested()
 
 const HP_TEXTURE = preload("res://ui/hp.png")
 
@@ -57,10 +56,10 @@ func _ready():
 	balls_inc_button.connect("pressed", self, "crement", ["balls", 1])
 	open_lan_toggle.connect("pressed", self, "toggle_lan")
 	small_map_toggle.connect("pressed", self, "toggle_small_map")
-	start_button.connect("pressed", self, "emit_signal", ["start_game"])
+	start_button.connect("pressed", self, "request_start")
 	options_back_button.connect("pressed", self, "switch_menu", ["main"])
-	refresh_button.connect("pressed", self, "emit_signal", ["refresh_servers"])
-	join_ip_button.connect("pressed", self, "emit_signal", ["connect_to_server", ""])
+	refresh_button.connect("pressed", self, "refresh_servers")
+	join_ip_button.connect("pressed", self, "request_connect")
 	join_back_button.connect("pressed", self, "switch_menu", ["main"])
 	message_timer.connect("timeout", self, "set_message")
 
@@ -106,7 +105,14 @@ func switch_menu(to):
 		join_menu.visible = true
 		join_back_button.grab_focus()
 	current_menu = to
-	emit_signal("refresh_servers")
+	refresh_servers()
+
+func refresh_servers():
+	for server in server_parent.get_children():
+		server.queue_free()
+	var servers = Network.get_servers()
+	for ip in servers.keys():
+		create_new_server(ip, servers[ip])
 
 func toggle_inputs(disable):
 	refresh_button.disabled = disable
@@ -139,10 +145,18 @@ func create_new_server(ip, server_name):
 	new_label.size_flags_horizontal = Label.SIZE_EXPAND_FILL
 	var new_button = Button.new()
 	new_button.text = "Join"
-	new_button.connect("pressed", self, "emit_signal", ["connect_to_server", ip])
+	new_button.connect("pressed", self, "request_connect", [ip])
 	new_server.add_child(new_label)
 	new_server.add_child(new_button)
 	server_parent.add_child(new_server)
+
+func request_start():
+	emit_signal("start_requested")
+
+func request_connect(ip = ""):
+	if ip == "":
+		ip = ip_input.text
+	emit_signal("connect_requested", ip)
 
 func create_bar(data, count):
 	var bar = VBoxContainer.new()
@@ -175,7 +189,12 @@ func update_bar(paddle, health):
 		else:
 			bars[paddle].get_child(i).modulate.a = 0.1
 
+func remove_bar(paddle):
+	bar_parent.get_node(paddle).queue_free()
+
 func reset(msg):
+	for bar in bar_parent.get_children():
+		bar.queue_free()
 	bars.clear()
 	bar_parent.columns = 1
 	menu_node.show()
