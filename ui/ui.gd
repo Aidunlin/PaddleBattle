@@ -63,11 +63,11 @@ func _ready():
 	join_back_button.connect("pressed", self, "switch_menu", ["main"])
 	message_timer.connect("timeout", self, "set_message")
 
-func set_message(new = "", time = 0):
-	message_node.text = new
+func set_message(msg = "", time = 0):
+	message_node.text = msg
 	if time > 0:
 		message_timer.start(time)
-	elif new != "" and not message_timer.is_stopped():
+	elif msg != "" and not message_timer.is_stopped():
 		message_timer.stop()
 
 func crement(which, value = 0):

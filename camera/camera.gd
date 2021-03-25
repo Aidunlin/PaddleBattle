@@ -34,5 +34,7 @@ func move_and_zoom(paddles):
 		position = average
 	zoom = zoom.linear_interpolate(new_zoom, 0.05)
 
-func reset():
+func reset(new_spawn = null):
+	if new_spawn:
+		spawn = new_spawn
 	position = spawn

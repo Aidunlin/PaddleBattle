@@ -1,17 +1,12 @@
 extends Node
 
-const BALL_TEXTURE = preload("res://ball/ball.png")
-const BALL_SCENE = preload("res://ball/ball.tscn")
 const MAP_SCENE = preload("res://map/map.tscn")
 const SMALL_MAP_SCENE = preload("res://map/smallmap.tscn")
-
-var ball_data = []
-var ball_spawns = []
 
 onready var camera = $Camera
 onready var map_parent = $Map
 onready var paddle_manager = $PaddleManager
-onready var ball_parent = $Balls
+onready var ball_manager = $BallManager
 onready var ui = $CanvasLayer/UI
 onready var join_timer = $JoinTimer
 
@@ -32,7 +27,7 @@ func _ready():
 func _physics_process(_delta):
 	if Game.is_playing:
 		if Network.peer_id == 1:
-			rpc_unreliable("update_objects", paddle_manager.paddles, ball_data)
+			rpc_unreliable("update_objects", paddle_manager.paddles, ball_manager.balls)
 			Network.broadcast_server()
 		camera.move_and_zoom(paddle_manager.get_children())
 
@@ -85,20 +80,10 @@ func load_game(small_map, map_color, ball_count):
 		map_parent.add_child(SMALL_MAP_SCENE.instance())
 	else:
 		map_parent.add_child(MAP_SCENE.instance())
-	camera.spawn = map_parent.get_child(0).get_node("CameraSpawn").position
+	camera.reset(map_parent.get_child(0).get_node("CameraSpawn").position)
 	paddle_manager.spawns = map_parent.get_child(0).get_node("PaddleSpawns").get_children()
-	ball_spawns = map_parent.get_child(0).get_node("BallSpawns").get_children()
-	camera.reset()
-	for i in min(ball_count, ball_spawns.size()):
-		var ball_node = BALL_SCENE.instance()
-		if get_tree().network_peer:
-			if Network.peer_id == 1:
-				ball_data.append({})
-			else:
-				ball_node = Sprite.new()
-				ball_node.texture = BALL_TEXTURE
-		ball_node.position = ball_spawns[i].position
-		ball_parent.add_child(ball_node)
+	ball_manager.spawns = map_parent.get_child(0).get_node("BallSpawns").get_children()
+	ball_manager.create_balls(ball_count)
 	ui.set_message("Press A/Enter to create your paddle", 5)
 	ui.menu_node.hide()
 	Game.is_playing = true
@@ -111,29 +96,13 @@ remote func unload_game(msg):
 		Network.reset()
 	join_timer.stop()
 	camera.reset()
-	paddle_manager.reset()
 	if map_parent.get_child_count() > 0:
 		map_parent.get_child(0).queue_free()
-	for ball in ball_parent.get_children():
-		ball.queue_free()
-	ball_data.clear()
+	paddle_manager.reset()
+	ball_manager.reset()
 	ui.reset(msg)
 
 remotesync func update_objects(paddles, balls):
 	if Game.is_playing:
 		paddle_manager.update_paddles(paddles)
-		if Network.peer_id == 1:
-			for ball_index in ball_parent.get_child_count():
-				var ball_node = ball_parent.get_child(ball_index)
-				if ball_node.position.length() > 4096:
-					ball_node.queue_free()
-					var new_ball_node = BALL_SCENE.instance()
-					new_ball_node.position = ball_spawns[ball_index].position
-					ball_parent.add_child(new_ball_node)
-				ball_data[ball_index].position = ball_node.position
-				ball_data[ball_index].rotation = ball_node.rotation
-		else:
-			for ball_index in ball_parent.get_child_count():
-				var ball_node = ball_parent.get_child(ball_index)
-				ball_node.position = balls[ball_index].position
-				ball_node.rotation = balls[ball_index].rotation
+		ball_manager.update_balls(balls)

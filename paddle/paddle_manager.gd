@@ -125,7 +125,7 @@ func get_paddle_inputs(paddle):
 	var inputs = {
 		"velocity": Vector2(),
 		"rotation": 0.0,
-		"dash": false
+		"dash": false,
 	}
 	if OS.is_window_focused():
 		if pad == -1:
