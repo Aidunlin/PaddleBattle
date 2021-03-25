@@ -1,5 +1,6 @@
 extends Control
 
+signal map_switched()
 signal start_requested()
 signal connect_requested()
 
@@ -24,8 +25,8 @@ onready var health_inc_button = $Menu/Options/HealthWrap/Inc
 onready var balls_dec_button = $Menu/Options/BallsWrap/Dec
 onready var balls_node = $Menu/Options/BallsWrap/Balls
 onready var balls_inc_button = $Menu/Options/BallsWrap/Inc
+onready var map_button = $Menu/Options/MapWrap/Map
 onready var open_lan_toggle = $Menu/Options/OpenLANWrap/OpenLAN
-onready var small_map_toggle = $Menu/Options/SmallMapWrap/SmallMap
 onready var start_button = $Menu/Options/Start
 onready var options_back_button = $Menu/Options/Back
 onready var join_menu = $Menu/Join
@@ -40,10 +41,9 @@ func _ready():
 	version_node.text = Game.VERSION
 	name_input.text = Game.config.peer_name
 	ip_input.text = Game.config.ip
+	map_button.text = Game.config.map
 	if Game.config.is_open_to_lan:
 		open_lan_toggle.text = "ON"
-	if Game.config.using_small_map:
-		small_map_toggle.text = "ON"
 	health_node.text = str(Game.config.max_health)
 	balls_node.text = str(Game.config.ball_count)
 	play_button.grab_focus()
@@ -54,8 +54,8 @@ func _ready():
 	health_inc_button.connect("pressed", self, "crement", ["health", 1])
 	balls_dec_button.connect("pressed", self, "crement", ["balls", -1])
 	balls_inc_button.connect("pressed", self, "crement", ["balls", 1])
+	map_button.connect("pressed", self, "switch_map")
 	open_lan_toggle.connect("pressed", self, "toggle_lan")
-	small_map_toggle.connect("pressed", self, "toggle_small_map")
 	start_button.connect("pressed", self, "request_start")
 	options_back_button.connect("pressed", self, "switch_menu", ["main"])
 	refresh_button.connect("pressed", self, "refresh_servers")
@@ -122,6 +122,9 @@ func toggle_inputs(disable):
 	join_ip_button.disabled = disable
 	join_back_button.disabled = disable
 
+func switch_map():
+	emit_signal("map_switched")
+
 func toggle_lan():
 	Game.config.is_open_to_lan = not Game.config.is_open_to_lan
 	if Game.config.is_open_to_lan:
@@ -129,12 +132,12 @@ func toggle_lan():
 	else:
 		open_lan_toggle.text = "OFF"
 
-func toggle_small_map():
-	Game.config.using_small_map = not Game.config.using_small_map
-	if Game.config.using_small_map:
-		small_map_toggle.text = "ON"
-	else:
-		small_map_toggle.text = "OFF"
+# func toggle_small_map():
+# 	Game.config.using_small_map = not Game.config.using_small_map
+# 	if Game.config.using_small_map:
+# 		small_map_toggle.text = "ON"
+# 	else:
+# 		small_map_toggle.text = "OFF"
 
 func create_new_server(ip, server_name):
 	var new_server = HBoxContainer.new()

@@ -60,7 +60,7 @@ extents = Vector2( 256, 32 )
 [sub_resource type="RectangleShape2D" id=15]
 extents = Vector2( 256, 32 )
 
-[node name="Map" type="Node2D"]
+[node name="BigMap" type="Node2D"]
 __meta__ = {
 "_edit_lock_": true
 }
