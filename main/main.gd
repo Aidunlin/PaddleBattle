@@ -1,10 +1,7 @@
 extends Node
 
-const MAP_SCENE = preload("res://map/map.tscn")
-const SMALL_MAP_SCENE = preload("res://map/smallmap.tscn")
-
 onready var camera = $Camera
-onready var map_parent = $Map
+onready var map_manager = $MapManager
 onready var paddle_manager = $PaddleManager
 onready var ball_manager = $BallManager
 onready var ui = $CanvasLayer/UI
@@ -28,7 +25,6 @@ func _physics_process(_delta):
 	if Game.is_playing:
 		if Network.peer_id == 1:
 			rpc_unreliable("update_objects", paddle_manager.paddles, ball_manager.balls)
-			Network.broadcast_server()
 		camera.move_and_zoom(paddle_manager.get_children())
 
 func connect_to_server(ip):
@@ -54,8 +50,7 @@ remote func check_client(version):
 	var id = get_tree().get_rpc_sender_id()
 	if version == Game.VERSION:
 		ui.set_message("Client connected", 2)
-		rpc_id(id, "start_client_game", paddle_manager.paddles, Game.config.using_small_map,
-				map_parent.modulate, Game.config.max_health, Game.config.ball_count)
+		rpc_id(id, "start_client_game", paddle_manager.paddles, Game.config.using_small_map, map_manager.color, Game.config.max_health, Game.config.ball_count)
 	else:
 		rpc_id(id, "unload_game", "Different server version (" + Game.VERSION + ")")
 
@@ -73,20 +68,21 @@ func start_server_game():
 	var map_color = Color.from_hsv(randf(), 0.8, 1)
 	load_game(Game.config.using_small_map, map_color, Game.config.ball_count)
 
-func load_game(small_map, map_color, ball_count):
+func load_game(is_small_map, map_color, ball_count):
 	Game.save_config()
-	map_parent.modulate = map_color
-	if small_map:
-		map_parent.add_child(SMALL_MAP_SCENE.instance())
-	else:
-		map_parent.add_child(MAP_SCENE.instance())
-	camera.reset(map_parent.get_child(0).get_node("CameraSpawn").position)
-	paddle_manager.spawns = map_parent.get_child(0).get_node("PaddleSpawns").get_children()
-	ball_manager.spawns = map_parent.get_child(0).get_node("BallSpawns").get_children()
+	map_manager.load_map(is_small_map, map_color)
+	camera.reset(map_manager.get_camera_spawn())
+	paddle_manager.spawns = map_manager.get_paddle_spawns()
+	ball_manager.spawns = map_manager.get_ball_spawns()
 	ball_manager.create_balls(ball_count)
 	ui.set_message("Press A/Enter to create your paddle", 5)
 	ui.menu_node.hide()
 	Game.is_playing = true
+
+remotesync func update_objects(paddles, balls):
+	if Game.is_playing:
+		paddle_manager.update_paddles(paddles)
+		ball_manager.update_balls(balls)
 
 remote func unload_game(msg):
 	Game.is_playing = false
@@ -96,13 +92,7 @@ remote func unload_game(msg):
 		Network.reset()
 	join_timer.stop()
 	camera.reset()
-	if map_parent.get_child_count() > 0:
-		map_parent.get_child(0).queue_free()
+	map_manager.reset()
 	paddle_manager.reset()
 	ball_manager.reset()
 	ui.reset(msg)
-
-remotesync func update_objects(paddles, balls):
-	if Game.is_playing:
-		paddle_manager.update_paddles(paddles)
-		ball_manager.update_balls(balls)

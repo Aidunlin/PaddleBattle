@@ -78,17 +78,17 @@ func crement(which, value = 0):
 		Game.config.ball_count = int(clamp(Game.config.ball_count + value, 1, 10))
 		balls_node.text = str(Game.config.ball_count)
 
-func switch_menu(to):
+func switch_menu(new_menu):
 	main_menu.visible = false
 	options_menu.visible = false
 	join_menu.visible = false
-	if to == "main":
+	if new_menu == "main":
 		main_menu.visible = true
 		if current_menu == "options":
 			play_button.grab_focus()
 		elif current_menu == "join":
 			join_button.grab_focus()
-	elif to == "options":
+	elif new_menu == "options":
 		if name_input.text == "":
 			set_message("Invalid name", 3)
 			name_input.grab_focus()
@@ -96,7 +96,7 @@ func switch_menu(to):
 			return
 		options_menu.visible = true
 		start_button.grab_focus()
-	elif to == "join":
+	elif new_menu == "join":
 		if name_input.text == "":
 			set_message("Invalid name", 3)
 			name_input.grab_focus()
@@ -104,7 +104,7 @@ func switch_menu(to):
 			return
 		join_menu.visible = true
 		join_back_button.grab_focus()
-	current_menu = to
+	current_menu = new_menu
 	refresh_servers()
 
 func refresh_servers():

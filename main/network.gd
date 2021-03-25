@@ -6,36 +6,38 @@ const SERVER_PORT = 8910
 const SOCKET_PORT = 8191
 
 var peer_id = 1
+var broadcasting = false
 var broadcast_socket = PacketPeerUDP.new()
 var listen_socket = PacketPeerUDP.new()
-var server_list = {}
+var servers = {}
 
 func _ready():
 	listen_socket.listen(SOCKET_PORT)
 
+func _process(_delta):
+	if broadcasting and Game.is_playing and Game.config.is_open_to_lan and peer_id == 1:
+		broadcast_socket.put_packet(Game.config.peer_name.to_ascii())
+
 func get_servers():
-	server_list.clear()
+	servers.clear()
 	while listen_socket.get_available_packet_count() > 0:
 		var ip = listen_socket.get_packet_ip()
 		var port = listen_socket.get_packet_port()
 		var data = listen_socket.get_packet()
-		if ip != "" and port > 0 and not server_list.has(ip):
+		if ip != "" and port > 0 and not servers.has(ip):
 			var server_name = data.get_string_from_ascii()
-			server_list[ip] = server_name
-	return server_list
+			servers[ip] = server_name
+	return servers
 
 func setup_server():
 	var peer = NetworkedMultiplayerENet.new()
-	peer.create_server(8910)
+	peer.create_server(SERVER_PORT)
 	get_tree().network_peer = peer
 	get_tree().refuse_new_network_connections = not Game.config.is_open_to_lan
 	if Game.config.is_open_to_lan:
 		broadcast_socket.set_broadcast_enabled(true)
 		broadcast_socket.set_dest_address("255.255.255.255", SOCKET_PORT)
-
-func broadcast_server():
-	if Game.config.is_open_to_lan:
-		broadcast_socket.put_packet(Game.config.peer_name.to_ascii())
+		broadcasting = true
 
 func setup_client(ip):
 	var peer = NetworkedMultiplayerENet.new()
