@@ -105,7 +105,6 @@ func switch_menu(new_menu):
 		join_menu.visible = true
 		join_back_button.grab_focus()
 	current_menu = new_menu
-	refresh_servers()
 
 func refresh_servers():
 	for server in server_parent.get_children():
@@ -131,13 +130,6 @@ func toggle_lan():
 		open_lan_toggle.text = "ON"
 	else:
 		open_lan_toggle.text = "OFF"
-
-# func toggle_small_map():
-# 	Game.config.using_small_map = not Game.config.using_small_map
-# 	if Game.config.using_small_map:
-# 		small_map_toggle.text = "ON"
-# 	else:
-# 		small_map_toggle.text = "OFF"
 
 func create_new_server(ip, server_name):
 	var new_server = HBoxContainer.new()

@@ -39,3 +39,4 @@ func get_ball_spawns():
 func reset():
 	if map:
 		map.queue_free()
+		map = null

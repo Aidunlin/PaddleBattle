@@ -101,3 +101,4 @@ remote func unload_game(msg):
 	paddle_manager.reset()
 	ball_manager.reset()
 	ui.reset(msg)
+	ui.refresh_servers()

@@ -69,14 +69,15 @@ __meta__ = {
 }
 
 [node name="Main" type="VBoxContainer" parent="Menu"]
-margin_left = 404.0
+margin_left = 384.0
 margin_top = 159.0
-margin_right = 620.0
+margin_right = 640.0
 margin_bottom = 440.0
+rect_min_size = Vector2( 256, 0 )
 custom_constants/separation = 4
 
 [node name="Title" type="Label" parent="Menu/Main"]
-margin_right = 216.0
+margin_right = 256.0
 margin_bottom = 49.0
 custom_fonts/font = SubResource( 1 )
 text = "PaddleBattle"
@@ -84,7 +85,7 @@ align = 1
 
 [node name="Version" type="Label" parent="Menu/Main"]
 margin_top = 53.0
-margin_right = 216.0
+margin_right = 256.0
 margin_bottom = 87.0
 custom_fonts/font = SubResource( 2 )
 text = "NO VERSION"
@@ -92,7 +93,7 @@ align = 1
 
 [node name="NameWrap" type="HBoxContainer" parent="Menu/Main"]
 margin_top = 91.0
-margin_right = 216.0
+margin_right = 256.0
 margin_bottom = 126.0
 
 [node name="Label" type="Label" parent="Menu/Main/NameWrap"]
@@ -103,7 +104,7 @@ text = "Name:"
 
 [node name="Name" type="LineEdit" parent="Menu/Main/NameWrap"]
 margin_left = 54.0
-margin_right = 216.0
+margin_right = 256.0
 margin_bottom = 35.0
 size_flags_horizontal = 3
 caret_blink = true
@@ -111,25 +112,25 @@ caret_blink_speed = 0.5
 
 [node name="Play" type="Button" parent="Menu/Main"]
 margin_top = 130.0
-margin_right = 216.0
+margin_right = 256.0
 margin_bottom = 165.0
 text = "Play"
 
 [node name="Join" type="Button" parent="Menu/Main"]
 margin_top = 169.0
-margin_right = 216.0
+margin_right = 256.0
 margin_bottom = 204.0
 text = "Join"
 
 [node name="Quit" type="Button" parent="Menu/Main"]
 margin_top = 208.0
-margin_right = 216.0
+margin_right = 256.0
 margin_bottom = 243.0
 text = "Quit"
 
 [node name="Label" type="Label" parent="Menu/Main"]
 margin_top = 247.0
-margin_right = 216.0
+margin_right = 256.0
 margin_bottom = 281.0
 custom_fonts/font = SubResource( 2 )
 text = "By Aidunlin"
@@ -137,14 +138,15 @@ align = 1
 
 [node name="Options" type="VBoxContainer" parent="Menu"]
 visible = false
-margin_left = 422.0
+margin_left = 384.0
 margin_top = 154.0
-margin_right = 602.0
+margin_right = 640.0
 margin_bottom = 446.0
+rect_min_size = Vector2( 256, 0 )
 custom_constants/separation = 4
 
 [node name="Label" type="Label" parent="Menu/Options"]
-margin_right = 180.0
+margin_right = 256.0
 margin_bottom = 34.0
 custom_fonts/font = SubResource( 2 )
 text = "Create Server"
@@ -152,143 +154,145 @@ align = 1
 
 [node name="HSeparator" type="HSeparator" parent="Menu/Options"]
 margin_top = 38.0
-margin_right = 180.0
+margin_right = 256.0
 margin_bottom = 42.0
 
 [node name="HealthWrap" type="HBoxContainer" parent="Menu/Options"]
 margin_top = 46.0
-margin_right = 180.0
+margin_right = 256.0
 margin_bottom = 81.0
 
 [node name="Label" type="Label" parent="Menu/Options/HealthWrap"]
-margin_right = 60.0
+margin_right = 136.0
 margin_bottom = 34.0
 size_flags_horizontal = 3
 custom_fonts/font = SubResource( 2 )
 text = "Health"
 
 [node name="Dec" type="Button" parent="Menu/Options/HealthWrap"]
-margin_left = 64.0
-margin_right = 100.0
+margin_left = 140.0
+margin_right = 176.0
 margin_bottom = 35.0
 rect_min_size = Vector2( 36, 0 )
 text = "-"
 
 [node name="Health" type="Label" parent="Menu/Options/HealthWrap"]
-margin_left = 104.0
-margin_right = 140.0
+margin_left = 180.0
+margin_right = 216.0
 margin_bottom = 34.0
 rect_min_size = Vector2( 36, 0 )
 custom_fonts/font = SubResource( 2 )
 align = 1
 
 [node name="Inc" type="Button" parent="Menu/Options/HealthWrap"]
-margin_left = 144.0
-margin_right = 180.0
+margin_left = 220.0
+margin_right = 256.0
 margin_bottom = 35.0
 rect_min_size = Vector2( 36, 0 )
 text = "+"
 
 [node name="BallsWrap" type="HBoxContainer" parent="Menu/Options"]
 margin_top = 85.0
-margin_right = 180.0
+margin_right = 256.0
 margin_bottom = 120.0
 
 [node name="Label" type="Label" parent="Menu/Options/BallsWrap"]
-margin_right = 60.0
+margin_right = 136.0
 margin_bottom = 34.0
 size_flags_horizontal = 3
 custom_fonts/font = SubResource( 2 )
 text = "Balls"
 
 [node name="Dec" type="Button" parent="Menu/Options/BallsWrap"]
-margin_left = 64.0
-margin_right = 100.0
+margin_left = 140.0
+margin_right = 176.0
 margin_bottom = 35.0
 rect_min_size = Vector2( 36, 0 )
 focus_neighbour_right = NodePath("../Inc")
 text = "-"
 
 [node name="Balls" type="Label" parent="Menu/Options/BallsWrap"]
-margin_left = 104.0
-margin_right = 140.0
+margin_left = 180.0
+margin_right = 216.0
 margin_bottom = 34.0
 rect_min_size = Vector2( 36, 0 )
 custom_fonts/font = SubResource( 2 )
 align = 1
 
 [node name="Inc" type="Button" parent="Menu/Options/BallsWrap"]
-margin_left = 144.0
-margin_right = 180.0
+margin_left = 220.0
+margin_right = 256.0
 margin_bottom = 35.0
 rect_min_size = Vector2( 36, 0 )
 text = "+"
 
 [node name="HSeparator2" type="HSeparator" parent="Menu/Options"]
 margin_top = 124.0
-margin_right = 180.0
+margin_right = 256.0
 margin_bottom = 128.0
 
 [node name="MapWrap" type="HBoxContainer" parent="Menu/Options"]
 margin_top = 132.0
-margin_right = 180.0
+margin_right = 256.0
 margin_bottom = 167.0
 
 [node name="Label" type="Label" parent="Menu/Options/MapWrap"]
-margin_right = 30.0
+margin_right = 92.0
 margin_bottom = 34.0
+size_flags_horizontal = 3
 custom_fonts/font = SubResource( 2 )
 text = "Map"
 
 [node name="Map" type="Button" parent="Menu/Options/MapWrap"]
-margin_left = 34.0
-margin_right = 180.0
+margin_left = 96.0
+margin_right = 256.0
 margin_bottom = 35.0
-size_flags_horizontal = 3
+rect_min_size = Vector2( 160, 0 )
 text = "BigMap"
 
 [node name="OpenLANWrap" type="HBoxContainer" parent="Menu/Options"]
 margin_top = 171.0
-margin_right = 180.0
+margin_right = 256.0
 margin_bottom = 206.0
 
 [node name="Label" type="Label" parent="Menu/Options/OpenLANWrap"]
-margin_right = 128.0
+margin_right = 204.0
 margin_bottom = 34.0
 size_flags_horizontal = 3
 custom_fonts/font = SubResource( 2 )
 text = "Open to LAN"
 
 [node name="OpenLAN" type="Button" parent="Menu/Options/OpenLANWrap"]
-margin_left = 132.0
-margin_right = 180.0
+margin_left = 208.0
+margin_right = 256.0
 margin_bottom = 35.0
 rect_min_size = Vector2( 48, 0 )
 text = "OFF"
 
 [node name="HSeparator3" type="HSeparator" parent="Menu/Options"]
 margin_top = 210.0
-margin_right = 180.0
+margin_right = 256.0
 margin_bottom = 214.0
 
 [node name="Start" type="Button" parent="Menu/Options"]
 margin_top = 218.0
-margin_right = 180.0
+margin_right = 256.0
 margin_bottom = 253.0
 text = "Start"
 
 [node name="Back" type="Button" parent="Menu/Options"]
 margin_top = 257.0
-margin_right = 180.0
+margin_right = 256.0
 margin_bottom = 292.0
 text = "Back"
 
 [node name="Join" type="VBoxContainer" parent="Menu"]
 visible = false
-margin_left = 385.0
+margin_left = 384.0
 margin_top = 214.0
-margin_right = 639.0
+margin_right = 640.0
 margin_bottom = 385.0
+rect_min_size = Vector2( 256, 0 )
 
 [node name="Label" type="Label" parent="Menu/Join"]
 margin_right = 254.0
