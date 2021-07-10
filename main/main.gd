@@ -70,6 +70,7 @@ remote func start_client_game(paddles, map_name, map_color, health, balls):
 func start_server_game():
 	Game.config.peer_name = ui.name_input.text
 	Network.setup_server()
+	randomize()
 	var map_color = Color.from_hsv(randf(), 0.8, 1)
 	load_game(Game.config.map, map_color, Game.config.ball_count)
 
