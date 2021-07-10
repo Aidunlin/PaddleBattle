@@ -7,8 +7,6 @@ With that being said, I hope you find enjoyment in PaddleBattle. Any feedback, b
 
 ## How to play
 
-Head over to the [releases page](https://github.com/Aidunlin/PaddleBattle/releases) to download and extract the latest source code zip. You'll also need a [standard Godot 3.2.3 binary](https://downloads.tuxfamily.org/godotengine/3.2.3/) for your platform to run the game. After extracting, place the Godot executable in the same directory as the source code and run it.
-
 Controls as of 0.5.0:
 * Controller (A to join) - Left stick to move, right stick to rotate, left trigger to dash
 * Keyboard (enter to join) - WASD to move, comma and period to rotate, shift to dash
