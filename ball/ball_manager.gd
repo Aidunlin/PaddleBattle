@@ -6,8 +6,8 @@ const BALL_SCENE = preload("res://ball/ball.tscn")
 var balls = []
 var spawns = []
 
-func create_balls(ball_count):
-	for i in min(ball_count, spawns.size()):
+func create_balls():
+	for i in spawns.size():
 		var ball_node = BALL_SCENE.instance()
 		if get_tree().network_peer:
 			if Network.peer_id == 1:

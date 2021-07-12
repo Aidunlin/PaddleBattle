@@ -14,18 +14,17 @@ var input_list = {}
 var used_inputs = []
 var paddles = {}
 var spawns = []
-var initial_max_health = 0
 
 func _input(_event):
 	if Game.is_playing and OS.is_window_focused():
 		if Input.is_key_pressed(KEY_ENTER) and not -1 in input_list.values():
 			create_paddle_from_input(-1)
 		for pad in Input.get_connected_joypads():
-			if Input.is_joy_button_pressed(pad, 0) and not pad in input_list.values():
+			if Input.is_joy_button_pressed(pad, JOY_BUTTON_0) and not pad in input_list.values():
 				create_paddle_from_input(pad)
-		if -1 in input_list.values() and Input.is_key_pressed(KEY_ESCAPE):
+		if Input.is_key_pressed(KEY_ESCAPE):
 			emit_signal("unload_requested")
-		for pad in input_list.values():
+		for pad in Input.get_connected_joypads():
 			if Input.is_joy_button_pressed(pad, JOY_START) and Input.is_joy_button_pressed(pad, JOY_SELECT):
 				emit_signal("unload_requested")
 				break
@@ -83,9 +82,9 @@ remote func create_paddle(data):
 		if "health" in data:
 			paddles[new_name].health = data.health
 		else:
-			paddles[new_name].health = Game.config.max_health
+			paddles[new_name].health = Game.MAX_HEALTH
 		emit_signal("paddle_created", paddles[new_name], paddle_count)
-		if Network.peer_id == 1 and Game.config.is_open_to_lan:
+		if Network.peer_id == 1:
 			var new_data = paddles[new_name].duplicate(true)
 			if Network.peer_id != data.id and "pad" in data:
 				new_data.pad = data.pad
@@ -153,7 +152,7 @@ remote func vibrate_pad(paddle):
 	if Game.is_playing:
 		if Network.peer_id == paddles[paddle].id:
 			Input.start_joy_vibration(input_list[paddle], 0.1, 0.1, 0.1)
-		elif Network.peer_id == 1 and Game.config.is_open_to_lan:
+		elif Network.peer_id == 1:
 			rpc_id(paddles[paddle].id, "vibrate_pad", paddle)
 
 remote func damage_paddle(paddle):
@@ -164,7 +163,7 @@ remote func damage_paddle(paddle):
 			var paddle_node = get_node(paddle)
 			paddle_node.position = spawns[paddle_node.get_index()].position
 			paddle_node.rotation = spawns[paddle_node.get_index()].rotation
-		paddles[paddle].health = Game.config.max_health
+		paddles[paddle].health = Game.MAX_HEALTH
 	emit_signal("paddle_damaged", paddle, paddles[paddle].health)
 	if Network.peer_id == 1:
 		rpc("damage_paddle", paddle)

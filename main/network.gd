@@ -33,11 +33,9 @@ func setup_server():
 	var peer = NetworkedMultiplayerENet.new()
 	peer.create_server(SERVER_PORT)
 	get_tree().network_peer = peer
-	get_tree().refuse_new_network_connections = not Game.config.is_open_to_lan
-	if Game.config.is_open_to_lan:
-		broadcast_socket.set_broadcast_enabled(true)
-		broadcast_socket.set_dest_address("255.255.255.255", SOCKET_PORT)
-		broadcasting = true
+	broadcast_socket.set_broadcast_enabled(true)
+	broadcast_socket.set_dest_address("255.255.255.255", SOCKET_PORT)
+	broadcasting = true
 
 func setup_client(ip):
 	var peer = NetworkedMultiplayerENet.new()

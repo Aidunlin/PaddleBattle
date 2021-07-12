@@ -1,23 +1,21 @@
 extends Node
 
-const BIG_MAP_SCENE = preload("res://map/maps/big_map.tscn")
-const SMALL_MAP_SCENE = preload("res://map/maps/small_map.tscn")
-
-var maps = {
-	"BigMap": BIG_MAP_SCENE,
-	"SmallMap": SMALL_MAP_SCENE,
+const MAPS = {
+	"BigMap": preload("res://map/maps/big_map.tscn"),
+	"SmallMap": preload("res://map/maps/small_map.tscn"),
 }
+
 var map = null
 var color = Color()
 
 func load_map(new_map, new_color):
 	color = new_color
-	map = maps[new_map].instance()
+	map = MAPS[new_map].instance()
 	map.modulate = color
 	add_child(map)
 
 func switch():
-	var map_names = maps.keys()
+	var map_names = MAPS.keys()
 	var map_index = map_names.find(Game.config.map)
 	var new_map_name
 	if map_index + 1 == len(map_names):

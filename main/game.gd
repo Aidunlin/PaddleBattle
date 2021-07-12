@@ -3,15 +3,13 @@
 extends Node
 
 const VERSION = "Dev Build"
+const MAX_HEALTH = 3
 
 var is_playing = false
 var config = {
 	"peer_name": "",
 	"ip": "",
 	"map": "BigMap",
-	"is_open_to_lan": true,
-	"max_health": 3,
-	"ball_count": 10,
 }
 
 func _enter_tree():
