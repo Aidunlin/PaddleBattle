@@ -15,7 +15,7 @@ func _ready():
 	listen_socket.listen(SOCKET_PORT)
 
 func _process(_delta):
-	if broadcasting and Game.is_playing and Game.config.is_open_to_lan and peer_id == 1:
+	if broadcasting:
 		broadcast_socket.put_packet(Game.config.peer_name.to_ascii())
 
 func get_servers():
@@ -48,3 +48,4 @@ func setup_client(ip):
 func reset():
 	get_tree().set_deferred("network_peer", null)
 	peer_id = 1
+	broadcasting = false

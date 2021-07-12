@@ -68,6 +68,7 @@ remote func start_client_game(paddles, map_name, map_color, health, balls):
 		paddle_manager.create_paddle(paddles[paddle])
 
 func start_server_game():
+	$DiscordManager.CreateLobby();
 	Game.config.peer_name = ui.name_input.text
 	Network.setup_server()
 	randomize()
@@ -91,6 +92,7 @@ remotesync func update_objects(paddles, balls):
 		ball_manager.update_balls(balls)
 
 remote func unload_game(msg):
+	$DiscordManager.LeaveLobby()
 	Game.is_playing = false
 	if get_tree().has_network_peer():
 		if Network.peer_id != 1:
@@ -102,4 +104,3 @@ remote func unload_game(msg):
 	paddle_manager.reset()
 	ball_manager.reset()
 	ui.reset(msg)
-	ui.refresh_servers()
