@@ -39,7 +39,6 @@ func connect_to_server(ip):
 	Game.config.ip = ip
 	if ip.is_valid_ip_address():
 		ui.set_message("Trying to connect...")
-		paddle_manager.initial_max_health = Game.MAX_HEALTH
 		Network.setup_client(ip)
 		join_timer.start(3)
 		ui.toggle_inputs(true)

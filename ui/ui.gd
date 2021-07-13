@@ -9,6 +9,7 @@ const HP_TEXTURE = preload("res://ui/hp.png")
 var current_menu = "main"
 var bars = {}
 
+onready var message_timer = $MessageTimer
 onready var message_node = $Message
 onready var bar_parent = $HUD/Bars
 onready var menu_node = $Menu
@@ -16,7 +17,6 @@ onready var main_menu = $Menu/Main
 onready var play_button = $Menu/Main/Play
 onready var name_input = $Menu/Main/NameWrap/Name
 onready var join_button = $Menu/Main/Join
-onready var quit_button = $Menu/Main/Quit
 onready var version_node = $Menu/Main/FooterWrap/Version
 onready var play_menu = $Menu/Play
 onready var map_button = $Menu/Play/MapWrap/Map
@@ -28,7 +28,6 @@ onready var refresh_button = $Menu/Join/Refresh
 onready var join_ip_input = $Menu/Join/IPWrap/IP
 onready var join_ip_button = $Menu/Join/JoinIP
 onready var join_menu_back_button = $Menu/Join/Back
-onready var message_timer = $MessageTimer
 
 func _ready():
 	version_node.text = Game.VERSION
@@ -36,16 +35,15 @@ func _ready():
 	join_ip_input.text = Game.config.ip
 	map_button.text = Game.config.map
 	play_button.grab_focus()
+	message_timer.connect("timeout", self, "set_message")
 	play_button.connect("pressed", self, "switch_menu", ["play"])
 	join_button.connect("pressed", self, "switch_menu", ["join"])
-	quit_button.connect("pressed", get_tree(), "quit")
 	map_button.connect("pressed", self, "switch_map")
 	start_button.connect("pressed", self, "request_start")
 	play_menu_back_button.connect("pressed", self, "switch_menu", ["main"])
 	refresh_button.connect("pressed", self, "refresh_servers")
 	join_ip_button.connect("pressed", self, "request_connect")
 	join_menu_back_button.connect("pressed", self, "switch_menu", ["main"])
-	message_timer.connect("timeout", self, "set_message")
 
 func set_message(msg = "", time = 0):
 	message_node.text = msg
@@ -80,7 +78,7 @@ func switch_menu(new_menu):
 			main_menu.visible = true
 			return
 		join_menu.visible = true
-		join_menu_back_button.grab_focus()
+		join_ip_button.grab_focus()
 	current_menu = new_menu
 
 func refresh_servers():
@@ -125,10 +123,10 @@ func request_connect(ip = ""):
 
 func create_bar(data, count):
 	var bar = VBoxContainer.new()
-	bar.name = data.name
 	bar.size_flags_horizontal = VBoxContainer.SIZE_EXPAND_FILL
 	bar.modulate = data.color
 	bar.alignment = BoxContainer.ALIGN_CENTER
+	bar.set("custom_constants/separation", -4)
 	var label = Label.new()
 	label.text = data.name
 	label.align = Label.ALIGN_CENTER

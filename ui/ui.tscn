@@ -1,11 +1,10 @@
-[gd_scene load_steps=8 format=2]
+[gd_scene load_steps=7 format=2]
 
 [ext_resource path="res://ui/robotomono.ttf" type="DynamicFontData" id=1]
 [ext_resource path="res://ui/ui.tres" type="Theme" id=2]
 [ext_resource path="res://ui/ui.gd" type="Script" id=3]
 [ext_resource path="res://main/icon.png" type="Texture" id=4]
 [ext_resource path="res://ui/header2.tres" type="DynamicFont" id=5]
-[ext_resource path="res://ui/overlay_style.tres" type="StyleBox" id=6]
 
 [sub_resource type="DynamicFont" id=1]
 size = 30
@@ -27,7 +26,6 @@ __meta__ = {
 visible = false
 anchor_right = 1.0
 margin_bottom = 35.0
-custom_styles/normal = ExtResource( 6 )
 align = 1
 __meta__ = {
 "_edit_lock_": true,
@@ -65,9 +63,9 @@ __meta__ = {
 
 [node name="Main" type="VBoxContainer" parent="Menu"]
 margin_left = 362.0
-margin_top = 146.0
+margin_top = 170.0
 margin_right = 662.0
-margin_bottom = 453.0
+margin_bottom = 430.0
 rect_min_size = Vector2( 300, 0 )
 custom_constants/separation = 4
 
@@ -122,16 +120,10 @@ margin_right = 300.0
 margin_bottom = 213.0
 text = "Join"
 
-[node name="Quit" type="Button" parent="Menu/Main"]
+[node name="FooterWrap" type="HBoxContainer" parent="Menu/Main"]
 margin_top = 217.0
 margin_right = 300.0
 margin_bottom = 260.0
-text = "Quit"
-
-[node name="FooterWrap" type="HBoxContainer" parent="Menu/Main"]
-margin_top = 264.0
-margin_right = 300.0
-margin_bottom = 307.0
 
 [node name="Author" type="Label" parent="Menu/Main/FooterWrap"]
 margin_right = 168.0
@@ -173,16 +165,15 @@ margin_right = 300.0
 margin_bottom = 96.0
 
 [node name="Label" type="Label" parent="Menu/Play/MapWrap"]
-margin_right = 136.0
+margin_right = 56.0
 margin_bottom = 43.0
-size_flags_horizontal = 3
-text = "Map"
+text = "Map:"
 
 [node name="Map" type="Button" parent="Menu/Play/MapWrap"]
-margin_left = 140.0
+margin_left = 60.0
 margin_right = 300.0
 margin_bottom = 43.0
-rect_min_size = Vector2( 160, 0 )
+size_flags_horizontal = 3
 text = "BigMap"
 
 [node name="HSeparator2" type="HSeparator" parent="Menu/Play"]
