@@ -16,16 +16,15 @@ func _ready():
 
 func _process(_delta):
 	if broadcasting:
-		broadcast_socket.put_packet(Game.config.peer_name.to_ascii())
+		broadcast_socket.put_var(Game.config.peer_name)
 
 func get_servers():
 	servers.clear()
 	while listen_socket.get_available_packet_count() > 0:
 		var ip = listen_socket.get_packet_ip()
 		var port = listen_socket.get_packet_port()
-		var data = listen_socket.get_packet()
+		var server_name = listen_socket.get_var()
 		if ip != "" and port > 0 and not servers.has(ip):
-			var server_name = data.get_string_from_ascii()
 			servers[ip] = server_name
 	return servers
 
@@ -47,3 +46,5 @@ func reset():
 	get_tree().set_deferred("network_peer", null)
 	peer_id = 1
 	broadcasting = false
+	listen_socket.close()
+	listen_socket.listen(SOCKET_PORT)

@@ -22,7 +22,6 @@ func _ready():
 	ui.connect("start_requested", self, "start_server_game")
 	ui.connect("connect_requested", self, "connect_to_server")
 	join_timer.connect("timeout", self, "unload_game", ["Connection failed"])
-	discord_manager.UpdateActivity("Thinking about paddles", "and battles")
 
 func _physics_process(_delta):
 	if Game.is_playing:
@@ -44,7 +43,7 @@ func connect_to_server(ip):
 		ui.toggle_inputs(true)
 	else:
 		ui.set_message("Invalid IP", 3)
-		ui.ip_input.grab_focus()
+		ui.join_ip_input.grab_focus()
 	Game.save_config()
 
 func handle_peer_disconnect(id):
@@ -73,6 +72,7 @@ func start_server_game():
 	randomize()
 	var map_color = Color.from_hsv(randf(), 0.8, 1)
 	load_game(Game.config.map, map_color)
+	discord_manager.CreateLobby()
 
 func load_game(map_name, map_color):
 	Game.save_config()
@@ -84,7 +84,6 @@ func load_game(map_name, map_color):
 	ui.set_message("Press A/Enter to create your paddle", 5)
 	ui.menu_node.hide()
 	Game.is_playing = true
-	discord_manager.UpdateActivity("Battling on " + map_name, "")
 
 remotesync func update_objects(paddles, balls):
 	if Game.is_playing:
@@ -92,10 +91,12 @@ remotesync func update_objects(paddles, balls):
 		ball_manager.update_balls(balls)
 
 remote func unload_game(msg):
-	discord_manager.UpdateActivity("Thinking about paddles", "and battles")
+	if Network.peer_id == 1:
+		discord_manager.DeleteLobby()
+	else:
+		discord_manager.LeaveLobby()
 	Game.is_playing = false
-	if get_tree().has_network_peer():
-		Network.reset()
+	Network.reset()
 	join_timer.stop()
 	camera.reset()
 	map_manager.reset()
