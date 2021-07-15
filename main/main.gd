@@ -28,7 +28,7 @@ func _physics_process(_delta):
 				"paddles": paddle_manager.paddles,
 				"balls": ball_manager.balls,
 			}
-			DiscordManager.SendDataAll(Game.Channels.UPDATE_OBJECTS, var2bytes(update_data, true))
+			DiscordManager.SendDataAll(Game.Channels.UPDATE_OBJECTS, update_data)
 			update_objects(paddle_manager.paddles, ball_manager.balls)
 		camera.move_and_zoom(paddle_manager.get_children())
 
@@ -42,7 +42,7 @@ func request_check():
 		"version": Game.VERSION,
 		"id": DiscordManager.GetUserId(),
 	}
-	DiscordManager.SendDataOwner(Game.Channels.CHECK_CLIENT, var2bytes(check_data, true))
+	DiscordManager.SendDataOwner(Game.Channels.CHECK_CLIENT, check_data)
 
 func handle_discord_message(channel_id, data):
 	var parsed_data = bytes2var(data)
@@ -82,12 +82,12 @@ func check_client(id, version):
 			"map": Game.map,
 			"color": map_manager.color,
 		}
-		DiscordManager.SendData(id, Game.Channels.START_CLIENT_GAME, var2bytes(game_data, true))
+		DiscordManager.SendData(id, Game.Channels.START_CLIENT_GAME, game_data)
 	else:
 		var unload_data = {
 			"reason": "Different server version (" + Game.VERSION + ")",
 		}
-		DiscordManager.SendData(id, Game.Channels.UNLOAD_GAME, var2bytes(unload_data, true))
+		DiscordManager.SendData(id, Game.Channels.UNLOAD_GAME, unload_data)
 
 func start_client_game(paddles, map_name, map_color):
 	load_game(map_name, map_color)
