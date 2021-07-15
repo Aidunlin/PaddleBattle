@@ -1,32 +1,39 @@
-# AutoLoaded Singleton
-
 extends Node
 
 const VERSION = "Dev Build"
 const MAX_HEALTH = 3
+const MOVE_SPEED = 500
 
-var is_playing = false
-var config = {
-	"peer_name": "",
-	"ip": "",
-	"map": "BigMap",
+const IS_DEV = true
+
+enum Channels {
+	UPDATE_OBJECTS,
+	CHECK_CLIENT,
+	START_CLIENT_GAME,
+	UNLOAD_GAME,
+	CREATE_PADDLE,
+	SET_PADDLE_INPUTS,
+	VIBRATE_PAD,
+	DAMAGE_PADDLE,
 }
 
-func _enter_tree():
-	load_config()
+var is_playing = false
+var username = ""
+var map = "BigMap"
+var peer_id = 0
 
-func load_config():
-	var file = File.new()
-	if file.file_exists("user://config.json"):
-		file.open("user://config.json", File.READ)
-		var config_from_file = parse_json(file.get_line())
-		for key in config_from_file:
-			if key in config:
-				config[key] = config_from_file[key]
-		file.close()
+func is_server():
+	return DiscordManager.IsLobbyOwner()
 
-func save_config():
-	var file = File.new()
-	file.open("user://config.json", File.WRITE)
-	file.store_line(to_json(config))
-	file.close()
+func setup_server():
+	DiscordManager.CreateLobby()
+
+func setup_client():
+	pass
+
+func reset():
+	if is_server():
+		DiscordManager.DeleteLobby()
+	else:
+		DiscordManager.LeaveLobby()
+	is_playing = false

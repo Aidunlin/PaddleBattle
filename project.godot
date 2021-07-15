@@ -31,7 +31,7 @@ default_bus_layout=""
 [autoload]
 
 Game="*res://main/game.gd"
-Network="*res://main/network.gd"
+DiscordManager="*res://discord/DiscordManager.cs"
 
 [input]
 

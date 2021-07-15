@@ -23,10 +23,8 @@ func move_and_zoom(paddles):
 		var y_between_paddles = max(max_y - average.y, average.y - min_y)
 		var margin_x = OS.window_size.x * 2 / 3
 		var margin_y = OS.window_size.y * 2 / 3
-		new_zoom = Vector2(
-			(2 * x_between_paddles + margin_x) / OS.window_size.x,
-			(2 * y_between_paddles + margin_y) / OS.window_size.y
-		)
+		new_zoom.x = (2 * x_between_paddles + margin_x) / OS.window_size.x
+		new_zoom.y = (2 * y_between_paddles + margin_y) / OS.window_size.y
 		var largest_zoom = max(new_zoom.x, new_zoom.y)
 		new_zoom = Vector2(largest_zoom, largest_zoom)
 		if new_zoom < DEFAULT_ZOOM:
