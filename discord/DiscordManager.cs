@@ -43,7 +43,7 @@ public class DiscordManager : Node {
 
 	public void Start(string instance) {
 		System.Environment.SetEnvironmentVariable("DISCORD_INSTANCE_ID", instance);
-		discord = new Discord.Discord(862090452361674762, (ulong)CreateFlags.NoRequireDiscord);
+		discord = new Discord.Discord(862090452361674762, (ulong)CreateFlags.Default);
 		activityManager = discord.GetActivityManager();
 		lobbyManager = discord.GetLobbyManager();
 		userManager = discord.GetUserManager();
@@ -162,7 +162,6 @@ public class DiscordManager : Node {
 
 	public void InitNetworking() {
 		lobbyManager.ConnectNetwork(currentLobby);
-		var channels = Enum.GetValues(typeof(Channels));
 		lobbyManager.OpenNetworkChannel(currentLobby, (byte)Channels.UpdateObjects, false);
 		lobbyManager.OpenNetworkChannel(currentLobby, (byte)Channels.CheckClient, true);
 		lobbyManager.OpenNetworkChannel(currentLobby, (byte)Channels.StartClientGame, true);
@@ -173,15 +172,15 @@ public class DiscordManager : Node {
 		lobbyManager.OpenNetworkChannel(currentLobby, (byte)Channels.DamagePaddle, true);
 	}
 
-	public void SendData(long userId, byte channel, byte[] data) {
-		lobbyManager.SendNetworkMessage(currentLobby, userId, channel, data);
+	public void SendData(long userId, byte channel, object data) {
+		lobbyManager.SendNetworkMessage(currentLobby, userId, channel, GD.Var2Bytes(data));
 	}
 
-	public void SendDataOwner(byte channel, byte[] data) {
-		lobbyManager.SendNetworkMessage(currentLobby, GetLobbyOwnerId(), channel, data);
+	public void SendDataOwner(byte channel, object data) {
+		SendData(GetLobbyOwnerId(), channel, data);
 	}
 
-	public void SendDataAll(byte channel, byte[] data) {
+	public void SendDataAll(byte channel, object data) {
 		if (currentLobby != 0) {
 			foreach (var user in lobbyManager.GetMemberUsers(currentLobby)) {
 				SendData(user.Id, channel, data);

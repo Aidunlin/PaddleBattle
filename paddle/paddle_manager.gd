@@ -39,7 +39,7 @@ func create_paddle_from_input(pad):
 		if Game.is_server():
 			create_paddle(data)
 		else:
-			DiscordManager.SendDataOwner(Game.Channels.CREATE_PADDLE, var2bytes(data, true))
+			DiscordManager.SendDataOwner(Game.Channels.CREATE_PADDLE, data)
 
 func create_paddle(data):
 	var paddle_count = get_child_count()
@@ -87,7 +87,7 @@ func create_paddle(data):
 			var new_data = paddles[new_name].duplicate(true)
 			if Game.peer_id != data.id and "pad" in data:
 				new_data.pad = data.pad
-			DiscordManager.SendDataAll(Game.Channels.CREATE_PADDLE, var2bytes(new_data, true))
+			DiscordManager.SendDataAll(Game.Channels.CREATE_PADDLE, new_data)
 		add_child(paddle_node)
 
 func remove_paddles(id):
@@ -120,7 +120,7 @@ func update_paddles(new_paddles):
 					"paddle": paddle,
 					"inputs": get_paddle_inputs(paddle),
 				}
-				DiscordManager.SendDataOwner(Game.Channels.SET_PADDLE_INPUTS, var2bytes(paddle_input_data, true))
+				DiscordManager.SendDataOwner(Game.Channels.SET_PADDLE_INPUTS, paddle_input_data)
 
 func get_paddle_inputs(paddle):
 	var pad = input_list[paddle]
@@ -159,7 +159,7 @@ func vibrate_pad(paddle):
 			var vibrate_data = {
 				"paddle": paddle,
 			}
-			DiscordManager.SendData(paddles[paddle].id, Game.Channels.VIBRATE_PAD, var2bytes(vibrate_data, true))
+			DiscordManager.SendData(paddles[paddle].id, Game.Channels.VIBRATE_PAD, vibrate_data)
 
 func damage_paddle(paddle):
 	paddles[paddle].health -= 1
@@ -175,7 +175,7 @@ func damage_paddle(paddle):
 		var damage_data = {
 			"paddle": paddle,
 		}
-		DiscordManager.SendDataAll(Game.Channels.DAMAGE_PADDLE, var2bytes(damage_data, true))
+		DiscordManager.SendDataAll(Game.Channels.DAMAGE_PADDLE, damage_data)
 
 func reset():
 	input_list.clear()
