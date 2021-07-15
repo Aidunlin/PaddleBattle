@@ -62,9 +62,9 @@ __meta__ = {
 
 [node name="Main" type="VBoxContainer" parent="Menu"]
 margin_left = 362.0
-margin_top = 146.0
+margin_top = 99.0
 margin_right = 662.0
-margin_bottom = 453.0
+margin_bottom = 500.0
 rect_min_size = Vector2( 300, 0 )
 custom_constants/separation = 4
 
@@ -89,28 +89,26 @@ custom_fonts/font = SubResource( 1 )
 text = "PaddleBattle"
 align = 1
 
-[node name="DevWrap" type="HBoxContainer" parent="Menu/Main"]
+[node name="DevWrap" type="VBoxContainer" parent="Menu/Main"]
 margin_top = 76.0
 margin_right = 300.0
-margin_bottom = 119.0
+margin_bottom = 166.0
 
 [node name="Discord0" type="Button" parent="Menu/Main/DevWrap"]
-margin_right = 148.0
+margin_right = 300.0
 margin_bottom = 43.0
-size_flags_horizontal = 3
 text = "Discord 0"
 
 [node name="Discord1" type="Button" parent="Menu/Main/DevWrap"]
-margin_left = 152.0
+margin_top = 47.0
 margin_right = 300.0
-margin_bottom = 43.0
-size_flags_horizontal = 3
+margin_bottom = 90.0
 text = "Discord 1"
 
 [node name="Name" type="Label" parent="Menu/Main"]
-margin_top = 123.0
+margin_top = 170.0
 margin_right = 300.0
-margin_bottom = 166.0
+margin_bottom = 213.0
 size_flags_horizontal = 3
 text = "NO NAME"
 align = 1
@@ -119,21 +117,70 @@ __meta__ = {
 }
 
 [node name="Map" type="Button" parent="Menu/Main"]
-margin_top = 170.0
+margin_top = 217.0
 margin_right = 300.0
-margin_bottom = 213.0
+margin_bottom = 260.0
 size_flags_horizontal = 3
 text = "BigMap"
 
 [node name="Play" type="Button" parent="Menu/Main"]
-margin_top = 217.0
-margin_right = 300.0
-margin_bottom = 260.0
-text = "Play"
-
-[node name="Version" type="Label" parent="Menu/Main"]
 margin_top = 264.0
 margin_right = 300.0
 margin_bottom = 307.0
+text = "Play"
+
+[node name="Join" type="Button" parent="Menu/Main"]
+margin_top = 311.0
+margin_right = 300.0
+margin_bottom = 354.0
+text = "Join"
+
+[node name="Version" type="Label" parent="Menu/Main"]
+margin_top = 358.0
+margin_right = 300.0
+margin_bottom = 401.0
 text = "NO VERSION"
 align = 1
+
+[node name="Join" type="VBoxContainer" parent="Menu"]
+visible = false
+margin_left = 362.0
+margin_top = 95.0
+margin_right = 662.0
+margin_bottom = 505.0
+rect_min_size = Vector2( 300, 0 )
+custom_constants/separation = 4
+
+[node name="Label" type="Label" parent="Menu/Join"]
+margin_right = 300.0
+margin_bottom = 43.0
+text = "Join"
+align = 1
+
+[node name="HSeparator" type="HSeparator" parent="Menu/Join"]
+margin_top = 47.0
+margin_right = 300.0
+margin_bottom = 51.0
+
+[node name="FriendsWrap" type="ScrollContainer" parent="Menu/Join"]
+margin_top = 55.0
+margin_right = 300.0
+margin_bottom = 355.0
+rect_min_size = Vector2( 0, 300 )
+follow_focus = true
+scroll_horizontal_enabled = false
+
+[node name="Friends" type="VBoxContainer" parent="Menu/Join/FriendsWrap"]
+margin_right = 300.0
+size_flags_horizontal = 3
+
+[node name="HSeparator2" type="HSeparator" parent="Menu/Join"]
+margin_top = 359.0
+margin_right = 300.0
+margin_bottom = 363.0
+
+[node name="Back" type="Button" parent="Menu/Join"]
+margin_top = 367.0
+margin_right = 300.0
+margin_bottom = 410.0
+text = "Back"

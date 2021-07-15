@@ -8,11 +8,12 @@ onready var ui = $CanvasLayer/UI
 
 func _ready():
 	DiscordManager.connect("UserUpdated", self, "get_user")
-	DiscordManager.connect("LobbyCreated", self, "start_server_game")
+	DiscordManager.connect("LobbyCreated", self, "create_game")
 	DiscordManager.connect("LobbyConnected", self, "request_check")
 	DiscordManager.connect("LobbyDeleted", self, "unload_game", ["Server disconnected"])
-	DiscordManager.connect("MemberDisconnected", self, "handle_peer_disconnect")
+	DiscordManager.connect("MemberDisconnected", self, "handle_member_disconnect")
 	DiscordManager.connect("MessageReceived", self, "handle_discord_message")
+	DiscordManager.connect("RelationshipsUpdated", ui, "update_friends")
 	paddle_manager.connect("unload_requested", self, "unload_game", ["You left the game"])
 	paddle_manager.connect("paddle_created", ui, "create_bar")
 	paddle_manager.connect("paddle_damaged", ui, "update_bar")
@@ -23,7 +24,7 @@ func _ready():
 
 func _physics_process(_delta):
 	if Game.is_playing:
-		if Game.is_server():
+		if Game.is_lobby_owner():
 			var update_data = {
 				"paddles": paddle_manager.paddles,
 				"balls": ball_manager.balls,
@@ -33,7 +34,7 @@ func _physics_process(_delta):
 		camera.move_and_zoom(paddle_manager.get_children())
 
 func get_user():
-	Game.peer_id = DiscordManager.GetUserId()
+	Game.user_id = DiscordManager.GetUserId()
 	Game.username = DiscordManager.GetUsername()
 	ui.name_label.text = Game.username
 
@@ -42,16 +43,16 @@ func request_check():
 		"version": Game.VERSION,
 		"id": DiscordManager.GetUserId(),
 	}
-	DiscordManager.SendDataOwner(Game.Channels.CHECK_CLIENT, check_data)
+	DiscordManager.SendDataOwner(Game.Channels.CHECK_MEMBER, check_data)
 
 func handle_discord_message(channel_id, data):
 	var parsed_data = bytes2var(data)
 	if channel_id == Game.Channels.UPDATE_OBJECTS:
 		update_objects(parsed_data["paddles"], parsed_data["balls"])
-	elif channel_id == Game.Channels.CHECK_CLIENT:
-		check_client(parsed_data["id"], parsed_data["version"])
-	elif channel_id == Game.Channels.START_CLIENT_GAME:
-		start_client_game(parsed_data["paddles"], parsed_data["map"], parsed_data["color"])
+	elif channel_id == Game.Channels.CHECK_MEMBER:
+		check_member(parsed_data["id"], parsed_data["version"])
+	elif channel_id == Game.Channels.JOIN_GAME:
+		join_game(parsed_data["paddles"], parsed_data["map"], parsed_data["color"])
 	elif channel_id == Game.Channels.UNLOAD_GAME:
 		unload_game(parsed_data["reason"])
 	elif channel_id == Game.Channels.CREATE_PADDLE:
@@ -66,15 +67,15 @@ func handle_discord_message(channel_id, data):
 func switch_map():
 	ui.map_button.text = map_manager.switch()
 
-func handle_peer_disconnect(id):
+func handle_member_disconnect(id):
 	paddle_manager.remove_paddles(id)
 	ui.bar_parent.columns = max(paddle_manager.paddles.size(), 1)
 	ui.set_message("Client disconnected", 2)
 
 func start_lobby():
-	Game.setup_server()
+	Game.create_lobby()
 
-func check_client(id, version):
+func check_member(id, version):
 	if version == Game.VERSION:
 		ui.set_message("Client connected", 2)
 		var game_data = {
@@ -82,19 +83,19 @@ func check_client(id, version):
 			"map": Game.map,
 			"color": map_manager.color,
 		}
-		DiscordManager.SendData(id, Game.Channels.START_CLIENT_GAME, game_data)
+		DiscordManager.SendData(id, Game.Channels.JOIN_GAME, game_data)
 	else:
 		var unload_data = {
 			"reason": "Different server version (" + Game.VERSION + ")",
 		}
 		DiscordManager.SendData(id, Game.Channels.UNLOAD_GAME, unload_data)
 
-func start_client_game(paddles, map_name, map_color):
+func join_game(paddles, map_name, map_color):
 	load_game(map_name, map_color)
 	for paddle in paddles:
 		paddle_manager.create_paddle(paddles[paddle])
 
-func start_server_game():
+func create_game():
 	randomize()
 	load_game(Game.map, Color.from_hsv(randf(), 0.8, 1))
 

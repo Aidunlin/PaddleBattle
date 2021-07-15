@@ -10,7 +10,7 @@ var balls_created = false
 func create_balls():
 	for i in spawns.size():
 		var ball_node = BALL_SCENE.instance()
-		if Game.is_server():
+		if Game.is_lobby_owner():
 			balls.append({})
 		else:
 			ball_node = Sprite.new()
@@ -22,7 +22,7 @@ func create_balls():
 func update_balls(new_balls):
 	if not balls_created:
 		return
-	if Game.is_server():
+	if Game.is_lobby_owner():
 		for ball_index in get_child_count():
 			var ball_node = get_child(ball_index)
 			if ball_node.position.length() > 4096:

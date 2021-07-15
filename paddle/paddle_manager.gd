@@ -32,11 +32,11 @@ func create_paddle_from_input(pad):
 	if not pad in used_inputs:
 		var data = {
 			"name": Game.username,
-			"id": Game.peer_id,
+			"id": Game.user_id,
 			"pad": pad,
 		}
 		used_inputs.append(pad)
-		if Game.is_server():
+		if Game.is_lobby_owner():
 			create_paddle(data)
 		else:
 			DiscordManager.SendDataOwner(Game.Channels.CREATE_PADDLE, data)
@@ -45,7 +45,7 @@ func create_paddle(data):
 	var paddle_count = get_child_count()
 	if paddle_count < spawns.size():
 		var paddle_node = PADDLE_SCENE.instance()
-		if not Game.is_server():
+		if not Game.is_lobby_owner():
 			paddle_node = Sprite.new()
 			paddle_node.texture = PADDLE_TEXTURE
 		var name_count = 1
@@ -66,10 +66,10 @@ func create_paddle(data):
 			paddle_node.modulate = data.color
 		else:
 			paddle_node.modulate = Color.from_hsv(randf(), 0.8, 1)
-		if Game.is_server():
+		if Game.is_lobby_owner():
 			paddle_node.connect("collided", self, "vibrate_pad", [new_name])
 			paddle_node.connect("damaged", self, "damage_paddle", [new_name])
-		if Game.peer_id == data.id and "pad" in data:
+		if Game.user_id == data.id and "pad" in data:
 			input_list[new_name] = data.pad
 		paddles[new_name] = {
 			"id": data.id,
@@ -83,9 +83,9 @@ func create_paddle(data):
 		else:
 			paddles[new_name].health = Game.MAX_HEALTH
 		emit_signal("paddle_created", paddles[new_name], paddle_count)
-		if Game.is_server():
+		if Game.is_lobby_owner():
 			var new_data = paddles[new_name].duplicate(true)
-			if Game.peer_id != data.id and "pad" in data:
+			if Game.user_id != data.id and "pad" in data:
 				new_data.pad = data.pad
 			DiscordManager.SendDataAll(Game.Channels.CREATE_PADDLE, new_data)
 		add_child(paddle_node)
@@ -101,12 +101,12 @@ func remove_paddles(id):
 		emit_signal("paddle_removed", paddle)
 
 func update_paddles(new_paddles):
-	if Game.is_server():
+	if Game.is_lobby_owner():
 		for paddle in new_paddles:
 			var paddle_node = get_node(paddle)
 			paddles[paddle].position = paddle_node.position
 			paddles[paddle].rotation = paddle_node.rotation
-			if Game.peer_id == new_paddles[paddle].id:
+			if Game.user_id == new_paddles[paddle].id:
 				set_paddle_inputs(paddle, get_paddle_inputs(paddle))
 	else:
 		for paddle in new_paddles:
@@ -115,12 +115,15 @@ func update_paddles(new_paddles):
 			var paddle_node = get_node(paddle)
 			paddle_node.position = new_paddles[paddle].position
 			paddle_node.rotation = new_paddles[paddle].rotation
-			if Game.peer_id == new_paddles[paddle].id:
+			if Game.user_id == new_paddles[paddle].id:
 				var paddle_input_data = {
 					"paddle": paddle,
 					"inputs": get_paddle_inputs(paddle),
 				}
 				DiscordManager.SendDataOwner(Game.Channels.SET_PADDLE_INPUTS, paddle_input_data)
+
+func get_key(key1, key2):
+	return int(Input.is_key_pressed(key1) or Input.is_key_pressed(key2))
 
 func get_paddle_inputs(paddle):
 	var pad = input_list[paddle]
@@ -131,12 +134,12 @@ func get_paddle_inputs(paddle):
 	}
 	if OS.is_window_focused():
 		if pad == -1:
-			inputs.velocity.x = int(Input.is_key_pressed(KEY_D)) - int(Input.is_key_pressed(KEY_A))
-			inputs.velocity.y = int(Input.is_key_pressed(KEY_S)) - int(Input.is_key_pressed(KEY_W))
+			inputs.velocity.x = get_key(KEY_D, KEY_RIGHT) - get_key(KEY_A, KEY_LEFT)
+			inputs.velocity.y = get_key(KEY_S, KEY_DOWN) - get_key(KEY_W, KEY_UP)
 			inputs.velocity = inputs.velocity.normalized() * Game.MOVE_SPEED
 			if inputs.velocity:
 				inputs.dash = Input.is_key_pressed(KEY_SHIFT)
-			inputs.rotation = deg2rad((int(Input.is_key_pressed(KEY_PERIOD)) - int(Input.is_key_pressed(KEY_COMMA))) * 4)
+			inputs.rotation = deg2rad((get_key(KEY_PERIOD, KEY_X) - get_key(KEY_COMMA, KEY_Z)) * 4)
 		else:
 			var left_stick = Vector2(Input.get_joy_axis(pad, JOY_ANALOG_LX), Input.get_joy_axis(pad, JOY_ANALOG_LY))
 			var right_stick = Vector2(Input.get_joy_axis(pad, JOY_ANALOG_RX), Input.get_joy_axis(pad, JOY_ANALOG_RY))
@@ -153,9 +156,9 @@ func set_paddle_inputs(paddle, inputs):
 
 func vibrate_pad(paddle):
 	if Game.is_playing:
-		if Game.peer_id == paddles[paddle].id:
+		if Game.user_id == paddles[paddle].id:
 			Input.start_joy_vibration(input_list[paddle], 0.1, 0.1, 0.1)
-		elif Game.is_server():
+		elif Game.is_lobby_owner():
 			var vibrate_data = {
 				"paddle": paddle,
 			}
@@ -165,13 +168,13 @@ func damage_paddle(paddle):
 	paddles[paddle].health -= 1
 	if paddles[paddle].health < 1:
 		emit_signal("paddle_destroyed", paddles[paddle].name + " was destroyed")
-		if Game.is_server():
+		if Game.is_lobby_owner():
 			var paddle_node = get_node(paddle)
 			paddle_node.position = spawns[paddle_node.get_index()].position
 			paddle_node.rotation = spawns[paddle_node.get_index()].rotation
 		paddles[paddle].health = Game.MAX_HEALTH
 	emit_signal("paddle_damaged", paddle, paddles[paddle].health)
-	if Game.is_server():
+	if Game.is_lobby_owner():
 		var damage_data = {
 			"paddle": paddle,
 		}

@@ -4,12 +4,10 @@ const VERSION = "Dev Build"
 const MAX_HEALTH = 3
 const MOVE_SPEED = 500
 
-const IS_DEV = true
-
 enum Channels {
 	UPDATE_OBJECTS,
-	CHECK_CLIENT,
-	START_CLIENT_GAME,
+	CHECK_MEMBER,
+	JOIN_GAME,
 	UNLOAD_GAME,
 	CREATE_PADDLE,
 	SET_PADDLE_INPUTS,
@@ -18,21 +16,18 @@ enum Channels {
 }
 
 var is_playing = false
-var username = ""
 var map = "BigMap"
-var peer_id = 0
+var username = ""
+var user_id = 0
 
-func is_server():
+func is_lobby_owner():
 	return DiscordManager.IsLobbyOwner()
 
-func setup_server():
+func create_lobby():
 	DiscordManager.CreateLobby()
 
-func setup_client():
-	pass
-
 func reset():
-	if is_server():
+	if is_lobby_owner():
 		DiscordManager.DeleteLobby()
 	else:
 		DiscordManager.LeaveLobby()
