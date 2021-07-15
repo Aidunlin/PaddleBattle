@@ -8,7 +8,6 @@ signal paddle_removed()
 
 const PADDLE_TEXTURE = preload("res://paddle/paddle.png")
 const PADDLE_SCENE = preload("res://paddle/paddle.tscn")
-const MOVE_SPEED = 500
 
 var input_list = {}
 var used_inputs = []
@@ -32,21 +31,21 @@ func _input(_event):
 func create_paddle_from_input(pad):
 	if not pad in used_inputs:
 		var data = {
-			"name": Game.config.peer_name,
-			"id": Network.peer_id,
+			"name": Game.username,
+			"id": Game.peer_id,
 			"pad": pad,
 		}
 		used_inputs.append(pad)
-		if Network.peer_id == 1:
+		if Game.is_server():
 			create_paddle(data)
 		else:
-			rpc_id(1, "create_paddle", data)
+			DiscordManager.SendDataOwner(Game.Channels.CREATE_PADDLE, var2bytes(data, true))
 
-remote func create_paddle(data):
+func create_paddle(data):
 	var paddle_count = get_child_count()
 	if paddle_count < spawns.size():
 		var paddle_node = PADDLE_SCENE.instance()
-		if Network.peer_id != 1:
+		if not Game.is_server():
 			paddle_node = Sprite.new()
 			paddle_node.texture = PADDLE_TEXTURE
 		var name_count = 1
@@ -67,10 +66,10 @@ remote func create_paddle(data):
 			paddle_node.modulate = data.color
 		else:
 			paddle_node.modulate = Color.from_hsv(randf(), 0.8, 1)
-		if Network.peer_id == 1:
+		if Game.is_server():
 			paddle_node.connect("collided", self, "vibrate_pad", [new_name])
 			paddle_node.connect("damaged", self, "damage_paddle", [new_name])
-		if Network.peer_id == data.id and "pad" in data:
+		if Game.peer_id == data.id and "pad" in data:
 			input_list[new_name] = data.pad
 		paddles[new_name] = {
 			"id": data.id,
@@ -84,11 +83,11 @@ remote func create_paddle(data):
 		else:
 			paddles[new_name].health = Game.MAX_HEALTH
 		emit_signal("paddle_created", paddles[new_name], paddle_count)
-		if Network.peer_id == 1:
+		if Game.is_server():
 			var new_data = paddles[new_name].duplicate(true)
-			if Network.peer_id != data.id and "pad" in data:
+			if Game.peer_id != data.id and "pad" in data:
 				new_data.pad = data.pad
-			rpc("create_paddle", new_data)
+			DiscordManager.SendDataAll(Game.Channels.CREATE_PADDLE, var2bytes(new_data, true))
 		add_child(paddle_node)
 
 func remove_paddles(id):
@@ -102,12 +101,12 @@ func remove_paddles(id):
 		emit_signal("paddle_removed", paddle)
 
 func update_paddles(new_paddles):
-	if Network.peer_id == 1:
+	if Game.is_server():
 		for paddle in new_paddles:
 			var paddle_node = get_node(paddle)
 			paddles[paddle].position = paddle_node.position
 			paddles[paddle].rotation = paddle_node.rotation
-			if Network.peer_id == new_paddles[paddle].id:
+			if Game.peer_id == new_paddles[paddle].id:
 				set_paddle_inputs(paddle, get_paddle_inputs(paddle))
 	else:
 		for paddle in new_paddles:
@@ -116,8 +115,12 @@ func update_paddles(new_paddles):
 			var paddle_node = get_node(paddle)
 			paddle_node.position = new_paddles[paddle].position
 			paddle_node.rotation = new_paddles[paddle].rotation
-			if Network.peer_id == new_paddles[paddle].id:
-				rpc_unreliable_id(1, "set_paddle_inputs", paddle, get_paddle_inputs(paddle))
+			if Game.peer_id == new_paddles[paddle].id:
+				var paddle_input_data = {
+					"paddle": paddle,
+					"inputs": get_paddle_inputs(paddle),
+				}
+				DiscordManager.SendDataOwner(Game.Channels.SET_PADDLE_INPUTS, var2bytes(paddle_input_data, true))
 
 func get_paddle_inputs(paddle):
 	var pad = input_list[paddle]
@@ -130,7 +133,7 @@ func get_paddle_inputs(paddle):
 		if pad == -1:
 			inputs.velocity.x = int(Input.is_key_pressed(KEY_D)) - int(Input.is_key_pressed(KEY_A))
 			inputs.velocity.y = int(Input.is_key_pressed(KEY_S)) - int(Input.is_key_pressed(KEY_W))
-			inputs.velocity = inputs.velocity.normalized() * MOVE_SPEED
+			inputs.velocity = inputs.velocity.normalized() * Game.MOVE_SPEED
 			if inputs.velocity:
 				inputs.dash = Input.is_key_pressed(KEY_SHIFT)
 			inputs.rotation = deg2rad((int(Input.is_key_pressed(KEY_PERIOD)) - int(Input.is_key_pressed(KEY_COMMA))) * 4)
@@ -138,35 +141,41 @@ func get_paddle_inputs(paddle):
 			var left_stick = Vector2(Input.get_joy_axis(pad, JOY_ANALOG_LX), Input.get_joy_axis(pad, JOY_ANALOG_LY))
 			var right_stick = Vector2(Input.get_joy_axis(pad, JOY_ANALOG_RX), Input.get_joy_axis(pad, JOY_ANALOG_RY))
 			if left_stick.length() > 0.2:
-				inputs.velocity = left_stick * MOVE_SPEED
+				inputs.velocity = left_stick * Game.MOVE_SPEED
 				inputs.dash = Input.is_joy_button_pressed(pad, JOY_L2)
 			if right_stick.length() > 0.7:
 				var paddle_node = get_node(paddle)
 				inputs.rotation = paddle_node.get_angle_to(paddle_node.position + right_stick) * 0.1
 	return inputs
 
-remote func set_paddle_inputs(paddle, inputs):
+func set_paddle_inputs(paddle, inputs):
 	get_node(paddle).set_inputs(inputs)
 
-remote func vibrate_pad(paddle):
+func vibrate_pad(paddle):
 	if Game.is_playing:
-		if Network.peer_id == paddles[paddle].id:
+		if Game.peer_id == paddles[paddle].id:
 			Input.start_joy_vibration(input_list[paddle], 0.1, 0.1, 0.1)
-		elif Network.peer_id == 1:
-			rpc_id(paddles[paddle].id, "vibrate_pad", paddle)
+		elif Game.is_server():
+			var vibrate_data = {
+				"paddle": paddle,
+			}
+			DiscordManager.SendData(paddles[paddle].id, Game.Channels.VIBRATE_PAD, var2bytes(vibrate_data, true))
 
-remote func damage_paddle(paddle):
+func damage_paddle(paddle):
 	paddles[paddle].health -= 1
 	if paddles[paddle].health < 1:
 		emit_signal("paddle_destroyed", paddles[paddle].name + " was destroyed")
-		if Network.peer_id == 1:
+		if Game.is_server():
 			var paddle_node = get_node(paddle)
 			paddle_node.position = spawns[paddle_node.get_index()].position
 			paddle_node.rotation = spawns[paddle_node.get_index()].rotation
 		paddles[paddle].health = Game.MAX_HEALTH
 	emit_signal("paddle_damaged", paddle, paddles[paddle].health)
-	if Network.peer_id == 1:
-		rpc("damage_paddle", paddle)
+	if Game.is_server():
+		var damage_data = {
+			"paddle": paddle,
+		}
+		DiscordManager.SendDataAll(Game.Channels.DAMAGE_PADDLE, var2bytes(damage_data, true))
 
 func reset():
 	input_list.clear()

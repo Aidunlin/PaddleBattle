@@ -1,6 +1,0 @@
-[gd_scene load_steps=2 format=2]
-
-[ext_resource path="res://discord/discord_manager.cs" type="Script" id=1]
-
-[node name="DiscordManager" type="Node"]
-script = ExtResource( 1 )
