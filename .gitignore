@@ -1,6 +1,5 @@
 .import/
 .mono/
 .vscode/
-*.exe
-*.log
-*.cfg
+export/
+export_presets.cfg
