@@ -23,9 +23,6 @@ var user_id = 0
 func is_lobby_owner():
 	return DiscordManager.IsLobbyOwner()
 
-func create_lobby():
-	DiscordManager.CreateLobby()
-
 func reset():
 	if is_lobby_owner():
 		DiscordManager.DeleteLobby()

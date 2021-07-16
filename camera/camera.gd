@@ -1,11 +1,9 @@
 extends Camera2D
 
-const DEFAULT_ZOOM = Vector2(1, 1)
-
 var spawn = Vector2()
 
 func move_and_zoom(paddles):
-	var new_zoom = DEFAULT_ZOOM
+	var new_zoom = Vector2.ONE
 	if paddles.size() > 0:
 		var average = Vector2()
 		var max_x = -INF
@@ -27,8 +25,8 @@ func move_and_zoom(paddles):
 		new_zoom.y = (2 * y_between_paddles + margin_y) / OS.window_size.y
 		var largest_zoom = max(new_zoom.x, new_zoom.y)
 		new_zoom = Vector2(largest_zoom, largest_zoom)
-		if new_zoom < DEFAULT_ZOOM:
-			new_zoom = DEFAULT_ZOOM
+		if new_zoom < Vector2.ONE:
+			new_zoom = Vector2.ONE
 		position = average
 	zoom = zoom.linear_interpolate(new_zoom, 0.05)
 
