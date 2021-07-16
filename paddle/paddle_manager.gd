@@ -82,7 +82,7 @@ func create_paddle(data):
 			paddles[new_name].health = data.health
 		else:
 			paddles[new_name].health = Game.MAX_HEALTH
-		emit_signal("paddle_created", paddles[new_name], paddle_count)
+		emit_signal("paddle_created", paddles[new_name])
 		if Game.is_lobby_owner():
 			var new_data = paddles[new_name].duplicate(true)
 			if Game.user_id != data.id and "pad" in data:
@@ -104,8 +104,9 @@ func remove_paddles(id):
 		remove_paddle(paddle)
 
 func update_paddles(new_paddles):
-	for paddle in new_paddles:
-		if has_node(paddle):
+	if Game.is_playing:
+		for paddle in new_paddles:
+			# if has_node(paddle):
 			var paddle_node = get_node(paddle)
 			if Game.is_lobby_owner():
 				paddles[paddle].position = paddle_node.position
@@ -156,13 +157,13 @@ func get_paddle_inputs(paddle):
 	return inputs
 
 func set_paddle_inputs(paddle, inputs):
-	if Game.is_playing:
+	if get_node(paddle).has_method("set_inputs"):
 		get_node(paddle).set_inputs(inputs)
 
 func vibrate_pad(paddle):
 	if Game.is_playing:
 		if Game.user_id == paddles[paddle].id:
-			Input.start_joy_vibration(input_list[paddle], 0.1, 0.1, 0.1)
+			Input.start_joy_vibration(input_list[paddle], 0.5, 0.5, 0.1)
 		elif Game.is_lobby_owner():
 			var vibrate_data = {
 				"paddle": paddle,

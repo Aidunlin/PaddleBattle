@@ -35,11 +35,13 @@ DiscordManager="*res://discord/DiscordManager.cs"
 
 [debug]
 
+settings/fps/force_fps=60
 gdscript/warnings/return_value_discarded=false
 
 [display]
 
-window/vsync/use_vsync=false
+window/size/width=1280
+window/size/height=720
 
 [input]
 
