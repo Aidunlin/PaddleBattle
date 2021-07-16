@@ -33,9 +33,13 @@ default_bus_layout=""
 Game="*res://main/game.gd"
 DiscordManager="*res://discord/DiscordManager.cs"
 
-[gui]
+[debug]
 
-theme/custom_font="res://ui/default_font.tres"
+gdscript/warnings/return_value_discarded=false
+
+[display]
+
+window/vsync/use_vsync=false
 
 [input]
 
