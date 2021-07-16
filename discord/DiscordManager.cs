@@ -80,9 +80,6 @@ public class DiscordManager : Node {
 			EmitSignal("MessageReceived", channelId, data);
 		};
 		relationshipManager.OnRefresh += () => {
-			relationshipManager.Filter((ref Relationship relationship) => {
-				return relationship.Presence.Activity.ApplicationId == clientId;
-			});
 			UpdateRelationships();
 		};
 		relationshipManager.OnRelationshipUpdate += (ref Relationship relationship) => {
@@ -191,6 +188,7 @@ public class DiscordManager : Node {
 			activity.Party.Id = currentLobby.ToString();
 			activity.Party.Size.CurrentSize =  lobbyManager.MemberCount(currentLobby);
 			activity.Party.Size.MaxSize = 8;
+			activity.Party.Privacy = ActivityPartyPrivacy.Public;
 		}
 		activityManager.UpdateActivity(activity, (result) => {
 			if (result != Result.Ok) {
@@ -200,11 +198,9 @@ public class DiscordManager : Node {
 	}
 
 	public void UpdateRelationships() {
-		GD.Print("Friends playing this game:");
-		for (int i = 0; i < relationshipManager.Count(); i++) {
-			var r = relationshipManager.GetAt((uint)i);
-			GD.Print(r.User.Username);
-		}
+		relationshipManager.Filter((ref Relationship relationship) => {
+			return relationship.Presence.Activity.ApplicationId == clientId;
+		});
 		EmitSignal("RelationshipsUpdated");
 	}
 
@@ -219,7 +215,7 @@ public class DiscordManager : Node {
 		}
 		return friends;
 	}
-	
+
 	public override void _Process(float delta) {
 		if (started) {
 			discord.RunCallbacks();

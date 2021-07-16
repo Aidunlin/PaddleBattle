@@ -13,14 +13,13 @@ func _ready():
 	DiscordManager.connect("LobbyDeleted", self, "unload_game", ["Server disconnected"])
 	DiscordManager.connect("MemberDisconnected", self, "handle_member_disconnect")
 	DiscordManager.connect("MessageReceived", self, "handle_discord_message")
-	DiscordManager.connect("RelationshipsUpdated", ui, "update_friends")
 	paddle_manager.connect("unload_requested", self, "unload_game", ["You left the game"])
 	paddle_manager.connect("paddle_created", ui, "create_bar")
 	paddle_manager.connect("paddle_damaged", ui, "update_bar")
 	paddle_manager.connect("paddle_destroyed", ui, "set_message", [2])
 	paddle_manager.connect("paddle_removed", ui, "remove_bar")
 	ui.connect("map_switched", self, "switch_map")
-	ui.connect("start_requested", self, "start_lobby")
+	ui.connect("start_requested", DiscordManager, "CreateLobby")
 
 func _physics_process(_delta):
 	if Game.is_playing:
@@ -48,21 +47,21 @@ func request_check():
 func handle_discord_message(channel_id, data):
 	var parsed_data = bytes2var(data)
 	if channel_id == Game.Channels.UPDATE_OBJECTS:
-		update_objects(parsed_data["paddles"], parsed_data["balls"])
+		update_objects(parsed_data.paddles, parsed_data.balls)
 	elif channel_id == Game.Channels.CHECK_MEMBER:
-		check_member(parsed_data["id"], parsed_data["version"])
+		check_member(parsed_data.id, parsed_data.version)
 	elif channel_id == Game.Channels.JOIN_GAME:
-		join_game(parsed_data["paddles"], parsed_data["map"], parsed_data["color"])
+		join_game(parsed_data.paddles, parsed_data.map, parsed_data.color)
 	elif channel_id == Game.Channels.UNLOAD_GAME:
-		unload_game(parsed_data["reason"])
+		unload_game(parsed_data.reason)
 	elif channel_id == Game.Channels.CREATE_PADDLE:
 		paddle_manager.create_paddle(parsed_data)
 	elif channel_id == Game.Channels.SET_PADDLE_INPUTS:
-		paddle_manager.set_paddle_inputs(parsed_data["paddle"], parsed_data["inputs"])
+		paddle_manager.set_paddle_inputs(parsed_data.paddle, parsed_data.inputs)
 	elif channel_id == Game.Channels.VIBRATE_PAD:
-		paddle_manager.vibrate_pad(parsed_data["paddle"])
+		paddle_manager.vibrate_pad(parsed_data.paddle)
 	elif channel_id == Game.Channels.DAMAGE_PADDLE:
-		paddle_manager.damage_paddle(parsed_data["paddle"])
+		paddle_manager.damage_paddle(parsed_data.paddle)
 
 func switch_map():
 	ui.map_button.text = map_manager.switch()
@@ -71,9 +70,6 @@ func handle_member_disconnect(id):
 	paddle_manager.remove_paddles(id)
 	ui.bar_parent.columns = max(paddle_manager.paddles.size(), 1)
 	ui.set_message("Client disconnected", 2)
-
-func start_lobby():
-	Game.create_lobby()
 
 func check_member(id, version):
 	if version == Game.VERSION:

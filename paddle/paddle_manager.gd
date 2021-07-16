@@ -14,16 +14,16 @@ var used_inputs = []
 var paddles = {}
 var spawns = []
 
-func _input(_event):
+func _unhandled_input(_event):
 	if Game.is_playing and OS.is_window_focused():
 		if Input.is_key_pressed(KEY_ENTER) and not -1 in input_list.values():
 			create_paddle_from_input(-1)
 		for pad in Input.get_connected_joypads():
 			if Input.is_joy_button_pressed(pad, JOY_BUTTON_0) and not pad in input_list.values():
 				create_paddle_from_input(pad)
-		if Input.is_key_pressed(KEY_ESCAPE):
+		if Input.is_key_pressed(KEY_ESCAPE) and used_inputs.has(-1):
 			emit_signal("unload_requested")
-		for pad in Input.get_connected_joypads():
+		for pad in used_inputs:
 			if Input.is_joy_button_pressed(pad, JOY_START) and Input.is_joy_button_pressed(pad, JOY_SELECT):
 				emit_signal("unload_requested")
 				break
@@ -90,29 +90,30 @@ func create_paddle(data):
 			DiscordManager.SendDataAll(Game.Channels.CREATE_PADDLE, new_data)
 		add_child(paddle_node)
 
+func remove_paddle(paddle):
+	paddles.erase(paddle)
+	get_node(paddle).queue_free()
+	emit_signal("paddle_removed", paddle)
+
 func remove_paddles(id):
 	var paddles_to_clear = []
 	for paddle in paddles:
 		if paddles[paddle].id == id:
 			paddles_to_clear.append(paddle)
 	for paddle in paddles_to_clear:
-		paddles.erase(paddle)
-		get_node(paddle).queue_free()
-		emit_signal("paddle_removed", paddle)
+		remove_paddle(paddle)
 
 func update_paddles(new_paddles):
-	if Game.is_lobby_owner():
-		for paddle in new_paddles:
-			var paddle_node = get_node(paddle)
+	for paddle in new_paddles:
+		var paddle_node = get_node(paddle)
+		if Game.is_lobby_owner():
 			paddles[paddle].position = paddle_node.position
 			paddles[paddle].rotation = paddle_node.rotation
 			if Game.user_id == new_paddles[paddle].id:
 				set_paddle_inputs(paddle, get_paddle_inputs(paddle))
-	else:
-		for paddle in new_paddles:
+		else:
 			paddles[paddle].position = new_paddles[paddle].position
 			paddles[paddle].rotation = new_paddles[paddle].rotation
-			var paddle_node = get_node(paddle)
 			paddle_node.position = new_paddles[paddle].position
 			paddle_node.rotation = new_paddles[paddle].rotation
 			if Game.user_id == new_paddles[paddle].id:

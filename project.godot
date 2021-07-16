@@ -33,6 +33,10 @@ default_bus_layout=""
 Game="*res://main/game.gd"
 DiscordManager="*res://discord/DiscordManager.cs"
 
+[gui]
+
+theme/custom_font="res://ui/default_font.tres"
+
 [input]
 
 ui_accept={
