@@ -10,6 +10,7 @@ public class DiscordManager : Node {
 	[Signal] public delegate void MemberDisconnected(long userId);
 	[Signal] public delegate void MessageReceived(byte channelId, byte[] data);
 	[Signal] public delegate void RelationshipsUpdated();
+	[Signal] public delegate void InviteReceived(long userId, string username);
 
 	public enum Channels {
 		UpdateObjects,
@@ -56,6 +57,9 @@ public class DiscordManager : Node {
 					GD.PrintErr("Failed to join lobby: ", result);
 				}
 			});
+		};
+		activityManager.OnActivityInvite += (ActivityActionType type, ref User user, ref Activity activity) => {
+			EmitSignal("InviteReceived", user.Id, user.Username);
 		};
 		lobbyManager.OnMemberConnect += (lobbyId, userId) => {
 			UpdateActivity("Battling it out", true);
@@ -199,7 +203,7 @@ public class DiscordManager : Node {
 
 	public void UpdateRelationships() {
 		relationshipManager.Filter((ref Relationship relationship) => {
-			return relationship.Presence.Activity.ApplicationId == clientId;
+			return relationship.Type == RelationshipType.Friend;
 		});
 		EmitSignal("RelationshipsUpdated");
 	}
@@ -214,6 +218,22 @@ public class DiscordManager : Node {
 			friends.Add(friend);
 		}
 		return friends;
+	}
+
+	public void SendInvite(long userId) {
+		activityManager.SendInvite(userId, ActivityActionType.Join, "Come battle it out!", result => {
+			if (result != Result.Ok) {
+				GD.PrintErr("Failed to send invite");
+			}
+		});
+	}
+
+	public void AcceptInvite(long userId) {
+		activityManager.AcceptInvite(userId, result => {
+			if (result != Result.Ok) {
+				GD.PrintErr("failed to accept invite");
+			}
+		});
 	}
 
 	public override void _Process(float delta) {
