@@ -20,10 +20,6 @@ var map = "BigMap"
 var user_name = ""
 var user_id = 0
 
-func _input(_event):
-	if not OS.is_window_focused():
-		get_tree().set_input_as_handled()
-
 func is_lobby_owner():
 	return DiscordManager.is_lobby_owner()
 

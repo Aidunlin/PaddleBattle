@@ -4,24 +4,24 @@ onready var camera = $Camera
 onready var map_manager = $MapManager
 onready var paddle_manager = $PaddleManager
 onready var ball_manager = $BallManager
+onready var hud_manager = $HUDManager
 onready var ui_manager = $CanvasLayer/UIManager
 
 func _ready():
 	DiscordManager.connect("user_updated", self, "get_user")
 	DiscordManager.connect("lobby_created", self, "create_game")
 	DiscordManager.connect("lobby_connected", self, "request_check")
-	DiscordManager.connect("lobby_deleted", self, "unload_game", ["Server disconnected"])
+	DiscordManager.connect("lobby_deleted", self, "unload_game", ["The lobby was ended"])
 	DiscordManager.connect("member_disconnected", self, "handle_member_disconnect")
 	DiscordManager.connect("message_received", self, "handle_discord_message")
 	DiscordManager.connect("invite_received", ui_manager, "show_invite")
 	paddle_manager.connect("options_requested", ui_manager, "show_options")
-	paddle_manager.connect("paddle_created", ui_manager, "create_bar")
-	paddle_manager.connect("paddle_damaged", ui_manager, "update_bar")
-	paddle_manager.connect("paddle_destroyed", ui_manager, "set_message", [2])
-	paddle_manager.connect("paddle_removed", ui_manager, "remove_bar")
+	paddle_manager.connect("paddle_destroyed", ui_manager, "add_message")
+	paddle_manager.connect("paddle_created", hud_manager, "create_hud")
+	paddle_manager.connect("paddle_damaged", hud_manager, "update_hud")
+	paddle_manager.connect("paddle_removed", hud_manager, "remove_hud")
 	ui_manager.connect("map_switched", self, "switch_map")
-	ui_manager.connect("start_requested", DiscordManager, "create_lobby")
-	ui_manager.connect("end_requested", self, "unload_game", ["You left the game"])
+	ui_manager.connect("end_requested", self, "unload_game", ["You left the lobby"])
 
 func _physics_process(_delta):
 	if Game.is_playing:
@@ -38,11 +38,13 @@ func get_user():
 	Game.user_id = DiscordManager.get_user_id()
 	Game.user_name = DiscordManager.get_user_name()
 	ui_manager.name_label.text = Game.user_name
+	ui_manager.play_button.connect("pressed", DiscordManager, "create_lobby")
 
 func request_check():
 	var check_data = {
 		"version": Game.VERSION,
 		"id": Game.user_id,
+		"name": Game.user_name,
 	}
 	DiscordManager.send_data_owner(Game.Channels.CHECK_MEMBER, check_data)
 
@@ -51,7 +53,7 @@ func handle_discord_message(channel_id, data):
 	if channel_id == Game.Channels.UPDATE_OBJECTS:
 		update_objects(parsed_data.paddles, parsed_data.balls)
 	elif channel_id == Game.Channels.CHECK_MEMBER:
-		check_member(parsed_data.id, parsed_data.version)
+		check_member(parsed_data.id, parsed_data.version, parsed_data.name)
 	elif channel_id == Game.Channels.JOIN_GAME:
 		join_game(parsed_data.paddles, parsed_data.map, parsed_data.color)
 	elif channel_id == Game.Channels.UNLOAD_GAME:
@@ -68,14 +70,13 @@ func handle_discord_message(channel_id, data):
 func switch_map():
 	ui_manager.map_button.text = map_manager.switch()
 
-func handle_member_disconnect(id):
+func handle_member_disconnect(id, name):
 	paddle_manager.remove_paddles(id)
-	ui_manager.bar_parent.columns = max(paddle_manager.paddles.size(), 1)
-	ui_manager.set_message("Client disconnected", 2)
+	ui_manager.add_message(name + " left the lobby")
 
-func check_member(id, version):
+func check_member(id, version, name):
 	if version == Game.VERSION:
-		ui_manager.set_message("Client connected", 2)
+		ui_manager.add_message(name + " joined te lobby")
 		var game_data = {
 			"paddles": paddle_manager.paddles,
 			"map": Game.map,
@@ -84,7 +85,7 @@ func check_member(id, version):
 		DiscordManager.send_data(id, Game.Channels.JOIN_GAME, game_data)
 	else:
 		var unload_data = {
-			"reason": "Different server version (" + Game.VERSION + ")",
+			"reason": "Could not join the lobby! Different version (" + Game.VERSION + ")",
 		}
 		DiscordManager.send_data(id, Game.Channels.UNLOAD_GAME, unload_data)
 
@@ -103,12 +104,13 @@ func load_game(map_name, map_color):
 	paddle_manager.spawns = map_manager.get_paddle_spawns()
 	ball_manager.spawns = map_manager.get_ball_spawns()
 	ball_manager.create_balls()
-	ui_manager.set_message("Press A/Enter to create your paddle", 5)
+	ui_manager.add_message("Press A/Enter to join")
 	ui_manager.main_menu_node.hide()
 	Game.is_playing = true
 
 func update_objects(paddles, balls):
 	if Game.is_playing:
+		hud_manager.move_huds(paddles)
 		paddle_manager.update_paddles(paddles)
 		ball_manager.update_balls(balls)
 
@@ -118,4 +120,5 @@ func unload_game(msg):
 	map_manager.reset()
 	paddle_manager.reset()
 	ball_manager.reset()
+	hud_manager.reset()
 	ui_manager.reset(msg)

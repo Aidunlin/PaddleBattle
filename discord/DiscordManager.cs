@@ -78,13 +78,12 @@ public class DiscordManager : Node {
 		};
 		lobby_manager.OnMemberDisconnect += (lobby_id, user_id) => {
 			update_activity("Battling it out", true);
+			if (user_id != lobby_owner_id && is_lobby_owner()) {
+				delete_lobby();
+			}
 			user_manager.GetUser(user_id, (Result result, ref User user) => {
 				if (result == Result.Ok) {
-					GD.Print(user.Username + " left the lobby");
-					EmitSignal("member_disconnected", user_id);
-					if (user_id == lobby_owner_id) {
-						leave_lobby();
-					}
+					EmitSignal("member_disconnected", user_id, user.Username);
 				}
 			});
 		};
@@ -147,8 +146,7 @@ public class DiscordManager : Node {
 	}
 
 	public long get_lobby_owner_id() {
-		lobby_owner_id = current_lobby != 0 ? lobby_manager.GetLobby(current_lobby).OwnerId : 0;
-		return lobby_owner_id;
+		return current_lobby != 0 ? lobby_manager.GetLobby(current_lobby).OwnerId : 0;
 	}
 
 	public bool is_lobby_owner() {
@@ -176,7 +174,7 @@ public class DiscordManager : Node {
 		lobby_manager.CreateLobby(txn, (Result result, ref Lobby lobby) => {
 			if (result == Result.Ok) {
 				current_lobby = lobby.Id;
-				get_lobby_owner_id();
+				lobby_owner_id = lobby.OwnerId;
 				init_networking();
 				GD.Print("Created lobby: ", current_lobby);
 				update_activity("Battling it out", true);
@@ -247,7 +245,7 @@ public class DiscordManager : Node {
 	public void accept_invite(long user_id) {
 		activity_manager.AcceptInvite(user_id, result => {
 			if (result != Result.Ok) {
-				GD.PrintErr("failed to accept invite");
+				GD.PrintErr("Failed to accept invite");
 			}
 		});
 	}
