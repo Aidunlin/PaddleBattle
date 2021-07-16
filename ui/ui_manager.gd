@@ -31,6 +31,7 @@ onready var version_node = $Menu/Main/Version
 
 onready var options_menu_node = $Menu/Options
 onready var friends_list = $Menu/Options/FriendsWrap/Friends
+onready var refresh_button = $Menu/Options/Refresh
 onready var back_button = $Menu/Options/Back
 onready var leave_button = $Menu/Options/Leave
 
@@ -46,13 +47,14 @@ func _ready():
 	play_button.connect("pressed", self, "request_start")
 	quit_button.connect("pressed", get_tree(), "quit")
 	version_node.text = Game.VERSION
-	back_button.connect("pressed", self, "toggle_options")
+	refresh_button.connect("pressed", self, "update_friends")
+	back_button.connect("pressed", self, "hide_options")
 	leave_button.connect("pressed", self, "request_end")
 	if not OS.is_debug_build():
 		start_discord("0")
 
 func start_discord(instance):
-	DiscordManager.Start(instance)
+	DiscordManager.start(instance)
 	dev_wrap.visible = false
 	play_button.grab_focus()
 
@@ -64,39 +66,49 @@ func set_message(msg = "", time = 0):
 		message_timer.stop()
 	message_node.visible = msg != ""
 
-func toggle_options():
-	overlay.visible = not overlay.visible
-	options_menu_node.visible = not options_menu_node.visible
-	if options_menu_node.visible:
-		back_button.grab_focus()
+func show_options():
+	overlay.show()
+	options_menu_node.show()
+	back_button.grab_focus()
+	update_friends()
+
+func hide_options():
+	overlay.hide()
+	options_menu_node.hide()
 
 class CustomSorter:
 	static func sort_ascending(a, b):
-		var compare_arr = [a.username.to_lower(), b.username.to_lower()]
+		var compare_arr = [a.name.to_lower(), b.name.to_lower()]
 		compare_arr.sort()
-		return compare_arr[0] == a.username.to_lower()
+		return compare_arr[0] == a.name.to_lower()
+
+func friend_pressed(button, id):
+	DiscordManager.send_invite(id)
+	button.find_next_valid_focus().grab_focus()
+	button.queue_free()
 
 func update_friends():
+	print("updated")
 	for friend in friends_list.get_children():
 		friend.queue_free()
-	var friends = DiscordManager.GetRelationships()
+	var friends = DiscordManager.get_relationships()
 	if friends:
 		friends.sort_custom(CustomSorter, "sort_ascending")
 		for friend in friends:
 			var friend_button = Button.new()
-			friend_button.text = friend.username
-			friend_button.connect("pressed", DiscordManager, "SendInvite", [friend.id])
+			friend_button.text = friend.name
+			friend_button.connect("pressed", self, "friend_pressed", [friend_button, friend.id])
 			friends_list.add_child(friend_button)
 
-func show_invite(user_id, username):
+func show_invite(user_id, user_name):
 	if not Game.is_playing:
 		invited_by = user_id
-		invite_name.text = "Invited by " + username
+		invite_name.text = "Invited by " + user_name
 		invite_wrap.show()
 
 func accept_invite():
 	invite_wrap.hide()
-	DiscordManager.AcceptInvite(invited_by)
+	DiscordManager.accept_invite(invited_by)
 
 func decline_invite():
 	invite_wrap.hide()

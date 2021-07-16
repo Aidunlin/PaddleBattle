@@ -20,17 +20,18 @@ func create_balls():
 func update_balls(new_balls):
 	for ball_index in get_child_count():
 		var ball_node = get_child(ball_index)
-		if Game.is_lobby_owner():
-			if ball_node.position.length() > 4096:
-				ball_node.queue_free()
-				var new_ball_node = BALL_SCENE.instance()
-				new_ball_node.position = spawns[ball_index].position
-				add_child(new_ball_node)
-			balls[ball_index].position = ball_node.position
-			balls[ball_index].rotation = ball_node.rotation
-		else:
-			ball_node.position = new_balls[ball_index].position
-			ball_node.rotation = new_balls[ball_index].rotation
+		if ball_node:
+			if Game.is_lobby_owner():
+				if ball_node.position.length() > 4096:
+					ball_node.queue_free()
+					var new_ball_node = BALL_SCENE.instance()
+					new_ball_node.position = spawns[ball_index].position
+					add_child(new_ball_node)
+				balls[ball_index].position = ball_node.position
+				balls[ball_index].rotation = ball_node.rotation
+			else:
+				ball_node.position = new_balls[ball_index].position
+				ball_node.rotation = new_balls[ball_index].rotation
 
 func reset():
 	for ball in get_children():

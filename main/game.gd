@@ -17,15 +17,19 @@ enum Channels {
 
 var is_playing = false
 var map = "BigMap"
-var username = ""
+var user_name = ""
 var user_id = 0
 
+func _input(_event):
+	if not OS.is_window_focused():
+		get_tree().set_input_as_handled()
+
 func is_lobby_owner():
-	return DiscordManager.IsLobbyOwner()
+	return DiscordManager.is_lobby_owner()
 
 func reset():
 	if is_lobby_owner():
-		DiscordManager.DeleteLobby()
+		DiscordManager.delete_lobby()
 	else:
-		DiscordManager.LeaveLobby()
+		DiscordManager.leave_lobby()
 	is_playing = false
