@@ -1,6 +1,6 @@
 extends Node
 
-signal unload_requested()
+signal options_requested()
 signal paddle_created()
 signal paddle_damaged()
 signal paddle_destroyed()
@@ -22,10 +22,10 @@ func _unhandled_input(_event):
 			if Input.is_joy_button_pressed(pad, JOY_BUTTON_0) and not pad in input_list.values():
 				create_paddle_from_input(pad)
 		if Input.is_key_pressed(KEY_ESCAPE) and used_inputs.has(-1):
-			emit_signal("unload_requested")
+			emit_signal("options_requested")
 		for pad in used_inputs:
 			if Input.is_joy_button_pressed(pad, JOY_START) and Input.is_joy_button_pressed(pad, JOY_SELECT):
-				emit_signal("unload_requested")
+				emit_signal("options_requested")
 				break
 
 func create_paddle_from_input(pad):
@@ -123,8 +123,8 @@ func update_paddles(new_paddles):
 				}
 				DiscordManager.SendDataOwner(Game.Channels.SET_PADDLE_INPUTS, paddle_input_data)
 
-func get_key(key1, key2):
-	return int(Input.is_key_pressed(key1) or Input.is_key_pressed(key2))
+func get_key(key):
+	return int(Input.is_key_pressed(key))
 
 func get_paddle_inputs(paddle):
 	var pad = input_list[paddle]
@@ -135,12 +135,12 @@ func get_paddle_inputs(paddle):
 	}
 	if OS.is_window_focused():
 		if pad == -1:
-			inputs.velocity.x = get_key(KEY_D, KEY_RIGHT) - get_key(KEY_A, KEY_LEFT)
-			inputs.velocity.y = get_key(KEY_S, KEY_DOWN) - get_key(KEY_W, KEY_UP)
+			inputs.velocity.x = get_key(KEY_D) - get_key(KEY_A)
+			inputs.velocity.y = get_key(KEY_S) - get_key(KEY_W)
 			inputs.velocity = inputs.velocity.normalized() * Game.MOVE_SPEED
 			if inputs.velocity:
 				inputs.dash = Input.is_key_pressed(KEY_SHIFT)
-			inputs.rotation = deg2rad((get_key(KEY_PERIOD, KEY_X) - get_key(KEY_COMMA, KEY_Z)) * 4)
+			inputs.rotation = deg2rad((get_key(KEY_PERIOD) - get_key(KEY_COMMA)) * 4)
 		else:
 			var left_stick = Vector2(Input.get_joy_axis(pad, JOY_ANALOG_LX), Input.get_joy_axis(pad, JOY_ANALOG_LY))
 			var right_stick = Vector2(Input.get_joy_axis(pad, JOY_ANALOG_RX), Input.get_joy_axis(pad, JOY_ANALOG_RY))

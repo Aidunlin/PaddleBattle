@@ -13,13 +13,16 @@ func _ready():
 	DiscordManager.connect("LobbyDeleted", self, "unload_game", ["Server disconnected"])
 	DiscordManager.connect("MemberDisconnected", self, "handle_member_disconnect")
 	DiscordManager.connect("MessageReceived", self, "handle_discord_message")
-	paddle_manager.connect("unload_requested", self, "unload_game", ["You left the game"])
+	DiscordManager.connect("RelationshipsUpdated", ui, "update_friends")
+	DiscordManager.connect("InviteReceived", ui, "show_invite")
+	paddle_manager.connect("options_requested", self, "toggle_options")
 	paddle_manager.connect("paddle_created", ui, "create_bar")
 	paddle_manager.connect("paddle_damaged", ui, "update_bar")
 	paddle_manager.connect("paddle_destroyed", ui, "set_message", [2])
 	paddle_manager.connect("paddle_removed", ui, "remove_bar")
 	ui.connect("map_switched", self, "switch_map")
 	ui.connect("start_requested", DiscordManager, "CreateLobby")
+	ui.connect("end_requested", self, "unload_game", ["You left the game"])
 
 func _physics_process(_delta):
 	if Game.is_playing:
@@ -43,6 +46,9 @@ func request_check():
 		"id": DiscordManager.GetUserId(),
 	}
 	DiscordManager.SendDataOwner(Game.Channels.CHECK_MEMBER, check_data)
+
+func toggle_options():
+	ui.toggle_options()
 
 func handle_discord_message(channel_id, data):
 	var parsed_data = bytes2var(data)
@@ -102,7 +108,7 @@ func load_game(map_name, map_color):
 	ball_manager.spawns = map_manager.get_ball_spawns()
 	ball_manager.create_balls()
 	ui.set_message("Press A/Enter to create your paddle", 5)
-	ui.menu_node.hide()
+	ui.main_menu_node.hide()
 	Game.is_playing = true
 
 func update_objects(paddles, balls):
