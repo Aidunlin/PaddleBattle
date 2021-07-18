@@ -15,9 +15,8 @@ onready var decline_button = $InviteWrap/InviteView/Decline
 onready var menu_node = $Menu
 
 onready var main_menu_node = $Menu/Main
-onready var dev_wrap = $Menu/Main/DevWrap
-onready var discord_0_button = $Menu/Main/DevWrap/Discord0
-onready var discord_1_button = $Menu/Main/DevWrap/Discord1
+onready var discord_0_button = $Menu/Main/Discord0
+onready var discord_1_button = $Menu/Main/Discord1
 onready var name_label = $Menu/Main/Name
 onready var map_button = $Menu/Main/Map
 onready var play_button = $Menu/Main/Play
@@ -48,7 +47,8 @@ func _ready():
 
 func start_discord(instance):
 	DiscordManager.start(instance)
-	dev_wrap.visible = false
+	discord_0_button.hide()
+	discord_1_button.hide()
 	play_button.grab_focus()
 
 func add_message(msg = ""):

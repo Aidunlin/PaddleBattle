@@ -10,7 +10,7 @@ func create_hud(data):
 	hud.size_flags_horizontal = VBoxContainer.SIZE_EXPAND_FILL
 	hud.modulate = data.color
 	hud.alignment = BoxContainer.ALIGN_CENTER
-	hud.set("custom_constants/separation", -4)
+	hud.set("custom_constants/separation", -8)
 	var label = Label.new()
 	label.text = data.name
 	label.align = Label.ALIGN_CENTER
@@ -31,9 +31,9 @@ func create_hud(data):
 func move_huds(paddles):
 	for paddle in paddles:
 		var hud = huds[paddle].get_parent()
-		var offset = Vector2(hud.rect_size.x / 2, 120)
+		var offset = Vector2(hud.rect_size.x / 2, 130)
 		var paddle_pos = paddles[paddle].position
-		huds[paddle].get_parent().rect_position = paddle_pos - offset
+		hud.rect_position = paddle_pos - offset
 
 func update_hud(paddle, health):
 	for i in Game.MAX_HEALTH:

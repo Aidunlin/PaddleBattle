@@ -34,9 +34,9 @@ __meta__ = {
 
 [node name="Main" type="VBoxContainer" parent="Menu"]
 margin_left = 490.0
-margin_top = 197.0
+margin_top = 174.0
 margin_right = 790.0
-margin_bottom = 522.0
+margin_bottom = 546.0
 rect_min_size = Vector2( 300, 0 )
 
 [node name="TitleWrap" type="HBoxContainer" parent="Menu/Main"]
@@ -60,28 +60,24 @@ margin_bottom = 43.0
 text = "PaddleBattle"
 align = 1
 
-[node name="DevWrap" type="HBoxContainer" parent="Menu/Main"]
+[node name="Discord0" type="Button" parent="Menu/Main"]
 margin_top = 47.0
 margin_right = 300.0
 margin_bottom = 90.0
-
-[node name="Discord0" type="Button" parent="Menu/Main/DevWrap"]
-margin_right = 148.0
-margin_bottom = 43.0
 size_flags_horizontal = 3
 text = "Discord 0"
 
-[node name="Discord1" type="Button" parent="Menu/Main/DevWrap"]
-margin_left = 152.0
+[node name="Discord1" type="Button" parent="Menu/Main"]
+margin_top = 94.0
 margin_right = 300.0
-margin_bottom = 43.0
+margin_bottom = 137.0
 size_flags_horizontal = 3
 text = "Discord 1"
 
 [node name="Name" type="Label" parent="Menu/Main"]
-margin_top = 94.0
+margin_top = 141.0
 margin_right = 300.0
-margin_bottom = 137.0
+margin_bottom = 184.0
 size_flags_horizontal = 3
 text = "NO NAME"
 align = 1
@@ -90,28 +86,28 @@ __meta__ = {
 }
 
 [node name="Map" type="Button" parent="Menu/Main"]
-margin_top = 141.0
+margin_top = 188.0
 margin_right = 300.0
-margin_bottom = 184.0
+margin_bottom = 231.0
 size_flags_horizontal = 3
 text = "BigMap"
 
 [node name="Play" type="Button" parent="Menu/Main"]
-margin_top = 188.0
-margin_right = 300.0
-margin_bottom = 231.0
-text = "Play"
-
-[node name="Quit" type="Button" parent="Menu/Main"]
 margin_top = 235.0
 margin_right = 300.0
 margin_bottom = 278.0
-text = "Quit"
+text = "Play"
 
-[node name="Version" type="Label" parent="Menu/Main"]
+[node name="Quit" type="Button" parent="Menu/Main"]
 margin_top = 282.0
 margin_right = 300.0
 margin_bottom = 325.0
+text = "Quit"
+
+[node name="Version" type="Label" parent="Menu/Main"]
+margin_top = 329.0
+margin_right = 300.0
+margin_bottom = 372.0
 text = "NO VERSION"
 align = 1
 
@@ -170,23 +166,22 @@ margin_bottom = 504.0
 text = "Leave"
 
 [node name="MessageWrap" type="MarginContainer" parent="."]
-modulate = Color( 1, 1, 1, 0.75 )
 margin_right = 408.0
 margin_bottom = 158.0
-custom_constants/margin_right = 4
-custom_constants/margin_top = 4
-custom_constants/margin_left = 4
-custom_constants/margin_bottom = 4
+custom_constants/margin_right = 8
+custom_constants/margin_top = 8
+custom_constants/margin_left = 8
+custom_constants/margin_bottom = 8
 __meta__ = {
 "_edit_lock_": true,
 "_edit_use_anchors_": false
 }
 
 [node name="MessageView" type="VBoxContainer" parent="MessageWrap"]
-margin_left = 4.0
-margin_top = 4.0
-margin_right = 404.0
-margin_bottom = 154.0
+margin_left = 8.0
+margin_top = 8.0
+margin_right = 408.0
+margin_bottom = 158.0
 rect_min_size = Vector2( 400, 150 )
 custom_constants/separation = -8
 
@@ -194,21 +189,21 @@ custom_constants/separation = -8
 visible = false
 anchor_top = 1.0
 anchor_bottom = 1.0
-margin_top = -145.0
-margin_right = 308.0
-custom_constants/margin_right = 4
-custom_constants/margin_top = 4
-custom_constants/margin_left = 4
-custom_constants/margin_bottom = 4
+margin_top = -153.0
+margin_right = 316.0
+custom_constants/margin_right = 8
+custom_constants/margin_top = 8
+custom_constants/margin_left = 8
+custom_constants/margin_bottom = 8
 __meta__ = {
 "_edit_use_anchors_": false
 }
 
 [node name="InviteView" type="VBoxContainer" parent="InviteWrap"]
-margin_left = 4.0
-margin_top = 4.0
-margin_right = 304.0
-margin_bottom = 141.0
+margin_left = 8.0
+margin_top = 8.0
+margin_right = 308.0
+margin_bottom = 145.0
 rect_min_size = Vector2( 300, 0 )
 
 [node name="Name" type="Label" parent="InviteWrap/InviteView"]
