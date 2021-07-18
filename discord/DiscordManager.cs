@@ -11,7 +11,7 @@ public class DiscordManager : Node {
 	[Signal] public delegate void relationships_updated();
 	[Signal] public delegate void invite_received(long user_id, string user_name);
 
-	public enum Channels {
+	public enum channels {
 		UPDATE_OBJECTS,
 		CHECK_MEMBER,
 		JOIN_GAME,
@@ -34,7 +34,7 @@ public class DiscordManager : Node {
 	public User current_user;
 	public bool started = false;
 
-	public override void _Process(float delta) {
+	public override void _PhysicsProcess(float delta) {
 		if (started) {
 			discord.RunCallbacks();
 			lobby_manager.FlushNetwork();
@@ -53,6 +53,13 @@ public class DiscordManager : Node {
 			EmitSignal("user_updated");
 		};
 		activity_manager.OnActivityJoin += secret => {
+			if (current_lobby != 0) {
+				if (is_lobby_owner()) {
+					delete_lobby();
+				} else {
+					leave_lobby();
+				}
+			}
 			lobby_manager.ConnectLobbyWithActivitySecret(secret, (Result result, ref Lobby lobby) => {
 				if (result == Result.Ok) {
 					current_lobby = lobby.Id;
@@ -127,14 +134,14 @@ public class DiscordManager : Node {
 
 	public void init_networking() {
 		lobby_manager.ConnectNetwork(current_lobby);
-		lobby_manager.OpenNetworkChannel(current_lobby, (byte)Channels.UPDATE_OBJECTS, false);
-		lobby_manager.OpenNetworkChannel(current_lobby, (byte)Channels.CHECK_MEMBER, true);
-		lobby_manager.OpenNetworkChannel(current_lobby, (byte)Channels.JOIN_GAME, true);
-		lobby_manager.OpenNetworkChannel(current_lobby, (byte)Channels.UNLOAD_GAME, true);
-		lobby_manager.OpenNetworkChannel(current_lobby, (byte)Channels.CREATE_PADDLE, true);
-		lobby_manager.OpenNetworkChannel(current_lobby, (byte)Channels.SET_PADDLE_INPUTS, false);
-		lobby_manager.OpenNetworkChannel(current_lobby, (byte)Channels.VIBRATE_PAD, true);
-		lobby_manager.OpenNetworkChannel(current_lobby, (byte)Channels.DAMAGE_PADDLE, true);
+		lobby_manager.OpenNetworkChannel(current_lobby, (byte)channels.UPDATE_OBJECTS, false);
+		lobby_manager.OpenNetworkChannel(current_lobby, (byte)channels.CHECK_MEMBER, true);
+		lobby_manager.OpenNetworkChannel(current_lobby, (byte)channels.JOIN_GAME, true);
+		lobby_manager.OpenNetworkChannel(current_lobby, (byte)channels.UNLOAD_GAME, true);
+		lobby_manager.OpenNetworkChannel(current_lobby, (byte)channels.CREATE_PADDLE, true);
+		lobby_manager.OpenNetworkChannel(current_lobby, (byte)channels.SET_PADDLE_INPUTS, false);
+		lobby_manager.OpenNetworkChannel(current_lobby, (byte)channels.VIBRATE_PAD, true);
+		lobby_manager.OpenNetworkChannel(current_lobby, (byte)channels.DAMAGE_PADDLE, true);
 	}
 
 	public string get_user_name() {
@@ -217,7 +224,7 @@ public class DiscordManager : Node {
 
 	public void update_relationships() {
 		relationship_manager.Filter((ref Relationship relationship) => {
-			return relationship.Type == RelationshipType.Friend;
+			return relationship.Presence.Activity.ApplicationId == client_id;
 		});
 		EmitSignal("relationships_updated");
 	}

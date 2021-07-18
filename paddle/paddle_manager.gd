@@ -39,7 +39,7 @@ func create_paddle_from_input(pad):
 		if Game.is_lobby_owner():
 			create_paddle(data)
 		else:
-			DiscordManager.send_data_owner(Game.Channels.CREATE_PADDLE, data)
+			DiscordManager.send_data_owner(Game.channels.CREATE_PADDLE, data)
 
 func create_paddle(data):
 	var paddle_count = get_child_count()
@@ -87,7 +87,7 @@ func create_paddle(data):
 			var new_data = paddles[new_name].duplicate(true)
 			if Game.user_id != data.id and "pad" in data:
 				new_data.pad = data.pad
-			DiscordManager.send_data_all(Game.Channels.CREATE_PADDLE, new_data)
+			DiscordManager.send_data_all(Game.channels.CREATE_PADDLE, new_data)
 		add_child(paddle_node)
 
 func remove_paddle(paddle):
@@ -106,7 +106,6 @@ func remove_paddles(id):
 func update_paddles(new_paddles):
 	if Game.is_playing:
 		for paddle in new_paddles:
-			# if has_node(paddle):
 			var paddle_node = get_node(paddle)
 			if Game.is_lobby_owner():
 				paddles[paddle].position = paddle_node.position
@@ -123,7 +122,7 @@ func update_paddles(new_paddles):
 						"paddle": paddle,
 						"inputs": get_paddle_inputs(paddle),
 					}
-					DiscordManager.send_data_owner(Game.Channels.SET_PADDLE_INPUTS, paddle_input_data)
+					DiscordManager.send_data_owner(Game.channels.SET_PADDLE_INPUTS, paddle_input_data)
 
 func get_key(key):
 	return int(Input.is_key_pressed(key))
@@ -157,8 +156,9 @@ func get_paddle_inputs(paddle):
 	return inputs
 
 func set_paddle_inputs(paddle, inputs):
-	if get_node(paddle).has_method("set_inputs"):
-		get_node(paddle).set_inputs(inputs)
+	if has_node(paddle):
+		if get_node(paddle).has_method("set_inputs"):
+			get_node(paddle).set_inputs(inputs)
 
 func vibrate_pad(paddle):
 	if Game.is_playing:
@@ -168,7 +168,7 @@ func vibrate_pad(paddle):
 			var vibrate_data = {
 				"paddle": paddle,
 			}
-			DiscordManager.send_data(paddles[paddle].id, Game.Channels.VIBRATE_PAD, vibrate_data)
+			DiscordManager.send_data(paddles[paddle].id, Game.channels.VIBRATE_PAD, vibrate_data)
 
 func damage_paddle(paddle):
 	paddles[paddle].health -= 1
@@ -184,7 +184,7 @@ func damage_paddle(paddle):
 		var damage_data = {
 			"paddle": paddle,
 		}
-		DiscordManager.send_data_all(Game.Channels.DAMAGE_PADDLE, damage_data)
+		DiscordManager.send_data_all(Game.channels.DAMAGE_PADDLE, damage_data)
 
 func reset():
 	input_list.clear()

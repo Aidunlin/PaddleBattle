@@ -30,7 +30,7 @@ func _physics_process(_delta):
 				"paddles": paddle_manager.paddles,
 				"balls": ball_manager.balls,
 			}
-			DiscordManager.send_data_all(Game.Channels.UPDATE_OBJECTS, update_data)
+			DiscordManager.send_data_all(Game.channels.UPDATE_OBJECTS, update_data)
 			update_objects(paddle_manager.paddles, ball_manager.balls)
 		camera.move_and_zoom(paddle_manager.get_children())
 
@@ -46,25 +46,25 @@ func request_check():
 		"id": Game.user_id,
 		"name": Game.user_name,
 	}
-	DiscordManager.send_data_owner(Game.Channels.CHECK_MEMBER, check_data)
+	DiscordManager.send_data_owner(Game.channels.CHECK_MEMBER, check_data)
 
 func handle_discord_message(channel_id, data):
 	var parsed_data = bytes2var(data)
-	if channel_id == Game.Channels.UPDATE_OBJECTS:
+	if channel_id == Game.channels.UPDATE_OBJECTS:
 		update_objects(parsed_data.paddles, parsed_data.balls)
-	elif channel_id == Game.Channels.CHECK_MEMBER:
+	elif channel_id == Game.channels.CHECK_MEMBER:
 		check_member(parsed_data.id, parsed_data.version, parsed_data.name)
-	elif channel_id == Game.Channels.JOIN_GAME:
+	elif channel_id == Game.channels.JOIN_GAME:
 		join_game(parsed_data.paddles, parsed_data.map, parsed_data.color)
-	elif channel_id == Game.Channels.UNLOAD_GAME:
+	elif channel_id == Game.channels.UNLOAD_GAME:
 		unload_game(parsed_data.reason)
-	elif channel_id == Game.Channels.CREATE_PADDLE:
+	elif channel_id == Game.channels.CREATE_PADDLE:
 		paddle_manager.create_paddle(parsed_data)
-	elif channel_id == Game.Channels.SET_PADDLE_INPUTS:
+	elif channel_id == Game.channels.SET_PADDLE_INPUTS:
 		paddle_manager.set_paddle_inputs(parsed_data.paddle, parsed_data.inputs)
-	elif channel_id == Game.Channels.VIBRATE_PAD:
+	elif channel_id == Game.channels.VIBRATE_PAD:
 		paddle_manager.vibrate_pad(parsed_data.paddle)
-	elif channel_id == Game.Channels.DAMAGE_PADDLE:
+	elif channel_id == Game.channels.DAMAGE_PADDLE:
 		paddle_manager.damage_paddle(parsed_data.paddle)
 
 func switch_map():
@@ -82,12 +82,12 @@ func check_member(id, version, name):
 			"map": Game.map,
 			"color": map_manager.color,
 		}
-		DiscordManager.send_data(id, Game.Channels.JOIN_GAME, game_data)
+		DiscordManager.send_data(id, Game.channels.JOIN_GAME, game_data)
 	else:
 		var unload_data = {
 			"reason": "Could not join the lobby! Different version (" + Game.VERSION + ")",
 		}
-		DiscordManager.send_data(id, Game.Channels.UNLOAD_GAME, unload_data)
+		DiscordManager.send_data(id, Game.channels.UNLOAD_GAME, unload_data)
 
 func join_game(paddles, map_name, map_color):
 	load_game(map_name, map_color)
