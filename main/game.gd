@@ -20,11 +20,8 @@ var map = "BigMap"
 var user_name = ""
 var user_id = 0
 
-func is_lobby_owner():
-	return DiscordManager.is_lobby_owner()
-
 func reset():
-	if is_lobby_owner():
+	if DiscordManager.is_lobby_owner():
 		DiscordManager.delete_lobby()
 	else:
 		DiscordManager.leave_lobby()

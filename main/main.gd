@@ -25,7 +25,7 @@ func _ready():
 
 func _physics_process(_delta):
 	if Game.is_playing:
-		if Game.is_lobby_owner():
+		if DiscordManager.is_lobby_owner():
 			var update_data = {
 				"paddles": paddle_manager.paddles,
 				"balls": ball_manager.balls,

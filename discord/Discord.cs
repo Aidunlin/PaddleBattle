@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Runtime.InteropServices;
 using System.Text;
 
@@ -246,6 +247,21 @@ namespace Discord
         public Int64 Id;
 
         public UInt32 Size;
+
+        static public ImageHandle User(Int64 id)
+        {
+            return User(id, 128);
+        }
+
+        static public ImageHandle User(Int64 id, UInt32 size)
+        {
+            return new ImageHandle
+            {
+                Type = ImageType.User,
+                Id = id,
+                Size = size,
+            };
+        }
     }
 
     [StructLayout(LayoutKind.Sequential, CharSet = CharSet.Ansi)]
@@ -905,7 +921,7 @@ namespace Discord
             internal UInt32 AchievementVersion;
         }
 
-        [DllImport(Constants.DllName, ExactSpelling = true, CallingConvention = CallingConvention.Winapi)]
+        [DllImport("discord_game_sdk", ExactSpelling = true, CallingConvention = CallingConvention.Winapi)]
         private static extern Result DiscordCreate(UInt32 version, ref FFICreateParams createParams, out IntPtr manager);
 
         public delegate void SetLogHookHandler(LogLevel level, string message);
@@ -1646,6 +1662,11 @@ namespace Discord
             Methods.Fetch(MethodsPtr, handle, refresh, GCHandle.ToIntPtr(wrapped), FetchCallbackImpl);
         }
 
+        public void Fetch(ImageHandle handle, FetchHandler callback)
+        {
+            Fetch(handle, false, callback);
+        }
+
         public ImageDimensions GetDimensions(ImageHandle handle)
         {
             var ret = new ImageDimensions();
@@ -1664,6 +1685,14 @@ namespace Discord
             {
                 throw new ResultException(res);
             }
+        }
+        
+        public byte[] GetData(ImageHandle handle)
+        {
+            var dimensions = GetDimensions(handle);
+            var data = new byte[dimensions.Width * dimensions.Height * 4];
+            GetData(handle, data);
+            return data;
         }
     }
 
@@ -1818,6 +1847,11 @@ namespace Discord
             {
                 throw new ResultException(res);
             }
+        }
+
+        public void RegisterCommand()
+        {
+            RegisterCommand(null);
         }
 
         public void RegisterSteam(UInt32 steamId)
@@ -2666,6 +2700,17 @@ namespace Discord
             return ret;
         }
 
+        public IEnumerable<User> GetMemberUsers(Int64 lobbyID)
+        {
+            var memberCount = MemberCount(lobbyID);
+            var members = new List<User>();
+            for (var i = 0; i < memberCount; i++)
+            {
+                members.Add(GetMemberUser(lobbyID, GetMemberUserId(lobbyID, i)));
+            }
+            return members;
+        }
+
         public string GetMemberMetadataValue(Int64 lobbyId, Int64 userId, string key)
         {
             var ret = new StringBuilder(4096);
@@ -2728,6 +2773,11 @@ namespace Discord
         {
             GCHandle wrapped = GCHandle.Alloc(callback);
             Methods.SendLobbyMessage(MethodsPtr, lobbyId, data, data.Length, GCHandle.ToIntPtr(wrapped), SendLobbyMessageCallbackImpl);
+        }
+
+        public void SendLobbyMessage(Int64 lobbyID, string data, SendLobbyMessageHandler handler)
+        {
+            SendLobbyMessage(lobbyID, Encoding.UTF8.GetBytes(data), handler);
         }
 
         public LobbySearchQuery GetSearchQuery()
@@ -3764,6 +3814,17 @@ namespace Discord
             }
             return ret.ToString();
         }
+
+        public IEnumerable<FileStat> Files()
+        {
+            var fileCount = Count();
+            var files = new List<FileStat>();
+            for (var i = 0; i < fileCount; i++)
+            {
+                files.Add(StatAt(i));
+            }
+            return files;
+        }
     }
 
     public partial class StoreManager
@@ -3939,6 +4000,17 @@ namespace Discord
             return ret;
         }
 
+        public IEnumerable<Sku> GetSkus()
+        {
+            var count = CountSkus();
+            var skus = new List<Sku>();
+            for (var i = 0; i < count; i++)
+            {
+                skus.Add(GetSkuAt(i));
+            }
+            return skus;
+        }
+
         [MonoPInvokeCallback]
         private static void FetchEntitlementsCallbackImpl(IntPtr ptr, Result result)
         {
@@ -3981,6 +4053,17 @@ namespace Discord
                 throw new ResultException(res);
             }
             return ret;
+        }
+
+        public IEnumerable<Entitlement> GetEntitlements()
+        {
+            var count = CountEntitlements();
+            var entitlements = new List<Entitlement>();
+            for (var i = 0; i < count; i++)
+            {
+                entitlements.Add(GetEntitlementAt(i));
+            }
+            return entitlements;
         }
 
         public bool HasSkuEntitlement(Int64 skuId)
