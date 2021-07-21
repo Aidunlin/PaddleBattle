@@ -9,7 +9,7 @@ var spawns = []
 func create_balls():
 	for i in spawns.size():
 		var ball_node = BALL_SCENE.instance()
-		if Game.is_lobby_owner():
+		if DiscordManager.is_lobby_owner():
 			balls.append({})
 		else:
 			ball_node = Sprite.new()
@@ -21,7 +21,7 @@ func update_balls(new_balls):
 	for ball_index in get_child_count():
 		var ball_node = get_child(ball_index)
 		if ball_node:
-			if Game.is_lobby_owner():
+			if DiscordManager.is_lobby_owner():
 				if ball_node.position.length() > 4096:
 					ball_node.queue_free()
 					var new_ball_node = BALL_SCENE.instance()
