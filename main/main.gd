@@ -110,8 +110,8 @@ func load_game(map_name, map_color):
 
 func update_objects(paddles, balls):
 	if Game.is_playing:
-		hud_manager.move_huds(paddles)
 		paddle_manager.update_paddles(paddles)
+		hud_manager.move_huds(paddles)
 		ball_manager.update_balls(balls)
 
 func unload_game(msg):
