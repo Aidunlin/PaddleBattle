@@ -28,11 +28,11 @@ func create_hud(data):
 	add_child(hud)
 	huds[data.name] = hp_hud
 
-func move_huds(paddles):
-	for paddle in paddles:
+func move_huds(paddle_names):
+	for paddle in paddle_names:
 		var hud = huds[paddle].get_parent()
 		var offset = Vector2(hud.rect_size.x / 2, 130)
-		var paddle_pos = paddles[paddle].position
+		var paddle_pos = paddle_names[paddle].position
 		hud.rect_position = paddle_pos - offset
 
 func update_hud(paddle, health):

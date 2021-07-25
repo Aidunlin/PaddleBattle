@@ -31,7 +31,7 @@ onready var leave_button = $Menu/Options/Leave
 
 func _ready():
 	accept_button.connect("pressed", self, "accept_invite")
-	decline_button.connect("pressed", invite_wrap, "decline_invite")
+	decline_button.connect("pressed", self, "decline_invite")
 	discord_0_button.connect("pressed", self, "start_discord", ["0"])
 	discord_0_button.grab_focus()
 	discord_1_button.connect("pressed", self, "start_discord", ["1"])

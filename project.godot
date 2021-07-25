@@ -127,3 +127,4 @@ common/physics_fps=120
 [rendering]
 
 environment/default_clear_color=Color( 0.901961, 0.901961, 0.901961, 1 )
+environment/bg_color=Color( 0.901961, 0.901961, 0.901961, 1 )
