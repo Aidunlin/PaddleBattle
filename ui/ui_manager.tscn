@@ -32,11 +32,32 @@ __meta__ = {
 "_edit_use_anchors_": false
 }
 
-[node name="Main" type="VBoxContainer" parent="Menu"]
+[node name="Discord" type="VBoxContainer" parent="Menu"]
 margin_left = 490.0
-margin_top = 174.0
+margin_top = 315.0
 margin_right = 790.0
-margin_bottom = 546.0
+margin_bottom = 405.0
+rect_min_size = Vector2( 300, 0 )
+
+[node name="Discord0" type="Button" parent="Menu/Discord"]
+margin_right = 300.0
+margin_bottom = 43.0
+size_flags_horizontal = 3
+text = "Discord 0"
+
+[node name="Discord1" type="Button" parent="Menu/Discord"]
+margin_top = 47.0
+margin_right = 300.0
+margin_bottom = 90.0
+size_flags_horizontal = 3
+text = "Discord 1"
+
+[node name="Main" type="VBoxContainer" parent="Menu"]
+visible = false
+margin_left = 490.0
+margin_top = 221.0
+margin_right = 790.0
+margin_bottom = 499.0
 rect_min_size = Vector2( 300, 0 )
 
 [node name="TitleWrap" type="HBoxContainer" parent="Menu/Main"]
@@ -60,24 +81,10 @@ margin_bottom = 43.0
 text = "PaddleBattle"
 align = 1
 
-[node name="Discord0" type="Button" parent="Menu/Main"]
+[node name="Name" type="Label" parent="Menu/Main"]
 margin_top = 47.0
 margin_right = 300.0
 margin_bottom = 90.0
-size_flags_horizontal = 3
-text = "Discord 0"
-
-[node name="Discord1" type="Button" parent="Menu/Main"]
-margin_top = 94.0
-margin_right = 300.0
-margin_bottom = 137.0
-size_flags_horizontal = 3
-text = "Discord 1"
-
-[node name="Name" type="Label" parent="Menu/Main"]
-margin_top = 141.0
-margin_right = 300.0
-margin_bottom = 184.0
 size_flags_horizontal = 3
 text = "NO NAME"
 align = 1
@@ -86,28 +93,28 @@ __meta__ = {
 }
 
 [node name="Map" type="Button" parent="Menu/Main"]
-margin_top = 188.0
+margin_top = 94.0
 margin_right = 300.0
-margin_bottom = 231.0
+margin_bottom = 137.0
 size_flags_horizontal = 3
 text = "BigMap"
 
 [node name="Play" type="Button" parent="Menu/Main"]
-margin_top = 235.0
+margin_top = 141.0
 margin_right = 300.0
-margin_bottom = 278.0
+margin_bottom = 184.0
 text = "Play"
 
 [node name="Quit" type="Button" parent="Menu/Main"]
-margin_top = 282.0
+margin_top = 188.0
 margin_right = 300.0
-margin_bottom = 325.0
+margin_bottom = 231.0
 text = "Quit"
 
 [node name="Version" type="Label" parent="Menu/Main"]
-margin_top = 329.0
+margin_top = 235.0
 margin_right = 300.0
-margin_bottom = 372.0
+margin_bottom = 278.0
 text = "NO VERSION"
 align = 1
 

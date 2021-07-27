@@ -6,7 +6,6 @@ signal paddle_damaged()
 signal paddle_destroyed()
 signal paddle_removed()
 
-const PADDLE_TEXTURE = preload("res://paddle/paddle.png")
 const PADDLE_SCENE = preload("res://paddle/paddle.tscn")
 
 var input_list = {}
@@ -45,9 +44,6 @@ func create_paddle(data):
 	var paddle_count = get_child_count()
 	if paddle_count < spawns.size():
 		var paddle_node = PADDLE_SCENE.instance()
-		if not DiscordManager.is_lobby_owner():
-			paddle_node = Sprite.new()
-			paddle_node.texture = PADDLE_TEXTURE
 		var name_count = 1
 		for paddle in get_children():
 			if data.name in paddle.name:
@@ -66,9 +62,8 @@ func create_paddle(data):
 			paddle_node.modulate = data.color
 		else:
 			paddle_node.modulate = Color.from_hsv(randf(), 0.8, 1)
-		if DiscordManager.is_lobby_owner():
-			paddle_node.connect("collided", self, "vibrate_pad", [new_name])
-			paddle_node.connect("damaged", self, "damage_paddle", [new_name])
+		paddle_node.connect("collided", self, "vibrate_pad", [new_name])
+		paddle_node.connect("damaged", self, "damage_paddle", [new_name])
 		if Game.user_id == data.id and "pad" in data:
 			input_list[new_name] = data.pad
 		paddles[new_name] = {

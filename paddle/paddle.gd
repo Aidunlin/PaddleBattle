@@ -23,44 +23,47 @@ func _ready():
 	safe_timer.start(3)
 
 func _physics_process(delta):
-	velocity = velocity.linear_interpolate(input_velocity, 0.06)
-	rotation += input_rotation
-	var collision = move_and_collide(velocity * delta, false)
-	if collision:
-		if collision.collider.is_in_group("balls"):
-			if is_dashing:
-				collision.collider.apply_central_impulse(-collision.normal * 300)
+	if DiscordManager.is_lobby_owner():
+		velocity = velocity.linear_interpolate(input_velocity, 0.06)
+		rotation += input_rotation
+		var collision = move_and_collide(velocity * delta, false)
+		if collision:
+			if collision.collider.is_in_group("balls"):
+				var modifier = 300 if is_dashing else 100
+				collision.collider.apply_central_impulse(-collision.normal * modifier)
 			else:
-				collision.collider.apply_central_impulse(-collision.normal * 100)
-		else:
-			velocity = velocity.bounce(collision.normal)
-		emit_signal("collided")
+				velocity = velocity.bounce(collision.normal)
+			emit_signal("collided")
 
 func back_collided(body):
-	if body.is_in_group("balls") and not is_safe:
+	if DiscordManager.is_lobby_owner() and body.is_in_group("balls") and not is_safe:
 		emit_signal("damaged")
 		is_safe = true
 		safe_timer.start(2)
 
 func safe_timeout():
-	is_safe = false
-	safe_timer.stop()
+	if DiscordManager.is_lobby_owner():
+		is_safe = false
+		safe_timer.stop()
 
 func dash_timeout():
-	is_dashing = false
-	dash_timer.stop()
-	dash_reset_timer.start(0.65)
+	if DiscordManager.is_lobby_owner():
+		is_dashing = false
+		dash_timer.stop()
+		dash_reset_timer.start(0.65)
 
 func dash_reset_timeout():
-	can_dash = true
-	dash_reset_timer.stop()
+	if DiscordManager.is_lobby_owner():
+		can_dash = true
+		dash_reset_timer.stop()
 
 func set_inputs(inputs):
-	input_velocity = inputs.velocity
-	input_rotation = inputs.rotation
-	if inputs.dash and can_dash:
-		can_dash = false
-		is_dashing = true
-		dash_timer.start(0.15)
-	if is_dashing:
-		input_velocity *= 3
+	if DiscordManager.is_lobby_owner():
+		input_velocity = inputs.velocity
+		input_rotation = inputs.rotation
+		if inputs.dash and can_dash:
+			can_dash = false
+			is_dashing = true
+			dash_timer.start(0.15)
+		if is_dashing:
+			input_velocity *= 3
