@@ -16,13 +16,13 @@ _global_script_class_icons={
 
 config/name="PaddleBattle"
 config/description="A multiplayer action game with pong-like mechanics"
-run/main_scene="res://main/main.tscn"
+run/main_scene="res://scenes/main.tscn"
 config/use_custom_user_dir=true
 config/custom_user_dir_name="PaddleBattle"
-boot_splash/image="res://main/icon.png"
+boot_splash/image="res://assets/icon.png"
 boot_splash/fullsize=false
 boot_splash/bg_color=Color( 0.901961, 0.901961, 0.901961, 1 )
-config/icon="res://main/icon.png"
+config/icon="res://assets/icon.png"
 
 [audio]
 
@@ -30,8 +30,8 @@ default_bus_layout=""
 
 [autoload]
 
-Game="*res://main/game.gd"
-DiscordManager="*res://discord/DiscordManager.cs"
+Game="*res://scripts/game.gd"
+DiscordManager="*res://scripts/DiscordManager.cs"
 
 [debug]
 
