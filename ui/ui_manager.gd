@@ -14,9 +14,11 @@ onready var accept_button = $InviteWrap/InviteView/Accept
 onready var decline_button = $InviteWrap/InviteView/Decline
 onready var menu_node = $Menu
 
+onready var discord_menu_node = $Menu/Discord
+onready var discord_0_button = $Menu/Discord/Discord0
+onready var discord_1_button = $Menu/Discord/Discord1
+
 onready var main_menu_node = $Menu/Main
-onready var discord_0_button = $Menu/Main/Discord0
-onready var discord_1_button = $Menu/Main/Discord1
 onready var name_label = $Menu/Main/Name
 onready var map_button = $Menu/Main/Map
 onready var play_button = $Menu/Main/Play
@@ -47,9 +49,7 @@ func _ready():
 
 func start_discord(instance):
 	DiscordManager.start(instance)
-	discord_0_button.hide()
-	discord_1_button.hide()
-	play_button.grab_focus()
+	discord_menu_node.hide()
 
 func add_message(msg = ""):
 	var new_message = Label.new()
@@ -61,20 +61,17 @@ func add_message(msg = ""):
 	print("Message: ", msg)
 
 func show_options():
-	overlay.show()
-	options_menu_node.show()
-	back_button.grab_focus()
-	update_friends()
+	if not options_menu_node.visible:
+		overlay.show()
+		options_menu_node.show()
+		back_button.grab_focus()
+		update_friends()
+	else:
+		hide_options()
 
 func hide_options():
 	overlay.hide()
 	options_menu_node.hide()
-
-class CustomSorter:
-	static func sort_ascending(a, b):
-		var compare_arr = [a.name.to_lower(), b.name.to_lower()]
-		compare_arr.sort()
-		return compare_arr[0] == a.name.to_lower()
 
 func friend_pressed(button, id):
 	DiscordManager.send_invite(id)
@@ -85,13 +82,11 @@ func update_friends():
 	for friend in friends_list.get_children():
 		friend.queue_free()
 	var friends = DiscordManager.get_relationships()
-	if friends:
-		friends.sort_custom(CustomSorter, "sort_ascending")
-		for friend in friends:
-			var friend_button = Button.new()
-			friend_button.text = friend.name
-			friend_button.connect("pressed", self, "friend_pressed", [friend_button, friend.id])
-			friends_list.add_child(friend_button)
+	for friend in friends:
+		var friend_button = Button.new()
+		friend_button.text = friend.name
+		friend_button.connect("pressed", self, "friend_pressed", [friend_button, friend.id])
+		friends_list.add_child(friend_button)
 
 func show_invite(user_id, user_name):
 	if not Game.is_playing:

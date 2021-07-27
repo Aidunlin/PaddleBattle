@@ -5,7 +5,6 @@ public class DiscordManager : Node {
 	[Signal] public delegate void user_updated();
 	[Signal] public delegate void lobby_created();
 	[Signal] public delegate void lobby_connected();
-	[Signal] public delegate void lobby_deleted();
 	[Signal] public delegate void member_disconnected(long user_id);
 	[Signal] public delegate void message_received(byte channel_id, byte[] data);
 	[Signal] public delegate void relationships_updated();
@@ -44,6 +43,9 @@ public class DiscordManager : Node {
 	public void start(string instance) {
 		System.Environment.SetEnvironmentVariable("DISCORD_INSTANCE_ID", instance);
 		discord = new Discord.Discord(client_id, (ulong)CreateFlags.Default);
+		discord.SetLogHook(LogLevel.Debug, (LogLevel level, string message) => {
+			GD.Print("Discord: ", level, " - ", message);
+		});
 		activity_manager = discord.GetActivityManager();
 		lobby_manager = discord.GetLobbyManager();
 		user_manager = discord.GetUserManager();
@@ -53,25 +55,8 @@ public class DiscordManager : Node {
 			EmitSignal("user_updated");
 		};
 		activity_manager.OnActivityJoin += secret => {
-			if (current_lobby != 0) {
-				if (is_lobby_owner()) {
-					delete_lobby();
-				} else {
-					leave_lobby();
-				}
-			}
-			lobby_manager.ConnectLobbyWithActivitySecret(secret, (Result result, ref Lobby lobby) => {
-				if (result == Result.Ok) {
-					current_lobby = lobby.Id;
-					get_lobby_owner_id();
-					init_networking();
-					GD.Print("Joined lobby: ", current_lobby);
-					update_activity("Battling it out", true);
-					EmitSignal("lobby_connected");
-				} else {
-					GD.PrintErr("Failed to join lobby: ", result);
-				}
-			});
+			leave_lobby();
+			join_lobby(secret);
 		};
 		activity_manager.OnActivityInvite += (ActivityActionType type, ref User user, ref Activity activity) => {
 			EmitSignal("invite_received", user.Id, user.Username);
@@ -80,26 +65,16 @@ public class DiscordManager : Node {
 			EmitSignal("message_received", channel_id, data);
 		};
 		lobby_manager.OnMemberConnect += (lobby_id, user_id) => {
-			update_activity("Battling it out", true);
-			GD.Print(lobby_manager.GetMemberUser(lobby_id, user_id).Username + " joined the lobby");
+			update_activity(true);
 		};
 		lobby_manager.OnMemberDisconnect += (lobby_id, user_id) => {
-			update_activity("Battling it out", true);
-			if (user_id != lobby_owner_id && is_lobby_owner()) {
-				delete_lobby();
-			}
+			update_activity(true);
+			lobby_owner_id = get_lobby_owner_id();
 			user_manager.GetUser(user_id, (Result result, ref User user) => {
 				if (result == Result.Ok) {
 					EmitSignal("member_disconnected", user_id, user.Username);
 				}
 			});
-		};
-		lobby_manager.OnLobbyDelete += (lobby_id, reason) => {
-			current_lobby = 0;
-			lobby_owner_id = 0;
-			GD.Print("Lobby was deleted: " + lobby_id + " with reason: " + reason);
-			update_activity("Thinking about battles", false);
-			EmitSignal("lobby_deleted");
 		};
 		relationship_manager.OnRefresh += () => {
 			update_relationships();
@@ -107,21 +82,17 @@ public class DiscordManager : Node {
 		relationship_manager.OnRelationshipUpdate += (ref Relationship relationship) => {
 			update_relationships();
 		};
-		update_activity("Thinking about battles", false);
+		update_activity(false);
 		started = true;
 	}
 	
-	public void update_activity(string state, bool in_lobby) {
-		var activity = new Activity {
-			State = state,
-			Assets = {
-				LargeImage = "paddlebattle"
-			}
-		};
+	public void update_activity(bool in_lobby) {
+		var activity = new Activity();
+		activity.State = in_lobby ? "Battling it out" : "Thinking about battles";
 		if (in_lobby) {
 			activity.Secrets.Join = lobby_manager.GetLobbyActivitySecret(current_lobby);
 			activity.Party.Id = current_lobby.ToString();
-			activity.Party.Size.CurrentSize =  lobby_manager.MemberCount(current_lobby);
+			activity.Party.Size.CurrentSize = lobby_manager.MemberCount(current_lobby);
 			activity.Party.Size.MaxSize = 8;
 			activity.Party.Privacy = ActivityPartyPrivacy.Public;
 		}
@@ -178,16 +149,31 @@ public class DiscordManager : Node {
 
 	public void create_lobby() {
 		var txn = lobby_manager.GetLobbyCreateTransaction();
+		txn.SetCapacity(8);
+		txn.SetType(LobbyType.Public);
 		lobby_manager.CreateLobby(txn, (Result result, ref Lobby lobby) => {
 			if (result == Result.Ok) {
 				current_lobby = lobby.Id;
 				lobby_owner_id = lobby.OwnerId;
 				init_networking();
-				GD.Print("Created lobby: ", current_lobby);
-				update_activity("Battling it out", true);
+				update_activity(true);
 				EmitSignal("lobby_created");
 			} else {
 				GD.PrintErr("Failed to create lobby: ", result);
+			}
+		});
+	}
+
+	public void join_lobby(string secret) {
+		lobby_manager.ConnectLobbyWithActivitySecret(secret, (Result result, ref Lobby lobby) => {
+			if (result == Result.Ok) {
+				current_lobby = lobby.Id;
+				lobby_owner_id = get_lobby_owner_id();
+				init_networking();
+				update_activity(true);
+				EmitSignal("lobby_connected");
+			} else {
+				GD.PrintErr("Failed to join lobby: ", result);
 			}
 		});
 	}
@@ -198,25 +184,9 @@ public class DiscordManager : Node {
 				if (result == Result.Ok) {
 					current_lobby = 0;
 					lobby_owner_id = 0;
-					GD.Print("Left lobby");
-					update_activity("Thinking about battles", false);
+					update_activity(false);
 				} else {
 					GD.PrintErr("Failed to leave lobby: ", result);
-				}
-			});
-		}
-	}
-
-	public void delete_lobby() {
-		if (current_lobby != 0) {
-			lobby_manager.DeleteLobby(current_lobby, result => {
-				if (result == Result.Ok) {
-					current_lobby = 0;
-					lobby_owner_id = 0;
-					GD.Print("Deleted current lobby");
-					update_activity("Thinking about battles", false);
-				} else {
-					GD.PrintErr("Failed to delete lobby: ", result);
 				}
 			});
 		}

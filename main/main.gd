@@ -11,7 +11,6 @@ func _ready():
 	DiscordManager.connect("user_updated", self, "get_user")
 	DiscordManager.connect("lobby_created", self, "create_game")
 	DiscordManager.connect("lobby_connected", self, "request_check")
-	DiscordManager.connect("lobby_deleted", self, "unload_game", ["The lobby was ended"])
 	DiscordManager.connect("member_disconnected", self, "handle_member_disconnect")
 	DiscordManager.connect("message_received", self, "handle_discord_message")
 	DiscordManager.connect("invite_received", ui_manager, "show_invite")
@@ -39,6 +38,8 @@ func get_user():
 	Game.user_name = DiscordManager.get_user_name()
 	ui_manager.name_label.text = Game.user_name
 	ui_manager.play_button.connect("pressed", DiscordManager, "create_lobby")
+	ui_manager.main_menu_node.show()
+	ui_manager.play_button.grab_focus()
 
 func request_check():
 	var check_data = {
@@ -50,22 +51,23 @@ func request_check():
 
 func handle_discord_message(channel_id, data):
 	var parsed_data = bytes2var(data)
-	if channel_id == Game.channels.UPDATE_OBJECTS:
-		update_objects(parsed_data.paddles, parsed_data.balls)
-	elif channel_id == Game.channels.CHECK_MEMBER:
-		check_member(parsed_data.id, parsed_data.version, parsed_data.name)
-	elif channel_id == Game.channels.JOIN_GAME:
-		join_game(parsed_data.paddles, parsed_data.map, parsed_data.color)
-	elif channel_id == Game.channels.UNLOAD_GAME:
-		unload_game(parsed_data.reason)
-	elif channel_id == Game.channels.CREATE_PADDLE:
-		paddle_manager.create_paddle(parsed_data)
-	elif channel_id == Game.channels.SET_PADDLE_INPUTS:
-		paddle_manager.set_paddle_inputs(parsed_data.paddle, parsed_data.inputs)
-	elif channel_id == Game.channels.VIBRATE_PAD:
-		paddle_manager.vibrate_pad(parsed_data.paddle)
-	elif channel_id == Game.channels.DAMAGE_PADDLE:
-		paddle_manager.damage_paddle(parsed_data.paddle)
+	match channel_id:
+		Game.channels.UPDATE_OBJECTS:
+			update_objects(parsed_data.paddles, parsed_data.balls)
+		Game.channels.CHECK_MEMBER:
+			check_member(parsed_data.id, parsed_data.version, parsed_data.name)
+		Game.channels.JOIN_GAME:
+			join_game(parsed_data.paddles, parsed_data.map)
+		Game.channels.UNLOAD_GAME:
+			unload_game(parsed_data.reason)
+		Game.channels.CREATE_PADDLE:
+			paddle_manager.create_paddle(parsed_data)
+		Game.channels.SET_PADDLE_INPUTS:
+			paddle_manager.set_paddle_inputs(parsed_data.paddle, parsed_data.inputs)
+		Game.channels.VIBRATE_PAD:
+			paddle_manager.vibrate_pad(parsed_data.paddle)
+		Game.channels.DAMAGE_PADDLE:
+			paddle_manager.damage_paddle(parsed_data.paddle)
 
 func switch_map():
 	ui_manager.map_button.text = map_manager.switch()
@@ -76,11 +78,10 @@ func handle_member_disconnect(id, name):
 
 func check_member(id, version, name):
 	if version == Game.VERSION:
-		ui_manager.add_message(name + " joined te lobby")
+		ui_manager.add_message(name + " joined the lobby")
 		var game_data = {
 			"paddles": paddle_manager.paddles,
 			"map": Game.map,
-			"color": map_manager.color,
 		}
 		DiscordManager.send_data(id, Game.channels.JOIN_GAME, game_data)
 	else:
@@ -89,14 +90,14 @@ func check_member(id, version, name):
 		}
 		DiscordManager.send_data(id, Game.channels.UNLOAD_GAME, unload_data)
 
-func join_game(paddles, map_name, map_color):
-	load_game(map_name, map_color)
+func join_game(paddles, map_name):
+	create_game(map_name)
 	for paddle in paddles:
 		paddle_manager.create_paddle(paddles[paddle])
 
-func create_game():
+func create_game(map_name = Game.map):
 	randomize()
-	load_game(Game.map, Color.from_hsv(randf(), 0.8, 1))
+	load_game(map_name, Color.from_hsv(randf(), 0.8, 1))
 
 func load_game(map_name, map_color):
 	map_manager.load_map(map_name, map_color)

@@ -21,8 +21,5 @@ var user_name = ""
 var user_id = 0
 
 func reset():
-	if DiscordManager.is_lobby_owner():
-		DiscordManager.delete_lobby()
-	else:
-		DiscordManager.leave_lobby()
+	DiscordManager.leave_lobby()
 	is_playing = false
