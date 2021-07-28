@@ -34,63 +34,45 @@ func _physics_process(_delta):
 			update_objects(paddle_manager.paddles, ball_manager.balls)
 		camera.move_and_zoom(paddle_manager.get_children())
 
-func get_user():
-	Game.user_id = DiscordManager.get_user_id()
-	Game.user_name = DiscordManager.get_user_name()
-	ui_manager.name_label.text = Game.user_name
-	ui_manager.play_button.connect("pressed", DiscordManager, "create_lobby")
-	ui_manager.main_menu_node.show()
-	ui_manager.play_button.grab_focus()
+func switch_map():
+	ui_manager.map_button.text = map_manager.switch()
 
-func request_check():
-	var check_data = {
-		"version": Game.VERSION,
-		"id": Game.user_id,
-	}
-	DiscordManager.send_data_owner(Game.channels.CHECK_MEMBER, check_data)
+func get_user():
+	if not Game.is_playing and not ui_manager.main_menu_node.visible:
+		Game.user_id = DiscordManager.get_user_id()
+		Game.user_name = DiscordManager.get_user_name()
+		ui_manager.name_label.text = Game.user_name
+		ui_manager.main_menu_node.show()
+		ui_manager.play_button.grab_focus()
 
 func handle_discord_message(channel_id, data):
 	var parsed_data = bytes2var(data)
 	match channel_id:
 		Game.channels.UPDATE_OBJECTS:
 			update_objects(parsed_data.paddles, parsed_data.balls)
-		Game.channels.CHECK_MEMBER:
-			check_member(parsed_data.id, parsed_data.version)
+		Game.channels.SET_PADDLE_INPUTS:
+			paddle_manager.set_paddle_inputs(parsed_data.paddle, parsed_data.inputs)
 		Game.channels.JOIN_GAME:
 			join_game(parsed_data.paddles, parsed_data.map)
 		Game.channels.UNLOAD_GAME:
 			unload_game(parsed_data.reason)
 		Game.channels.CREATE_PADDLE:
 			paddle_manager.create_paddle(parsed_data)
-		Game.channels.SET_PADDLE_INPUTS:
-			paddle_manager.set_paddle_inputs(parsed_data.paddle, parsed_data.inputs)
-		Game.channels.VIBRATE_PAD:
-			paddle_manager.vibrate_pad(parsed_data.paddle)
 		Game.channels.DAMAGE_PADDLE:
 			paddle_manager.damage_paddle(parsed_data.paddle)
 
-func switch_map():
-	ui_manager.map_button.text = map_manager.switch()
-
-func handle_member_connect(name):
+func handle_member_connect(id, name):
 	ui_manager.add_message(name + " joined the lobby")
-
-func handle_member_disconnect(id, name):
-	paddle_manager.remove_paddles(id)
-	ui_manager.add_message(name + " left the lobby")
-
-func check_member(id, version):
-	if version == Game.VERSION:
+	if DiscordManager.is_lobby_owner():
 		var game_data = {
 			"paddles": paddle_manager.paddles,
 			"map": Game.map,
 		}
 		DiscordManager.send_data(id, Game.channels.JOIN_GAME, game_data)
-	else:
-		var unload_data = {
-			"reason": "Could not join the lobby! Different version (" + Game.VERSION + ")",
-		}
-		DiscordManager.send_data(id, Game.channels.UNLOAD_GAME, unload_data)
+
+func handle_member_disconnect(id, name):
+	paddle_manager.remove_paddles(id)
+	ui_manager.add_message(name + " left the lobby")
 
 func join_game(paddles, map_name):
 	create_game(map_name)

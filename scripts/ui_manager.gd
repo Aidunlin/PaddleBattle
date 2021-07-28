@@ -34,11 +34,12 @@ onready var leave_button = $Menu/Options/Leave
 func _ready():
 	accept_button.connect("pressed", self, "accept_invite")
 	decline_button.connect("pressed", self, "decline_invite")
-	discord_0_button.connect("pressed", self, "start_discord", ["0"])
 	discord_0_button.grab_focus()
+	discord_0_button.connect("pressed", self, "start_discord", ["0"])
 	discord_1_button.connect("pressed", self, "start_discord", ["1"])
 	map_button.connect("pressed", self, "emit_signal", ["map_switched"])
 	map_button.text = Game.map
+	play_button.connect("pressed", DiscordManager, "create_lobby")
 	quit_button.connect("pressed", get_tree(), "quit")
 	version_node.text = Game.VERSION
 	refresh_button.connect("pressed", self, "update_friends")
@@ -66,8 +67,6 @@ func show_options():
 		options_menu_node.show()
 		back_button.grab_focus()
 		update_friends()
-	else:
-		hide_options()
 
 func hide_options():
 	overlay.hide()

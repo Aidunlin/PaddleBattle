@@ -62,7 +62,6 @@ func create_paddle(data):
 			paddle_node.modulate = data.color
 		else:
 			paddle_node.modulate = Color.from_hsv(randf(), 0.8, 1)
-		paddle_node.connect("collided", self, "vibrate_pad", [new_name])
 		paddle_node.connect("damaged", self, "damage_paddle", [new_name])
 		if Game.user_id == data.id and "pad" in data:
 			input_list[new_name] = data.pad
@@ -136,15 +135,14 @@ func get_paddle_inputs(paddle):
 		inputs.velocity.x = get_key(KEY_D) - get_key(KEY_A)
 		inputs.velocity.y = get_key(KEY_S) - get_key(KEY_W)
 		inputs.velocity = inputs.velocity.normalized() * Game.MOVE_SPEED
-		if inputs.velocity:
-			inputs.dash = Input.is_key_pressed(KEY_SHIFT)
+		inputs.dash = Input.is_key_pressed(KEY_SHIFT)
 		inputs.rotation = deg2rad((get_key(KEY_PERIOD) - get_key(KEY_COMMA)) * 4)
 	else:
 		var left_stick = Vector2(get_axis(pad, JOY_ANALOG_LX), get_axis(pad, JOY_ANALOG_LY))
 		var right_stick = Vector2(get_axis(pad, JOY_ANALOG_RX), get_axis(pad, JOY_ANALOG_RY))
 		if left_stick.length() > 0.2:
 			inputs.velocity = left_stick * Game.MOVE_SPEED
-			inputs.dash = Input.is_joy_button_pressed(pad, JOY_L2)
+		inputs.dash = Input.is_joy_button_pressed(pad, JOY_L2)
 		if right_stick.length() > 0.7:
 			var paddle_node = get_node(paddle)
 			inputs.rotation = paddle_node.get_angle_to(paddle_node.position + right_stick) * 0.1
@@ -154,16 +152,6 @@ func set_paddle_inputs(paddle, inputs):
 	if has_node(paddle):
 		if get_node(paddle).has_method("set_inputs"):
 			get_node(paddle).set_inputs(inputs)
-
-func vibrate_pad(paddle):
-	if Game.is_playing:
-		if Game.user_id == paddles[paddle].id:
-			Input.start_joy_vibration(input_list[paddle], 0.5, 0.5, 0.1)
-		elif DiscordManager.is_lobby_owner():
-			var vibrate_data = {
-				"paddle": paddle,
-			}
-			DiscordManager.send_data(paddles[paddle].id, Game.channels.VIBRATE_PAD, vibrate_data)
 
 func damage_paddle(paddle):
 	paddles[paddle].health -= 1

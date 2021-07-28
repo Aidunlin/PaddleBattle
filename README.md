@@ -7,16 +7,14 @@ With that being said, I hope you find enjoyment in PaddleBattle. Any feedback, b
 
 ## How to play
 
-Controls as of 0.5.0:
-* Controller (A to join) - Left stick to move, right stick to rotate, left trigger to dash
-* Keyboard (enter to join) - WASD to move, comma and period to rotate, shift to dash
+Simply download the project, unzip, and run `godot.exe`! Releases prior to 0.6.0 require a couple more steps to run the game.
 
-Note that controls, mechanics, and features will change and have changed across releases prior to 1.0.0.
+0.6.0 implements the Discord Game SDK! Discord's networking layer replaces LAN multiplayer (introduced in 0.4.0). You can send and receive invites in-game, and your in-game username is copied straight from Discord. Additionally, if the lobby creator leaves, the game will (almost seamlessly) switch to a new owner.
 
-Your objective is to bounce balls off of the enemy paddle's back side, causing them to lose health. How you do this is up to you. Up to 8 can play at once!
+When the game is running in debug mode (i.e. with a console output), the game will make you choose the Discord instance to connect to. If you haven't installed another version of Discord, just choose `Discord 0`.
 
-## How to play over LAN
+Your objective is to bounce balls off of the enemy paddle's back side, causing them to lose health. How you do this is up to you. Good luck and have fun!
 
-0.4.0 introduces online multiplayer. Others can connect to you by simply joining through the server list or directly typing in your IP address. This works without any additional setup over your local network (including VPNs like Hamachi or Tunngle), but if you want to play with people who are outside of your network, you have to port forward (use 8910).
-
-Regardless of whether you are on the host machine or a client machine, you can have multiple people playing on your device as long as there is room available. For example, 2 people on the same computer can play with 3 people on a different computer. Each additional player on the same device will have the same in-game name followed by a number to differentiate between them. If you want to leave (if you are on a client) or end the game (if you are on the host), you can do so by pressing escape or both start and select.
+Controls:
+* Controller (A to join) - `LS` to move, `RS` to rotate, `LT` to dash
+* Keyboard (enter to join) - `WASD` to move, `comma` and `period` to rotate, `shift` to dash
