@@ -13,12 +13,10 @@ public class DiscordManager : Node {
 
 	public enum channels {
 		UPDATE_OBJECTS,
-		CHECK_MEMBER,
+		SET_PADDLE_INPUTS,
 		JOIN_GAME,
 		UNLOAD_GAME,
 		CREATE_PADDLE,
-		SET_PADDLE_INPUTS,
-		VIBRATE_PAD,
 		DAMAGE_PADDLE,
 	};
 
@@ -69,7 +67,7 @@ public class DiscordManager : Node {
 			update_activity(true);
 			user_manager.GetUser(user_id, (Result result, ref User user) => {
 				if (result == Result.Ok) {
-					EmitSignal("member_connected", user.Username);
+					EmitSignal("member_connected", user_id, user.Username);
 				}
 			});
 		};
@@ -112,12 +110,10 @@ public class DiscordManager : Node {
 	public void init_networking() {
 		lobby_manager.ConnectNetwork(current_lobby);
 		lobby_manager.OpenNetworkChannel(current_lobby, (byte)channels.UPDATE_OBJECTS, false);
-		lobby_manager.OpenNetworkChannel(current_lobby, (byte)channels.CHECK_MEMBER, true);
+		lobby_manager.OpenNetworkChannel(current_lobby, (byte)channels.SET_PADDLE_INPUTS, false);
 		lobby_manager.OpenNetworkChannel(current_lobby, (byte)channels.JOIN_GAME, true);
 		lobby_manager.OpenNetworkChannel(current_lobby, (byte)channels.UNLOAD_GAME, true);
 		lobby_manager.OpenNetworkChannel(current_lobby, (byte)channels.CREATE_PADDLE, true);
-		lobby_manager.OpenNetworkChannel(current_lobby, (byte)channels.SET_PADDLE_INPUTS, false);
-		lobby_manager.OpenNetworkChannel(current_lobby, (byte)channels.VIBRATE_PAD, true);
 		lobby_manager.OpenNetworkChannel(current_lobby, (byte)channels.DAMAGE_PADDLE, true);
 	}
 
