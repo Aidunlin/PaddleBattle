@@ -98,25 +98,24 @@ func remove_paddles(id):
 		remove_paddle(paddle)
 
 func update_paddles(new_paddles):
-	if Game.is_playing:
-		for paddle in new_paddles:
-			var paddle_node = get_node(paddle)
-			if DiscordManager.is_lobby_owner():
-				paddles[paddle].position = paddle_node.position
-				paddles[paddle].rotation = paddle_node.rotation
-				if Game.user_id == new_paddles[paddle].id:
-					set_paddle_inputs(paddle, get_paddle_inputs(paddle))
-			else:
-				paddles[paddle].position = new_paddles[paddle].position
-				paddles[paddle].rotation = new_paddles[paddle].rotation
-				paddle_node.position = new_paddles[paddle].position
-				paddle_node.rotation = new_paddles[paddle].rotation
-				if Game.user_id == new_paddles[paddle].id:
-					var paddle_input_data = {
-						"paddle": paddle,
-						"inputs": get_paddle_inputs(paddle),
-					}
-					DiscordManager.send_data_owner(Game.channels.SET_PADDLE_INPUTS, paddle_input_data)
+	for paddle in new_paddles:
+		var paddle_node = get_node(paddle)
+		if DiscordManager.is_lobby_owner():
+			paddles[paddle].position = paddle_node.position
+			paddles[paddle].rotation = paddle_node.rotation
+			if Game.user_id == new_paddles[paddle].id:
+				set_paddle_inputs(paddle, get_paddle_inputs(paddle))
+		else:
+			paddles[paddle].position = new_paddles[paddle].position
+			paddles[paddle].rotation = new_paddles[paddle].rotation
+			paddle_node.position = new_paddles[paddle].position
+			paddle_node.rotation = new_paddles[paddle].rotation
+			if Game.user_id == new_paddles[paddle].id:
+				var data = {
+					"paddle": paddle,
+					"inputs": get_paddle_inputs(paddle),
+				}
+				DiscordManager.send_data_owner(Game.channels.SET_PADDLE_INPUTS, data)
 
 func get_key(key):
 	return int(Input.is_key_pressed(key))
@@ -164,10 +163,10 @@ func damage_paddle(paddle):
 		paddles[paddle].health = Game.MAX_HEALTH
 	emit_signal("paddle_damaged", paddle, paddles[paddle].health)
 	if DiscordManager.is_lobby_owner():
-		var damage_data = {
+		var data = {
 			"paddle": paddle,
 		}
-		DiscordManager.send_data_all(Game.channels.DAMAGE_PADDLE, damage_data)
+		DiscordManager.send_data_all(Game.channels.DAMAGE_PADDLE, data)
 
 func reset():
 	input_list.clear()

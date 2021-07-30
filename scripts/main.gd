@@ -10,7 +10,6 @@ onready var ui_manager = $CanvasLayer/UIManager
 func _ready():
 	DiscordManager.connect("user_updated", self, "get_user")
 	DiscordManager.connect("lobby_created", self, "create_game")
-	DiscordManager.connect("lobby_connected", self, "request_check")
 	DiscordManager.connect("member_connected", self, "handle_member_connect")
 	DiscordManager.connect("member_disconnected", self, "handle_member_disconnect")
 	DiscordManager.connect("message_received", self, "handle_discord_message")
@@ -26,11 +25,11 @@ func _ready():
 func _physics_process(_delta):
 	if Game.is_playing:
 		if DiscordManager.is_lobby_owner():
-			var update_data = {
+			var data = {
 				"paddles": paddle_manager.paddles,
 				"balls": ball_manager.balls,
 			}
-			DiscordManager.send_data_all(Game.channels.UPDATE_OBJECTS, update_data)
+			DiscordManager.send_data_all(Game.channels.UPDATE_OBJECTS, data)
 			update_objects(paddle_manager.paddles, ball_manager.balls)
 		camera.move_and_zoom(paddle_manager.get_children())
 
@@ -45,30 +44,30 @@ func get_user():
 		ui_manager.main_menu_node.show()
 		ui_manager.play_button.grab_focus()
 
-func handle_discord_message(channel_id, data):
-	var parsed_data = bytes2var(data)
+func handle_discord_message(channel_id, message):
+	var data = bytes2var(message)
 	match channel_id:
 		Game.channels.UPDATE_OBJECTS:
-			update_objects(parsed_data.paddles, parsed_data.balls)
+			update_objects(data.paddles, data.balls)
 		Game.channels.SET_PADDLE_INPUTS:
-			paddle_manager.set_paddle_inputs(parsed_data.paddle, parsed_data.inputs)
+			paddle_manager.set_paddle_inputs(data.paddle, data.inputs)
 		Game.channels.JOIN_GAME:
-			join_game(parsed_data.paddles, parsed_data.map)
+			join_game(data.paddles, data.map)
 		Game.channels.UNLOAD_GAME:
-			unload_game(parsed_data.reason)
+			unload_game(data.reason)
 		Game.channels.CREATE_PADDLE:
-			paddle_manager.create_paddle(parsed_data)
+			paddle_manager.create_paddle(data)
 		Game.channels.DAMAGE_PADDLE:
-			paddle_manager.damage_paddle(parsed_data.paddle)
+			paddle_manager.damage_paddle(data.paddle)
 
 func handle_member_connect(id, name):
 	ui_manager.add_message(name + " joined the lobby")
 	if DiscordManager.is_lobby_owner():
-		var game_data = {
+		var data = {
 			"paddles": paddle_manager.paddles,
 			"map": Game.map,
 		}
-		DiscordManager.send_data(id, Game.channels.JOIN_GAME, game_data)
+		DiscordManager.send_data(id, Game.channels.JOIN_GAME, data)
 
 func handle_member_disconnect(id, name):
 	paddle_manager.remove_paddles(id)
