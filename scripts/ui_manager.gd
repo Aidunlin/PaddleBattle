@@ -7,7 +7,6 @@ var invited_by = 0
 
 onready var message_wrap = $MessageWrap
 onready var message_view = $MessageWrap/MessageView
-onready var overlay = $Overlay
 onready var invite_wrap = $InviteWrap
 onready var invite_name = $InviteWrap/InviteView/Name
 onready var accept_button = $InviteWrap/InviteView/Accept
@@ -63,14 +62,15 @@ func add_message(msg = ""):
 
 func show_options():
 	if not options_menu_node.visible:
-		overlay.show()
 		options_menu_node.show()
+		if invited_by:
+			invite_wrap.show()
 		back_button.grab_focus()
 		update_friends()
 
 func hide_options():
-	overlay.hide()
 	options_menu_node.hide()
+	invite_wrap.hide()
 
 func friend_pressed(button, id):
 	DiscordManager.send_invite(id)
@@ -88,20 +88,21 @@ func update_friends():
 		friends_list.add_child(friend_button)
 
 func show_invite(user_id, user_name):
-	if not Game.is_playing:
-		invited_by = user_id
-		invite_name.text = "Invited by " + user_name
+	invited_by = user_id
+	invite_name.text = "Invited by " + user_name
+	if not Game.is_playing or options_menu_node.visible:
 		invite_wrap.show()
 
 func accept_invite():
 	invite_wrap.hide()
 	DiscordManager.accept_invite(invited_by)
+	invited_by = ""
 
 func decline_invite():
 	invite_wrap.hide()
+	invited_by = ""
 
 func reset(msg):
-	overlay.hide()
 	main_menu_node.show()
 	options_menu_node.hide()
 	play_button.grab_focus()

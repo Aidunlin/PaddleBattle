@@ -31,7 +31,6 @@ script = ExtResource( 4 )
 script = ExtResource( 5 )
 
 [node name="HUDManager" type="Control" parent="."]
-modulate = Color( 1, 1, 1, 0.8 )
 anchor_right = 1.0
 anchor_bottom = 1.0
 theme = ExtResource( 8 )
