@@ -14,16 +14,6 @@ __meta__ = {
 "_edit_use_anchors_": false
 }
 
-[node name="Overlay" type="Panel" parent="."]
-visible = false
-modulate = Color( 1, 1, 1, 0.85 )
-anchor_right = 1.0
-anchor_bottom = 1.0
-__meta__ = {
-"_edit_lock_": true,
-"_edit_use_anchors_": false
-}
-
 [node name="Menu" type="CenterContainer" parent="."]
 anchor_right = 1.0
 anchor_bottom = 1.0
@@ -44,6 +34,7 @@ margin_right = 300.0
 margin_bottom = 43.0
 size_flags_horizontal = 3
 text = "Discord 0"
+flat = true
 
 [node name="Discord1" type="Button" parent="Menu/Discord"]
 margin_top = 47.0
@@ -51,14 +42,18 @@ margin_right = 300.0
 margin_bottom = 90.0
 size_flags_horizontal = 3
 text = "Discord 1"
+flat = true
 
 [node name="Main" type="VBoxContainer" parent="Menu"]
 visible = false
 margin_left = 490.0
-margin_top = 221.0
+margin_top = 213.0
 margin_right = 790.0
-margin_bottom = 499.0
+margin_bottom = 507.0
 rect_min_size = Vector2( 300, 0 )
+__meta__ = {
+"_edit_use_anchors_": false
+}
 
 [node name="TitleWrap" type="HBoxContainer" parent="Menu/Main"]
 margin_right = 300.0
@@ -92,29 +87,42 @@ __meta__ = {
 "_edit_use_anchors_": false
 }
 
-[node name="Map" type="Button" parent="Menu/Main"]
+[node name="HSeparator" type="HSeparator" parent="Menu/Main"]
 margin_top = 94.0
 margin_right = 300.0
-margin_bottom = 137.0
+margin_bottom = 98.0
+
+[node name="Map" type="Button" parent="Menu/Main"]
+margin_top = 102.0
+margin_right = 300.0
+margin_bottom = 145.0
 size_flags_horizontal = 3
 text = "BigMap"
+flat = true
 
 [node name="Play" type="Button" parent="Menu/Main"]
-margin_top = 141.0
+margin_top = 149.0
 margin_right = 300.0
-margin_bottom = 184.0
+margin_bottom = 192.0
 text = "Play"
+flat = true
 
 [node name="Quit" type="Button" parent="Menu/Main"]
-margin_top = 188.0
+margin_top = 196.0
 margin_right = 300.0
-margin_bottom = 231.0
+margin_bottom = 239.0
 text = "Quit"
+flat = true
+
+[node name="HSeparator2" type="HSeparator" parent="Menu/Main"]
+margin_top = 243.0
+margin_right = 300.0
+margin_bottom = 247.0
 
 [node name="Version" type="Label" parent="Menu/Main"]
-margin_top = 235.0
+margin_top = 251.0
 margin_right = 300.0
-margin_bottom = 278.0
+margin_bottom = 294.0
 text = "NO VERSION"
 align = 1
 
@@ -159,18 +167,21 @@ margin_top = 367.0
 margin_right = 300.0
 margin_bottom = 410.0
 text = "Refresh"
+flat = true
 
 [node name="Back" type="Button" parent="Menu/Options"]
 margin_top = 414.0
 margin_right = 300.0
 margin_bottom = 457.0
 text = "Back"
+flat = true
 
 [node name="Leave" type="Button" parent="Menu/Options"]
 margin_top = 461.0
 margin_right = 300.0
 margin_bottom = 504.0
 text = "Leave"
+flat = true
 
 [node name="MessageWrap" type="MarginContainer" parent="."]
 margin_right = 408.0
@@ -226,9 +237,11 @@ margin_top = 47.0
 margin_right = 300.0
 margin_bottom = 90.0
 text = "Accept"
+flat = true
 
 [node name="Decline" type="Button" parent="InviteWrap/InviteView"]
 margin_top = 94.0
 margin_right = 300.0
 margin_bottom = 137.0
 text = "Decline"
+flat = true

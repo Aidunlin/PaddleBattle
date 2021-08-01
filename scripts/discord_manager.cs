@@ -8,7 +8,6 @@ public class discord_manager : Node
 	[Signal] public delegate void member_connected();
 	[Signal] public delegate void member_disconnected();
 	[Signal] public delegate void message_received();
-	[Signal] public delegate void relationships_updated();
 	[Signal] public delegate void invite_received();
 
 	public enum channels
@@ -246,7 +245,6 @@ public class discord_manager : Node
 		{
 			return relationship.Presence.Activity.ApplicationId == client_id;
 		});
-		EmitSignal("relationships_updated");
 	}
 
 	public Godot.Collections.Array get_relationships()
