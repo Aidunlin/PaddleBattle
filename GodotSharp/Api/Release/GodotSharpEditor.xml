@@ -332,7 +332,7 @@
         </member>
         <member name="M:Godot.EditorFileSystem.GetFileType(System.String)">
             <summary>
-            <para>Gets the type of the file, given the full path.</para>
+            <para>Returns the resource type of the file, given the full path. This returns a string such as <c>"Resource"</c> or <c>"GDScript"</c>, not a file extension such as <c>".gd"</c>.</para>
             </summary>
         </member>
         <member name="M:Godot.EditorFileSystem.UpdateScriptClasses">
@@ -372,7 +372,7 @@
         </member>
         <member name="M:Godot.EditorFileSystemDirectory.GetFileType(System.Int32)">
             <summary>
-            <para>Returns the file extension of the file at index <c>idx</c>.</para>
+            <para>Returns the resource type of the file at index <c>idx</c>. This returns a string such as <c>"Resource"</c> or <c>"GDScript"</c>, not a file extension such as <c>".gd"</c>.</para>
             </summary>
         </member>
         <member name="M:Godot.EditorFileSystemDirectory.GetFileScriptClassName(System.Int32)">
@@ -581,17 +581,17 @@
         </member>
         <member name="M:Godot.EditorInspectorPlugin.AddCustomControl(Godot.Control)">
             <summary>
-            <para>Adds a custom control, not necessarily a property editor.</para>
+            <para>Adds a custom control, which is not necessarily a property editor.</para>
             </summary>
         </member>
         <member name="M:Godot.EditorInspectorPlugin.AddPropertyEditor(System.String,Godot.Control)">
             <summary>
-            <para>Adds a property editor, this must inherit <see cref="T:Godot.EditorProperty"/>.</para>
+            <para>Adds a property editor for an individual property. The <c>editor</c> control must extend <see cref="T:Godot.EditorProperty"/>.</para>
             </summary>
         </member>
         <member name="M:Godot.EditorInspectorPlugin.AddPropertyEditorForMultipleProperties(System.String,System.String[],Godot.Control)">
             <summary>
-            <para>Adds an editor that allows modifying multiple properties, this must inherit <see cref="T:Godot.EditorProperty"/>.</para>
+            <para>Adds an editor that allows modifying multiple properties. The <c>editor</c> control must extend <see cref="T:Godot.EditorProperty"/>.</para>
             </summary>
         </member>
         <member name="T:Godot.EditorInterface">
@@ -1038,6 +1038,16 @@
             <para>Updates the overlays of the 2D and 3D editor viewport. Causes methods <see cref="M:Godot.EditorPlugin.ForwardCanvasDrawOverViewport(Godot.Control)"/>, <see cref="M:Godot.EditorPlugin.ForwardCanvasForceDrawOverViewport(Godot.Control)"/>, <see cref="M:Godot.EditorPlugin.ForwardSpatialDrawOverViewport(Godot.Control)"/> and <see cref="M:Godot.EditorPlugin.ForwardSpatialForceDrawOverViewport(Godot.Control)"/> to be called.</para>
             </summary>
         </member>
+        <member name="M:Godot.EditorPlugin.MakeBottomPanelItemVisible(Godot.Control)">
+            <summary>
+            <para>Makes a specific item in the bottom panel visible.</para>
+            </summary>
+        </member>
+        <member name="M:Godot.EditorPlugin.HideBottomPanel">
+            <summary>
+            <para>Minimizes the bottom panel.</para>
+            </summary>
+        </member>
         <member name="M:Godot.EditorPlugin.GetUndoRedo">
             <summary>
             <para>Gets the undo/redo object. Most actions in the editor can be undoable, so use this object to make sure this happens when it's worth it.</para>
@@ -1048,9 +1058,69 @@
             <para>Queue save the project's editor layout.</para>
             </summary>
         </member>
+        <member name="M:Godot.EditorPlugin.AddImportPlugin(Godot.EditorImportPlugin)">
+            <summary>
+            <para>Registers a new <see cref="T:Godot.EditorImportPlugin"/>. Import plugins are used to import custom and unsupported assets as a custom <see cref="T:Godot.Resource"/> type.</para>
+            <para>Note: If you want to import custom 3D asset formats use <see cref="M:Godot.EditorPlugin.AddSceneImportPlugin(Godot.EditorSceneImporter)"/> instead.</para>
+            <para>See <see cref="M:Godot.EditorPlugin.AddInspectorPlugin(Godot.EditorInspectorPlugin)"/> for an example of how to register a plugin.</para>
+            </summary>
+        </member>
+        <member name="M:Godot.EditorPlugin.RemoveImportPlugin(Godot.EditorImportPlugin)">
+            <summary>
+            <para>Removes an import plugin registered by <see cref="M:Godot.EditorPlugin.AddImportPlugin(Godot.EditorImportPlugin)"/>.</para>
+            </summary>
+        </member>
+        <member name="M:Godot.EditorPlugin.AddSceneImportPlugin(Godot.EditorSceneImporter)">
+            <summary>
+            <para>Registers a new <see cref="T:Godot.EditorSceneImporter"/>. Scene importers are used to import custom 3D asset formats as scenes.</para>
+            </summary>
+        </member>
+        <member name="M:Godot.EditorPlugin.RemoveSceneImportPlugin(Godot.EditorSceneImporter)">
+            <summary>
+            <para>Removes a scene importer registered by <see cref="M:Godot.EditorPlugin.AddSceneImportPlugin(Godot.EditorSceneImporter)"/>.</para>
+            </summary>
+        </member>
         <member name="M:Godot.EditorPlugin.AddExportPlugin(Godot.EditorExportPlugin)">
             <summary>
-            <para>Registers a new export plugin. Export plugins are used when the project is being exported. See <see cref="T:Godot.EditorExportPlugin"/> for more information.</para>
+            <para>Registers a new <see cref="T:Godot.EditorExportPlugin"/>. Export plugins are used to perform tasks when the project is being exported.</para>
+            <para>See <see cref="M:Godot.EditorPlugin.AddInspectorPlugin(Godot.EditorInspectorPlugin)"/> for an example of how to register a plugin.</para>
+            </summary>
+        </member>
+        <member name="M:Godot.EditorPlugin.RemoveExportPlugin(Godot.EditorExportPlugin)">
+            <summary>
+            <para>Removes an export plugin registered by <see cref="M:Godot.EditorPlugin.AddExportPlugin(Godot.EditorExportPlugin)"/>.</para>
+            </summary>
+        </member>
+        <member name="M:Godot.EditorPlugin.AddSpatialGizmoPlugin(Godot.EditorSpatialGizmoPlugin)">
+            <summary>
+            <para>Registers a new <see cref="T:Godot.EditorSpatialGizmoPlugin"/>. Gizmo plugins are used to add custom gizmos to the 3D preview viewport for a <see cref="T:Godot.Spatial"/>.</para>
+            <para>See <see cref="M:Godot.EditorPlugin.AddInspectorPlugin(Godot.EditorInspectorPlugin)"/> for an example of how to register a plugin.</para>
+            </summary>
+        </member>
+        <member name="M:Godot.EditorPlugin.RemoveSpatialGizmoPlugin(Godot.EditorSpatialGizmoPlugin)">
+            <summary>
+            <para>Removes a gizmo plugin registered by <see cref="M:Godot.EditorPlugin.AddSpatialGizmoPlugin(Godot.EditorSpatialGizmoPlugin)"/>.</para>
+            </summary>
+        </member>
+        <member name="M:Godot.EditorPlugin.AddInspectorPlugin(Godot.EditorInspectorPlugin)">
+            <summary>
+            <para>Registers a new <see cref="T:Godot.EditorInspectorPlugin"/>. Inspector plugins are used to extend <see cref="T:Godot.EditorInspector"/> and provide custom configuration tools for your object's properties.</para>
+            <para>Note: Always use <see cref="M:Godot.EditorPlugin.RemoveInspectorPlugin(Godot.EditorInspectorPlugin)"/> to remove the registered <see cref="T:Godot.EditorInspectorPlugin"/> when your <see cref="T:Godot.EditorPlugin"/> is disabled to prevent leaks and an unexpected behavior.</para>
+            <para><code>
+            const MyInspectorPlugin = preload("res://addons/your_addon/path/to/your/script.gd")
+            var inspector_plugin = MyInspectorPlugin.new()
+            
+            func _enter_tree():
+                add_inspector_plugin(inspector_plugin)
+            
+            func _exit_tree():
+                remove_inspector_plugin(inspector_plugin)
+            </code></para>
+            </summary>
+        </member>
+        <member name="M:Godot.EditorPlugin.RemoveInspectorPlugin(Godot.EditorInspectorPlugin)">
+            <summary>
+            <para>Removes an inspector plugin registered by <see cref="M:Godot.EditorPlugin.AddImportPlugin(Godot.EditorImportPlugin)"/></para>
             </summary>
         </member>
         <member name="M:Godot.EditorPlugin.SetInputEventForwardingAlwaysEnabled">
@@ -1126,7 +1196,7 @@
         </member>
         <member name="M:Godot.EditorProperty.GetTooltipText">
             <summary>
-            <para>Override if you want to allow a custom tooltip over your property.</para>
+            <para>Must be implemented to provide a custom tooltip to the property editor.</para>
             </summary>
         </member>
         <member name="M:Godot.EditorProperty.AddFocusable(Godot.Control)">
@@ -1136,7 +1206,7 @@
         </member>
         <member name="M:Godot.EditorProperty.SetBottomEditor(Godot.Control)">
             <summary>
-            <para>Adds controls with this function if you want them on the bottom (below the label).</para>
+            <para>Puts the <c>editor</c> control below the property label. The control must be previously added using <see cref="M:Godot.Node.AddChild(Godot.Node,System.Boolean)"/>.</para>
             </summary>
         </member>
         <member name="M:Godot.EditorProperty.EmitChanged(System.String,System.Object,System.String,System.Boolean)">
@@ -1152,12 +1222,14 @@
         </member>
         <member name="M:Godot.EditorResourcePreview.QueueResourcePreview(System.String,Godot.Object,System.String,System.Object)">
             <summary>
-            <para>Queue a resource file for preview (using a path). Once the preview is ready, your receiver.receiver_func will be called either containing the preview texture or an empty texture (if no preview was possible). Callback must have the format: (path,texture,userdata). Userdata can be anything.</para>
+            <para>Queue a resource file located at <c>path</c> for preview. Once the preview is ready, the <c>receiver</c>'s <c>receiver_func</c> will be called. The <c>receiver_func</c> must take the following four arguments: <see cref="T:System.String"/> path, <see cref="T:Godot.Texture"/> preview, <see cref="T:Godot.Texture"/> thumbnail_preview, <c>Variant</c> userdata. <c>userdata</c> can be anything, and will be returned when <c>receiver_func</c> is called.</para>
+            <para>Note: If it was not possible to create the preview the <c>receiver_func</c> will still be called, but the preview will be null.</para>
             </summary>
         </member>
         <member name="M:Godot.EditorResourcePreview.QueueEditedResourcePreview(Godot.Resource,Godot.Object,System.String,System.Object)">
             <summary>
-            <para>Queue a resource being edited for preview (using an instance). Once the preview is ready, your receiver.receiver_func will be called either containing the preview texture or an empty texture (if no preview was possible). Callback must have the format: (path,texture,userdata). Userdata can be anything.</para>
+            <para>Queue the <c>resource</c> being edited for preview. Once the preview is ready, the <c>receiver</c>'s <c>receiver_func</c> will be called. The <c>receiver_func</c> must take the following four arguments: <see cref="T:System.String"/> path, <see cref="T:Godot.Texture"/> preview, <see cref="T:Godot.Texture"/> thumbnail_preview, <c>Variant</c> userdata. <c>userdata</c> can be anything, and will be returned when <c>receiver_func</c> is called.</para>
+            <para>Note: If it was not possible to create the preview the <c>receiver_func</c> will still be called, but the preview will be null.</para>
             </summary>
         </member>
         <member name="M:Godot.EditorResourcePreview.AddPreviewGenerator(Godot.EditorResourcePreviewGenerator)">

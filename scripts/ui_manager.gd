@@ -31,6 +31,10 @@ onready var back_button = $Menu/Options/Back
 onready var leave_button = $Menu/Options/Leave
 
 func _ready():
+	discord_menu_node.show()
+	main_menu_node.hide()
+	options_menu_node.hide()
+	invite_wrap.hide()
 	accept_button.connect("pressed", self, "accept_invite")
 	decline_button.connect("pressed", self, "decline_invite")
 	discord_0_button.grab_focus()

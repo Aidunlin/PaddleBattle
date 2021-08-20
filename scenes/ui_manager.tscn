@@ -23,6 +23,7 @@ __meta__ = {
 }
 
 [node name="Discord" type="VBoxContainer" parent="Menu"]
+visible = false
 margin_left = 490.0
 margin_top = 315.0
 margin_right = 790.0
@@ -45,7 +46,6 @@ text = "Discord 1"
 flat = true
 
 [node name="Main" type="VBoxContainer" parent="Menu"]
-visible = false
 margin_left = 490.0
 margin_top = 213.0
 margin_right = 790.0
