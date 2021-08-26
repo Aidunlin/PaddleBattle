@@ -167,21 +167,18 @@ margin_top = 367.0
 margin_right = 300.0
 margin_bottom = 410.0
 text = "Refresh"
-flat = true
 
 [node name="Back" type="Button" parent="Menu/Options"]
 margin_top = 414.0
 margin_right = 300.0
 margin_bottom = 457.0
 text = "Back"
-flat = true
 
 [node name="Leave" type="Button" parent="Menu/Options"]
 margin_top = 461.0
 margin_right = 300.0
 margin_bottom = 504.0
 text = "Leave"
-flat = true
 
 [node name="MessageWrap" type="MarginContainer" parent="."]
 margin_right = 408.0
