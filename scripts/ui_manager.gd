@@ -87,8 +87,8 @@ func update_friends():
 	var friends = DiscordManager.get_relationships()
 	for friend in friends:
 		var friend_button = Button.new()
-		friend_button.text = friend.name
-		friend_button.connect("pressed", self, "friend_pressed", [friend_button, friend.id])
+		friend_button.text = friend
+		friend_button.connect("pressed", self, "friend_pressed", [friend_button, friends[friend]])
 		friends_list.add_child(friend_button)
 
 func show_invite(user_id, user_name):

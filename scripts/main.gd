@@ -29,7 +29,7 @@ func _physics_process(_delta):
 				"paddles": paddle_manager.paddles,
 				"balls": ball_manager.balls,
 			}
-			DiscordManager.send_data_all(Game.channels.UPDATE_OBJECTS, data)
+			DiscordManager.send_all(Game.channels.UPDATE_OBJECTS, data)
 			update_objects(paddle_manager.paddles, ball_manager.balls)
 		camera.move_and_zoom(paddle_manager.get_children())
 
@@ -67,7 +67,7 @@ func handle_member_connect(id, name):
 			"paddles": paddle_manager.paddles,
 			"map": Game.map,
 		}
-		DiscordManager.send_data(id, Game.channels.JOIN_GAME, data)
+		DiscordManager.send(id, Game.channels.JOIN_GAME, data)
 
 func handle_member_disconnect(id, name):
 	paddle_manager.remove_paddles(id)

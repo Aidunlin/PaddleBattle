@@ -78,7 +78,7 @@ public class discord_manager : Node {
 		relationship_manager.OnRefresh += () => {
 			update_relationships();
 		};
-		relationship_manager.OnRelationshipUpdate += (ref Relationship relationship) => {
+		relationship_manager.OnRelationshipUpdate += (ref Relationship rel) => {
 			update_relationships();
 		};
 		update_activity(false);
@@ -87,6 +87,9 @@ public class discord_manager : Node {
 	
 	public void update_activity(bool in_lobby) {
 		var activity = new Activity();
+		if (Godot.OS.IsDebugBuild()) {
+			activity.Details = "Debugging";
+		}
 		if (in_lobby) {
 			activity.State = "Battling it out";
 			activity.Secrets.Join = lobby_manager.GetLobbyActivitySecret(current_lobby_id);
@@ -97,6 +100,7 @@ public class discord_manager : Node {
 		} else {
 			activity.State = "Thinking about battles";
 		}
+		activity.Assets.LargeImage = "paddlebattle";
 		activity_manager.UpdateActivity(activity, (result) => {
 			if (result != Result.Ok) {
 				GD.PrintErr("Failed to update activity: ", result);
@@ -137,18 +141,18 @@ public class discord_manager : Node {
 		return get_lobby_owner_id() == user_manager.GetCurrentUser().Id;
 	}
 	
-	public void send_data(long user_id, byte channel, object data) {
+	public void send(long user_id, byte channel, object data) {
 		lobby_manager.SendNetworkMessage(current_lobby_id, user_id, channel, GD.Var2Bytes(data));
 	}
 	
-	public void send_data_owner(byte channel, object data) {
-		send_data(get_lobby_owner_id(), channel, data);
+	public void send_owner(byte channel, object data) {
+		send(get_lobby_owner_id(), channel, data);
 	}
 	
-	public void send_data_all(byte channel, object data) {
+	public void send_all(byte channel, object data) {
 		if (current_lobby_id != 0) {
 			foreach (var user in lobby_manager.GetMemberUsers(current_lobby_id)) {
-				send_data(user.Id, channel, data);
+				send(user.Id, channel, data);
 			}
 		}
 	}
@@ -199,19 +203,17 @@ public class discord_manager : Node {
 	}
 	
 	public void update_relationships() {
-		relationship_manager.Filter((ref Relationship relationship) => {
-			return relationship.Presence.Activity.ApplicationId == discord_id;
+		relationship_manager.Filter((ref Relationship rel) => {
+			return rel.Type == RelationshipType.Friend && rel.Presence.Status != Status.Offline;
+			// return rel.Presence.Activity.ApplicationId == discord_id;
 		});
 	}
 	
-	public Godot.Collections.Array get_relationships() {
-		var friends = new Godot.Collections.Array();
+	public Godot.Collections.Dictionary get_relationships() {
+		var friends = new Godot.Collections.Dictionary();
 		for (int i = 0; i < relationship_manager.Count(); i++) {
-			var relationship = relationship_manager.GetAt((uint)i);
-			var friend = new Godot.Collections.Dictionary();
-			friend.Add("name", relationship.User.Username);
-			friend.Add("id", relationship.User.Id);
-			friends.Add(friend);
+			var rel = relationship_manager.GetAt((uint)i);
+			friends.Add(rel.User.Username, rel.User.Id);
 		}
 		return friends;
 	}
