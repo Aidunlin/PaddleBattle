@@ -4,7 +4,7 @@ const VERSION = "Dev Build"
 const MAX_HEALTH = 3
 const MOVE_SPEED = 600
 
-enum channels {
+enum Channels {
 	UPDATE_OBJECTS,
 	SET_PADDLE_INPUTS,
 	JOIN_GAME,

@@ -43,18 +43,15 @@ func back_collided(body):
 		is_safe = true
 
 func safe_timeout():
-	safe_timer.stop()
 	if DiscordManager.is_lobby_owner():
 		is_safe = false
 
 func dash_timeout():
-	dash_timer.stop()
 	if DiscordManager.is_lobby_owner():
 		is_dashing = false
 		dash_reset_timer.start(0.2)
 
 func dash_reset_timeout():
-	dash_reset_timer.stop()
 	if DiscordManager.is_lobby_owner():
 		can_dash = true
 

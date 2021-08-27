@@ -30,7 +30,10 @@ position = Vector2( -5, 0 )
 shape = SubResource( 2 )
 
 [node name="SafeTimer" type="Timer" parent="."]
+one_shot = true
 
 [node name="DashTimer" type="Timer" parent="."]
+one_shot = true
 
 [node name="DashResetTimer" type="Timer" parent="."]
+one_shot = true

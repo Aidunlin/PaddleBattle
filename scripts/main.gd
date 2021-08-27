@@ -30,7 +30,7 @@ func _physics_process(_delta):
 				"paddles": paddle_manager.paddles,
 				"balls": ball_manager.balls,
 			}
-			DiscordManager.send_all(Game.channels.UPDATE_OBJECTS, data)
+			DiscordManager.send_all(Game.Channels.UPDATE_OBJECTS, data)
 			update_objects(paddle_manager.paddles, ball_manager.balls)
 		camera.move_and_zoom(paddle_manager.get_children())
 
@@ -48,17 +48,17 @@ func get_user():
 func handle_discord_message(channel_id, message):
 	var data = bytes2var(message)
 	match channel_id:
-		Game.channels.UPDATE_OBJECTS:
+		Game.Channels.UPDATE_OBJECTS:
 			update_objects(data.paddles, data.balls)
-		Game.channels.SET_PADDLE_INPUTS:
+		Game.Channels.SET_PADDLE_INPUTS:
 			paddle_manager.set_paddle_inputs(data.paddle, data.inputs)
-		Game.channels.JOIN_GAME:
+		Game.Channels.JOIN_GAME:
 			join_game(data.paddles, data.map)
-		Game.channels.UNLOAD_GAME:
+		Game.Channels.UNLOAD_GAME:
 			unload_game(data.reason)
-		Game.channels.CREATE_PADDLE:
+		Game.Channels.CREATE_PADDLE:
 			paddle_manager.create_paddle(data)
-		Game.channels.DAMAGE_PADDLE:
+		Game.Channels.DAMAGE_PADDLE:
 			paddle_manager.damage_paddle(data.paddle)
 
 func handle_member_connect(id, name):

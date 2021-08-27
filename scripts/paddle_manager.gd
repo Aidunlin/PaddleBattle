@@ -38,7 +38,7 @@ func create_paddle_from_input(pad):
 		if DiscordManager.is_lobby_owner():
 			create_paddle(data)
 		else:
-			DiscordManager.send_owner(Game.channels.CREATE_PADDLE, data)
+			DiscordManager.send_owner(Game.Channel.CREATE_PADDLE, data)
 
 func create_paddle(data):
 	var paddle_count = get_child_count()
@@ -81,7 +81,7 @@ func create_paddle(data):
 			var new_data = paddles[new_name].duplicate(true)
 			if Game.user_id != data.id and "pad" in data:
 				new_data.pad = data.pad
-			DiscordManager.send_all(Game.channels.CREATE_PADDLE, new_data)
+			DiscordManager.send_all(Game.Channels.CREATE_PADDLE, new_data)
 		add_child(paddle_node)
 
 func remove_paddle(paddle):
@@ -115,7 +115,7 @@ func update_paddles(new_paddles):
 					"paddle": paddle,
 					"inputs": get_paddle_inputs(paddle),
 				}
-				DiscordManager.send_owner(Game.channels.SET_PADDLE_INPUTS, data)
+				DiscordManager.send_owner(Game.Channels.SET_PADDLE_INPUTS, data)
 
 func get_key(key):
 	return int(Input.is_key_pressed(key))
@@ -166,7 +166,7 @@ func damage_paddle(paddle):
 		var data = {
 			"paddle": paddle,
 		}
-		DiscordManager.send_all(Game.channels.DAMAGE_PADDLE, data)
+		DiscordManager.send_all(Game.Channels.DAMAGE_PADDLE, data)
 
 func reset():
 	input_list.clear()
