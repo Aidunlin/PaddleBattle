@@ -17,11 +17,10 @@ func load_map(new_map, new_color):
 func switch():
 	var map_names = MAPS.keys()
 	var map_index = map_names.find(Game.map)
-	var new_map_name
-	if map_index + 1 == len(map_names):
-		new_map_name = map_names[0]
-	else:
-		new_map_name = map_names[map_index + 1]
+	var new_index = 0
+	if map_index + 1 != len(map_names):
+		new_index = map_names[map_index + 1]
+	var new_map_name = map_names[new_index]
 	Game.map = new_map_name
 	return new_map_name
 

@@ -92,7 +92,7 @@ func friend_pressed(button, id):
 func update_friends():
 	for friend in friends_list.get_children():
 		friend.queue_free()
-	var friends = DiscordManager.get_relationships()
+	var friends = DiscordManager.get_friends()
 	for friend in friends:
 		var friend_button = Button.new()
 		friend_button.text = friend

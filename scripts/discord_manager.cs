@@ -10,7 +10,7 @@ public class discord_manager : Node {
 	[Signal] public delegate void message_received();
 	[Signal] public delegate void invite_received();
 	
-	public enum channels {
+	public enum Channels {
 		UPDATE_OBJECTS,
 		SET_PADDLE_INPUTS,
 		JOIN_GAME,
@@ -97,7 +97,6 @@ public class discord_manager : Node {
 			activity.Party.Id = current_lobby_id.ToString();
 			activity.Party.Size.CurrentSize = lobby_manager.MemberCount(current_lobby_id);
 			activity.Party.Size.MaxSize = 8;
-			activity.Party.Privacy = ActivityPartyPrivacy.Public;
 		} else {
 			activity.State = "Thinking about battles";
 		}
@@ -108,19 +107,19 @@ public class discord_manager : Node {
 			}
 		});
 	}
-
-	public void open_channel(channels channel, bool reliable) {
+	
+	public void open_channel(Channels channel, bool reliable) {
 		lobby_manager.OpenNetworkChannel(current_lobby_id, (byte)channel, reliable);
 	}
 	
 	public void init_networking() {
 		lobby_manager.ConnectNetwork(current_lobby_id);
-		open_channel(channels.UPDATE_OBJECTS, false);
-		open_channel(channels.SET_PADDLE_INPUTS, false);
-		open_channel(channels.JOIN_GAME, true);
-		open_channel(channels.UNLOAD_GAME, true);
-		open_channel(channels.CREATE_PADDLE, true);
-		open_channel(channels.DAMAGE_PADDLE, true);
+		open_channel(Channels.UPDATE_OBJECTS, false);
+		open_channel(Channels.SET_PADDLE_INPUTS, false);
+		open_channel(Channels.JOIN_GAME, true);
+		open_channel(Channels.UNLOAD_GAME, true);
+		open_channel(Channels.CREATE_PADDLE, true);
+		open_channel(Channels.DAMAGE_PADDLE, true);
 	}
 	
 	public string get_user_name() {
@@ -161,7 +160,6 @@ public class discord_manager : Node {
 	public void create_lobby() {
 		var txn = lobby_manager.GetLobbyCreateTransaction();
 		txn.SetCapacity(8);
-		txn.SetType(LobbyType.Public);
 		lobby_manager.CreateLobby(txn, (Result result, ref Lobby lobby) => {
 			if (result == Result.Ok) {
 				current_lobby_id = lobby.Id;
@@ -210,7 +208,7 @@ public class discord_manager : Node {
 		});
 	}
 	
-	public Godot.Collections.Dictionary get_relationships() {
+	public Godot.Collections.Dictionary get_friends() {
 		var friends = new Godot.Collections.Dictionary();
 		for (int i = 0; i < relationship_manager.Count(); i++) {
 			var rel = relationship_manager.GetAt((uint)i);
@@ -220,7 +218,7 @@ public class discord_manager : Node {
 	}
 	
 	public void send_invite(long user_id) {
-		activity_manager.SendInvite(user_id, ActivityActionType.Join, "Come battle it out!", result => {
+		activity_manager.SendInvite(user_id, ActivityActionType.Join, "", result => {
 			if (result != Result.Ok) {
 				EmitSignal("error", "Failed to send invite");
 			}

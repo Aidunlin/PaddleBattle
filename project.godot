@@ -31,7 +31,7 @@ DiscordManager="*res://scripts/discord_manager.cs"
 
 [debug]
 
-settings/fps/force_fps=60
+settings/fps/force_fps=120
 gdscript/warnings/return_value_discarded=false
 
 [display]
@@ -39,6 +39,7 @@ gdscript/warnings/return_value_discarded=false
 window/size/width=1280
 window/size/height=720
 window/dpi/allow_hidpi=true
+window/vsync/use_vsync=false
 
 [input]
 
