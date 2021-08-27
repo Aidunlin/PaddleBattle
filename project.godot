@@ -8,8 +8,44 @@
 
 config_version=4
 
-_global_script_classes=[  ]
+_global_script_classes=[ {
+"base": "Node",
+"class": "BallManager",
+"language": "GDScript",
+"path": "res://scripts/ball_manager.gd"
+}, {
+"base": "Node",
+"class": "Main",
+"language": "GDScript",
+"path": "res://scripts/main.gd"
+}, {
+"base": "Node",
+"class": "MapManager",
+"language": "GDScript",
+"path": "res://scripts/map_manager.gd"
+}, {
+"base": "KinematicBody2D",
+"class": "Paddle",
+"language": "GDScript",
+"path": "res://scripts/paddle.gd"
+}, {
+"base": "Node",
+"class": "PaddleManager",
+"language": "GDScript",
+"path": "res://scripts/paddle_manager.gd"
+}, {
+"base": "Control",
+"class": "UIManager",
+"language": "GDScript",
+"path": "res://scripts/ui_manager.gd"
+} ]
 _global_script_class_icons={
+"BallManager": "",
+"Main": "",
+"MapManager": "",
+"Paddle": "",
+"PaddleManager": "",
+"UIManager": ""
 }
 
 [application]

@@ -25,7 +25,7 @@ func _ready():
 
 func _physics_process(delta):
 	if DiscordManager.is_lobby_owner():
-		velocity = velocity.linear_interpolate(input_velocity, 0.06)
+		velocity = lerp(velocity, input_velocity, 0.06)
 		rotation += input_rotation
 		var collision = move_and_collide(velocity * delta, false)
 		if collision:

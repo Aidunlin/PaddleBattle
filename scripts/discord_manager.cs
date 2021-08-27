@@ -2,6 +2,7 @@ using Godot;
 using Discord;
 
 public class discord_manager : Node {
+	[Signal] public delegate void error();
 	[Signal] public delegate void user_updated();
 	[Signal] public delegate void lobby_created();
 	[Signal] public delegate void member_connected();
@@ -103,7 +104,7 @@ public class discord_manager : Node {
 		activity.Assets.LargeImage = "paddlebattle";
 		activity_manager.UpdateActivity(activity, (result) => {
 			if (result != Result.Ok) {
-				GD.PrintErr("Failed to update activity: ", result);
+				EmitSignal("error", "Failed to update activity: " + result);
 			}
 		});
 	}
@@ -169,7 +170,7 @@ public class discord_manager : Node {
 				update_activity(true);
 				EmitSignal("lobby_created");
 			} else {
-				GD.PrintErr("Failed to create lobby: ", result);
+				EmitSignal("error", "Failed to create lobby: " + result);
 			}
 		});
 	}
@@ -183,7 +184,7 @@ public class discord_manager : Node {
 				init_networking();
 				update_activity(true);
 			} else {
-				GD.PrintErr("Failed to join lobby: ", result);
+				EmitSignal("error", "Failed to join lobby: " + result);
 			}
 		});
 	}
@@ -196,7 +197,7 @@ public class discord_manager : Node {
 					lobby_owner_id = 0;
 					update_activity(false);
 				} else {
-					GD.PrintErr("Failed to leave lobby: ", result);
+				EmitSignal("error", "Failed to leave lobby: " + result);
 				}
 			});
 		}
@@ -221,7 +222,7 @@ public class discord_manager : Node {
 	public void send_invite(long user_id) {
 		activity_manager.SendInvite(user_id, ActivityActionType.Join, "Come battle it out!", result => {
 			if (result != Result.Ok) {
-				GD.PrintErr("Failed to send invite");
+				EmitSignal("error", "Failed to send invite");
 			}
 		});
 	}
@@ -229,7 +230,7 @@ public class discord_manager : Node {
 	public void accept_invite(long user_id) {
 		activity_manager.AcceptInvite(user_id, result => {
 			if (result != Result.Ok) {
-				GD.PrintErr("Failed to accept invite");
+				EmitSignal("error", "Failed to accept invite");
 			}
 		});
 	}
