@@ -468,7 +468,7 @@
         </member>
         <member name="M:Godot.EditorImportPlugin.GetImportOrder">
             <summary>
-            <para>Gets the order of this importer to be run when importing resources. Higher values will be called later. Use this to ensure the importer runs after the dependencies are already imported.</para>
+            <para>Gets the order of this importer to be run when importing resources. Importers with lower import orders will be called first, and higher values will be called later. Use this to ensure the importer runs after the dependencies are already imported. The default import order is <c>0</c> unless overridden by a specific importer. See <see cref="T:Godot.ResourceImporter.ImportOrder"/> for some predefined values.</para>
             </summary>
         </member>
         <member name="M:Godot.EditorImportPlugin.GetImporterName">
@@ -1214,6 +1214,53 @@
             <para>If one or several properties have changed, this must be called. <c>field</c> is used in case your editor can modify fields separately (as an example, Vector3.x). The <c>changing</c> argument avoids the editor requesting this property to be refreshed (leave as <c>false</c> if unsure).</para>
             </summary>
         </member>
+        <member name="T:Godot.EditorResourcePicker">
+            <summary>
+            <para>This <see cref="T:Godot.Control"/> node is used in the editor's Inspector dock to allow editing of <see cref="T:Godot.Resource"/> type properties. It provides options for creating, loading, saving and converting resources. Can be used with <see cref="T:Godot.EditorInspectorPlugin"/> to recreate the same behavior.</para>
+            <para>Note: This <see cref="T:Godot.Control"/> does not include any editor for the resource, as editing is controlled by the Inspector dock itself or sub-Inspectors.</para>
+            </summary>
+        </member>
+        <member name="P:Godot.EditorResourcePicker.BaseType">
+            <summary>
+            <para>The base type of allowed resource types. Can be a comma-separated list of several options.</para>
+            </summary>
+        </member>
+        <member name="P:Godot.EditorResourcePicker.EditedResource">
+            <summary>
+            <para>The edited resource value.</para>
+            </summary>
+        </member>
+        <member name="P:Godot.EditorResourcePicker.Editable">
+            <summary>
+            <para>If <c>true</c>, the value can be selected and edited.</para>
+            </summary>
+        </member>
+        <member name="P:Godot.EditorResourcePicker.ToggleMode">
+            <summary>
+            <para>If <c>true</c>, the main button with the resource preview works in the toggle mode. Use <see cref="M:Godot.EditorResourcePicker.SetTogglePressed(System.Boolean)"/> to manually set the state.</para>
+            </summary>
+        </member>
+        <member name="M:Godot.EditorResourcePicker.HandleMenuSelected(System.Int32)">
+            <summary>
+            <para>This virtual method can be implemented to handle context menu items not handled by default. See <see cref="M:Godot.EditorResourcePicker.SetCreateOptions(Godot.Object)"/>.</para>
+            </summary>
+        </member>
+        <member name="M:Godot.EditorResourcePicker.SetCreateOptions(Godot.Object)">
+            <summary>
+            <para>This virtual method is called when updating the context menu of <see cref="T:Godot.EditorResourcePicker"/>. Implement this method to override the "New ..." items with your own options. <c>menu_node</c> is a reference to the <see cref="T:Godot.PopupMenu"/> node.</para>
+            <para>Note: Implement <see cref="M:Godot.EditorResourcePicker.HandleMenuSelected(System.Int32)"/> to handle these custom items.</para>
+            </summary>
+        </member>
+        <member name="M:Godot.EditorResourcePicker.GetAllowedTypes">
+            <summary>
+            <para>Returns a list of all allowed types and subtypes corresponding to the <see cref="P:Godot.EditorResourcePicker.BaseType"/>. If the <see cref="P:Godot.EditorResourcePicker.BaseType"/> is empty, an empty list is returned.</para>
+            </summary>
+        </member>
+        <member name="M:Godot.EditorResourcePicker.SetTogglePressed(System.Boolean)">
+            <summary>
+            <para>Sets the toggle mode state for the main button. Works only if <see cref="P:Godot.EditorResourcePicker.ToggleMode"/> is set to <c>true</c>.</para>
+            </summary>
+        </member>
         <member name="T:Godot.EditorResourcePreview">
             <summary>
             <para>This object is used to generate previews for resources of files.</para>
@@ -1382,6 +1429,17 @@
         <member name="M:Godot.EditorScript.GetEditorInterface">
             <summary>
             <para>Returns the <see cref="T:Godot.EditorInterface"/> singleton instance.</para>
+            </summary>
+        </member>
+        <member name="T:Godot.EditorScriptPicker">
+            <summary>
+            <para>Similar to <see cref="T:Godot.EditorResourcePicker"/> this <see cref="T:Godot.Control"/> node is used in the editor's Inspector dock, but only to edit the <c>script</c> property of a <see cref="T:Godot.Node"/>. Default options for creating new resources of all possible subtypes are replaced with dedicated buttons that open the "Attach Node Script" dialog. Can be used with <see cref="T:Godot.EditorInspectorPlugin"/> to recreate the same behavior.</para>
+            <para>Note: You must set the <see cref="P:Godot.EditorScriptPicker.ScriptOwner"/> for the custom context menu items to work.</para>
+            </summary>
+        </member>
+        <member name="P:Godot.EditorScriptPicker.ScriptOwner">
+            <summary>
+            <para>The owner <see cref="T:Godot.Node"/> of the script property that holds the edited resource.</para>
             </summary>
         </member>
         <member name="T:Godot.EditorSelection">
@@ -1709,9 +1767,10 @@
             </summary>
             <param name="color">If the parameter is null, then the default value is new Color(1, 1, 1, 1)</param>
         </member>
-        <member name="M:Godot.EditorSpatialGizmoPlugin.CreateHandleMaterial(System.String,System.Boolean)">
+        <member name="M:Godot.EditorSpatialGizmoPlugin.CreateHandleMaterial(System.String,System.Boolean,Godot.Texture)">
             <summary>
             <para>Creates a handle material with its variants (selected and/or editable) and adds them to the internal material list. They can then be accessed with <see cref="M:Godot.EditorSpatialGizmoPlugin.GetMaterial(System.String,Godot.EditorSpatialGizmo)"/> and used in <see cref="M:Godot.EditorSpatialGizmo.AddHandles(Godot.Vector3[],Godot.Material,System.Boolean,System.Boolean)"/>. Should not be overridden.</para>
+            <para>You can optionally provide a texture to use instead of the default icon.</para>
             </summary>
         </member>
         <member name="M:Godot.EditorSpatialGizmoPlugin.AddMaterial(System.String,Godot.SpatialMaterial)">
@@ -1722,6 +1781,11 @@
         <member name="M:Godot.EditorSpatialGizmoPlugin.GetMaterial(System.String,Godot.EditorSpatialGizmo)">
             <summary>
             <para>Gets material from the internal list of materials. If an <see cref="T:Godot.EditorSpatialGizmo"/> is provided, it will try to get the corresponding variant (selected and/or editable).</para>
+            </summary>
+        </member>
+        <member name="T:Godot.EditorSpinSlider">
+            <summary>
+            <para>This <see cref="T:Godot.Control"/> node is used in the editor's Inspector dock to allow editing of numeric values. Can be used with <see cref="T:Godot.EditorInspectorPlugin"/> to recreate the same behavior.</para>
             </summary>
         </member>
         <member name="T:Godot.EditorVCSInterface">
