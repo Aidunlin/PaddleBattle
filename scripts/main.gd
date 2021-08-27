@@ -8,6 +8,7 @@ onready var hud_manager = $HUDManager
 onready var ui_manager = $CanvasLayer/UIManager
 
 func _ready():
+	DiscordManager.connect("error", ui_manager, "add_message")
 	DiscordManager.connect("user_updated", self, "get_user")
 	DiscordManager.connect("lobby_created", self, "create_game")
 	DiscordManager.connect("member_connected", self, "handle_member_connect")

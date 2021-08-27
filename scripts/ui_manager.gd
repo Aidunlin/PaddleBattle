@@ -55,14 +55,22 @@ func start_discord(instance):
 	DiscordManager.start(instance)
 	discord_menu_node.hide()
 
-func add_message(msg = ""):
+func add_message(msg = "", err = false):
 	var new_message = Label.new()
 	new_message.text = msg
 	message_view.add_child(new_message)
 	message_view.move_child(new_message, 0)
+	var message_timer = Timer.new()
+	new_message.add_child(message_timer)
+	message_timer.one_shot = true
+	message_timer.connect("timeout", new_message, "queue_free")
+	message_timer.start(5)
 	if message_view.get_child_count() > 5:
 		message_view.get_child(message_view.get_child_count() - 1).queue_free()
-	print("Message: ", msg)
+	if err:
+		printerr(msg)
+	else:
+		print(msg)
 
 func show_options():
 	if not options_menu_node.visible:
