@@ -9,15 +9,11 @@ public class discord_manager : Node {
 	[Signal] public delegate void member_disconnected();
 	[Signal] public delegate void message_received();
 	[Signal] public delegate void invite_received();
-	
-	public enum Channels {
-		UPDATE_OBJECTS,
-		SET_PADDLE_INPUTS,
-		JOIN_GAME,
-		UNLOAD_GAME,
-		CREATE_PADDLE,
-		DAMAGE_PADDLE,
-	};
+
+	public enum ChannelType {
+		UNRELIABLE,
+		RELIABLE,
+	}
 	
 	public Discord.Discord discord;
 	public ActivityManager activity_manager;
@@ -57,7 +53,7 @@ public class discord_manager : Node {
 			EmitSignal("invite_received", user.Id, user.Username);
 		};
 		lobby_manager.OnNetworkMessage += (lobby_id, user_id, channel_id, data) => {
-			EmitSignal("message_received", channel_id, data);
+			EmitSignal("message_received", data);
 		};
 		lobby_manager.OnMemberConnect += (lobby_id, user_id) => {
 			update_activity(true);
@@ -107,19 +103,11 @@ public class discord_manager : Node {
 			}
 		});
 	}
-	
-	public void open_channel(Channels channel, bool reliable) {
-		lobby_manager.OpenNetworkChannel(current_lobby_id, (byte)channel, reliable);
-	}
-	
+
 	public void init_networking() {
 		lobby_manager.ConnectNetwork(current_lobby_id);
-		open_channel(Channels.UPDATE_OBJECTS, false);
-		open_channel(Channels.SET_PADDLE_INPUTS, false);
-		open_channel(Channels.JOIN_GAME, true);
-		open_channel(Channels.UNLOAD_GAME, true);
-		open_channel(Channels.CREATE_PADDLE, true);
-		open_channel(Channels.DAMAGE_PADDLE, true);
+		lobby_manager.OpenNetworkChannel(current_lobby_id, (byte)ChannelType.UNRELIABLE, false);
+		lobby_manager.OpenNetworkChannel(current_lobby_id, (byte)ChannelType.RELIABLE, true);
 	}
 	
 	public string get_user_name() {
@@ -141,18 +129,19 @@ public class discord_manager : Node {
 		return get_lobby_owner_id() == user_manager.GetCurrentUser().Id;
 	}
 	
-	public void send(long user_id, byte channel, object data) {
+	public void send(long user_id, object data, bool reliable) {
+		byte channel = reliable ? (byte)ChannelType.RELIABLE : (byte)ChannelType.UNRELIABLE;
 		lobby_manager.SendNetworkMessage(current_lobby_id, user_id, channel, GD.Var2Bytes(data));
 	}
 	
-	public void send_owner(byte channel, object data) {
-		send(get_lobby_owner_id(), channel, data);
+	public void send_owner(object data, bool reliable) {
+		send(get_lobby_owner_id(), data, reliable);
 	}
 	
-	public void send_all(byte channel, object data) {
+	public void send_all(object data, bool reliable) {
 		if (current_lobby_id != 0) {
 			foreach (var user in lobby_manager.GetMemberUsers(current_lobby_id)) {
-				send(user.Id, channel, data);
+				send(user.Id, data, reliable);
 			}
 		}
 	}

@@ -22,23 +22,24 @@ func _unhandled_input(_event):
 				create_paddle_from_input(pad)
 		if Input.is_key_pressed(KEY_ESCAPE) and -1 in used_inputs:
 			emit_signal("options_requested")
+			return
 		for pad in used_inputs:
 			if Input.is_joy_button_pressed(pad, JOY_START):
 				emit_signal("options_requested")
-				break
+				return
 
 func create_paddle_from_input(pad):
 	if not pad in used_inputs:
-		var data = {
+		var new_paddle_data = {
 			"name": Game.user_name,
 			"id": Game.user_id,
 			"pad": pad,
 		}
 		used_inputs.append(pad)
 		if DiscordManager.is_lobby_owner():
-			create_paddle(data)
+			create_paddle(new_paddle_data)
 		else:
-			DiscordManager.send_owner(Game.Channel.CREATE_PADDLE, data)
+			DiscordManager.send_owner(new_paddle_data, true)
 
 func create_paddle(data):
 	var paddle_count = get_child_count()
@@ -81,7 +82,7 @@ func create_paddle(data):
 			var new_data = paddles[new_name].duplicate(true)
 			if Game.user_id != data.id and "pad" in data:
 				new_data.pad = data.pad
-			DiscordManager.send_all(Game.Channels.CREATE_PADDLE, new_data)
+			DiscordManager.send_all(new_data, true)
 		add_child(paddle_node)
 
 func remove_paddle(paddle):
@@ -111,11 +112,11 @@ func update_paddles(new_paddles):
 			paddle_node.position = new_paddles[paddle].position
 			paddle_node.rotation = new_paddles[paddle].rotation
 			if Game.user_id == new_paddles[paddle].id:
-				var data = {
+				var input_data = {
 					"paddle": paddle,
 					"inputs": get_paddle_inputs(paddle),
 				}
-				DiscordManager.send_owner(Game.Channels.SET_PADDLE_INPUTS, data)
+				DiscordManager.send_owner(input_data, false)
 
 func get_key(key):
 	return int(Input.is_key_pressed(key))
@@ -163,10 +164,10 @@ func damage_paddle(paddle):
 		paddles[paddle].health = Game.MAX_HEALTH
 	emit_signal("paddle_damaged", paddle, paddles[paddle].health)
 	if DiscordManager.is_lobby_owner():
-		var data = {
+		var paddle_data = {
 			"paddle": paddle,
 		}
-		DiscordManager.send_all(Game.Channels.DAMAGE_PADDLE, data)
+		DiscordManager.send_all(paddle_data, true)
 
 func reset():
 	input_list.clear()

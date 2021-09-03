@@ -7,7 +7,7 @@ With that being said, I hope you find enjoyment in PaddleBattle. Any feedback, b
 
 ## How to play
 
-Simply download the project, unzip, and run `godot.exe`! Releases prior to 0.6.0 require a couple more steps to run the game.
+Simply download the project, unzip, and run `godot.exe`! Releases prior to 0.6.0 require a couple more steps to run the game. Note that you may need to download and install [.NET Core SDK](https://dotnet.microsoft.com/download/dotnet-core) to run.
 
 0.6.0 implements the Discord Game SDK! Discord's networking layer replaces LAN multiplayer (introduced in 0.4.0). You can send and receive invites in-game, and your in-game username is copied straight from Discord. Additionally, if the lobby creator leaves, the game will (almost seamlessly) switch to a new owner.
 

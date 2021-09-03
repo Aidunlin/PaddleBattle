@@ -4,15 +4,6 @@ const VERSION = "Dev Build"
 const MAX_HEALTH = 3
 const MOVE_SPEED = 600
 
-enum Channels {
-	UPDATE_OBJECTS,
-	SET_PADDLE_INPUTS,
-	JOIN_GAME,
-	UNLOAD_GAME,
-	CREATE_PADDLE,
-	DAMAGE_PADDLE,
-}
-
 var is_playing = false
 var map = "BigMap"
 var user_name = ""
