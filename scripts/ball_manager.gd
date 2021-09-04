@@ -16,7 +16,7 @@ func update_balls(new_balls):
 	for ball_index in get_child_count():
 		var ball_node = get_child(ball_index)
 		if ball_node:
-			if DiscordManager.is_lobby_owner():
+			if DiscordManager.IsLobbyOwner():
 				ball_node.mode = RigidBody2D.MODE_CHARACTER
 				if ball_node.position.length() > 4096:
 					ball_node.queue_free()
@@ -33,3 +33,4 @@ func reset():
 	for ball in get_children():
 		ball.queue_free()
 	balls.clear()
+	spawns.clear()

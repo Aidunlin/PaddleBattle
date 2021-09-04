@@ -42,7 +42,7 @@ func _ready():
 	discord_1_button.connect("pressed", self, "start_discord", ["1"])
 	map_button.connect("pressed", self, "emit_signal", ["map_switched"])
 	map_button.text = Game.map
-	play_button.connect("pressed", DiscordManager, "create_lobby")
+	play_button.connect("pressed", DiscordManager, "CreateLobby")
 	quit_button.connect("pressed", get_tree(), "quit")
 	version_node.text = Game.VERSION
 	refresh_button.connect("pressed", self, "update_friends")
@@ -52,8 +52,13 @@ func _ready():
 		start_discord("0")
 
 func start_discord(instance):
-	DiscordManager.start(instance)
+	DiscordManager.Start(instance)
 	discord_menu_node.hide()
+
+func show_user_and_menu():
+	name_label.text = Game.user_name
+	main_menu_node.show()
+	play_button.grab_focus()
 
 func add_message(msg = "", err = false):
 	var new_message = Label.new()
@@ -85,14 +90,14 @@ func hide_options():
 	invite_wrap.hide()
 
 func friend_pressed(button, id):
-	DiscordManager.send_invite(id)
+	DiscordManager.SendInvite(id)
 	button.find_next_valid_focus().grab_focus()
 	button.queue_free()
 
 func update_friends():
 	for friend in friends_list.get_children():
 		friend.queue_free()
-	var friends = DiscordManager.get_friends()
+	var friends = DiscordManager.GetFriends()
 	for friend in friends:
 		var friend_button = Button.new()
 		friend_button.text = friend
@@ -107,7 +112,7 @@ func show_invite(user_id, user_name):
 
 func accept_invite():
 	invite_wrap.hide()
-	DiscordManager.accept_invite(invited_by)
+	DiscordManager.AcceptInvite(invited_by)
 	invited_by = ""
 
 func decline_invite():

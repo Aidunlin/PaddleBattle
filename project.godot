@@ -27,7 +27,7 @@ default_bus_layout=""
 [autoload]
 
 Game="*res://scripts/game.gd"
-DiscordManager="*res://scripts/discord_manager.cs"
+DiscordManager="*res://scripts/DiscordManager.cs"
 
 [debug]
 
