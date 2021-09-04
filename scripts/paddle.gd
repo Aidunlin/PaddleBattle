@@ -24,7 +24,7 @@ func _ready():
 	safe_timer.start(3)
 
 func _physics_process(delta):
-	if DiscordManager.is_lobby_owner():
+	if DiscordManager.IsLobbyOwner():
 		velocity = lerp(velocity, input_velocity, 0.06)
 		rotation += input_rotation
 		var collision = move_and_collide(velocity * delta, false)
@@ -37,26 +37,26 @@ func _physics_process(delta):
 			emit_signal("collided")
 
 func back_collided(body):
-	if DiscordManager.is_lobby_owner() and body.is_in_group("balls") and not is_safe:
+	if DiscordManager.IsLobbyOwner() and body.is_in_group("balls") and not is_safe:
 		emit_signal("damaged")
 		safe_timer.start(2)
 		is_safe = true
 
 func safe_timeout():
-	if DiscordManager.is_lobby_owner():
+	if DiscordManager.IsLobbyOwner():
 		is_safe = false
 
 func dash_timeout():
-	if DiscordManager.is_lobby_owner():
+	if DiscordManager.IsLobbyOwner():
 		is_dashing = false
 		dash_reset_timer.start(0.2)
 
 func dash_reset_timeout():
-	if DiscordManager.is_lobby_owner():
+	if DiscordManager.IsLobbyOwner():
 		can_dash = true
 
 func set_inputs(inputs):
-	if DiscordManager.is_lobby_owner():
+	if DiscordManager.IsLobbyOwner():
 		input_velocity = inputs.velocity
 		input_rotation = inputs.rotation
 		if not inputs.dash:

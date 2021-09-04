@@ -13,7 +13,7 @@ var used_inputs = []
 var paddles = {}
 var spawns = []
 
-func _unhandled_input(_event):
+func _physics_process(_delta):
 	if Game.is_playing:
 		if Input.is_key_pressed(KEY_ENTER) and not -1 in input_list.values():
 			create_paddle_from_input(-1)
@@ -22,11 +22,9 @@ func _unhandled_input(_event):
 				create_paddle_from_input(pad)
 		if Input.is_key_pressed(KEY_ESCAPE) and -1 in used_inputs:
 			emit_signal("options_requested")
-			return
 		for pad in used_inputs:
 			if Input.is_joy_button_pressed(pad, JOY_START):
 				emit_signal("options_requested")
-				return
 
 func create_paddle_from_input(pad):
 	if not pad in used_inputs:
@@ -36,10 +34,10 @@ func create_paddle_from_input(pad):
 			"pad": pad,
 		}
 		used_inputs.append(pad)
-		if DiscordManager.is_lobby_owner():
+		if DiscordManager.IsLobbyOwner():
 			create_paddle(new_paddle_data)
 		else:
-			DiscordManager.send_owner(new_paddle_data, true)
+			DiscordManager.SendOwner(new_paddle_data, true)
 
 func create_paddle(data):
 	var paddle_count = get_child_count()
@@ -78,11 +76,11 @@ func create_paddle(data):
 		else:
 			paddles[new_name].health = Game.MAX_HEALTH
 		emit_signal("paddle_created", paddles[new_name])
-		if DiscordManager.is_lobby_owner():
+		if DiscordManager.IsLobbyOwner():
 			var new_data = paddles[new_name].duplicate(true)
 			if Game.user_id != data.id and "pad" in data:
 				new_data.pad = data.pad
-			DiscordManager.send_all(new_data, true)
+			DiscordManager.SendAll(new_data, true)
 		add_child(paddle_node)
 
 func remove_paddle(paddle):
@@ -101,7 +99,7 @@ func remove_paddles(id):
 func update_paddles(new_paddles):
 	for paddle in new_paddles:
 		var paddle_node = get_node(paddle)
-		if DiscordManager.is_lobby_owner():
+		if DiscordManager.IsLobbyOwner():
 			paddles[paddle].position = paddle_node.position
 			paddles[paddle].rotation = paddle_node.rotation
 			if Game.user_id == new_paddles[paddle].id:
@@ -116,7 +114,7 @@ func update_paddles(new_paddles):
 					"paddle": paddle,
 					"inputs": get_paddle_inputs(paddle),
 				}
-				DiscordManager.send_owner(input_data, false)
+				DiscordManager.SendOwner(input_data, false)
 
 func get_key(key):
 	return int(Input.is_key_pressed(key))
@@ -157,17 +155,17 @@ func damage_paddle(paddle):
 	paddles[paddle].health -= 1
 	if paddles[paddle].health < 1:
 		emit_signal("paddle_destroyed", paddles[paddle].name + " was destroyed")
-		if DiscordManager.is_lobby_owner():
+		if DiscordManager.IsLobbyOwner():
 			var paddle_node = get_node(paddle)
 			paddle_node.position = spawns[paddle_node.get_index()].position
 			paddle_node.rotation = spawns[paddle_node.get_index()].rotation
 		paddles[paddle].health = Game.MAX_HEALTH
 	emit_signal("paddle_damaged", paddle, paddles[paddle].health)
-	if DiscordManager.is_lobby_owner():
+	if DiscordManager.IsLobbyOwner():
 		var paddle_data = {
 			"paddle": paddle,
 		}
-		DiscordManager.send_all(paddle_data, true)
+		DiscordManager.SendAll(paddle_data, true)
 
 func reset():
 	input_list.clear()
@@ -175,3 +173,4 @@ func reset():
 	for paddle in get_children():
 		paddle.queue_free()
 	paddles.clear()
+	spawns.clear()

@@ -8,13 +8,13 @@ onready var hud_manager = $HUDManager
 onready var ui_manager = $CanvasLayer/UIManager
 
 func _ready():
-	DiscordManager.connect("error", ui_manager, "add_message")
-	DiscordManager.connect("user_updated", self, "get_user")
-	DiscordManager.connect("lobby_created", self, "create_game")
-	DiscordManager.connect("member_connected", self, "handle_connect")
-	DiscordManager.connect("member_disconnected", self, "handle_disconnect")
-	DiscordManager.connect("message_received", self, "handle_message")
-	DiscordManager.connect("invite_received", ui_manager, "show_invite")
+	DiscordManager.connect("Error", ui_manager, "add_message")
+	DiscordManager.connect("UserUpdated", self, "get_user")
+	DiscordManager.connect("LobbyCreated", self, "create_game")
+	DiscordManager.connect("MemberConnected", self, "handle_connect")
+	DiscordManager.connect("MemberDisconnected", self, "handle_disconnect")
+	DiscordManager.connect("MessageReceived", self, "handle_message")
+	DiscordManager.connect("InviteReceived", ui_manager, "show_invite")
 	paddle_manager.connect("options_requested", ui_manager, "show_options")
 	paddle_manager.connect("paddle_destroyed", ui_manager, "add_message")
 	paddle_manager.connect("paddle_created", hud_manager, "create_hud")
@@ -25,12 +25,12 @@ func _ready():
 
 func _physics_process(_delta):
 	if Game.is_playing:
-		if DiscordManager.is_lobby_owner():
+		if DiscordManager.IsLobbyOwner():
 			var object_data = {
 				"paddles": paddle_manager.paddles,
 				"balls": ball_manager.balls,
 			}
-			DiscordManager.send_all(object_data, false)
+			DiscordManager.SendAll(object_data, false)
 			update_objects(paddle_manager.paddles, ball_manager.balls)
 		camera.move_and_zoom(paddle_manager.get_children())
 
@@ -39,11 +39,9 @@ func switch_map():
 
 func get_user():
 	if not Game.is_playing and not ui_manager.main_menu_node.visible:
-		Game.user_id = DiscordManager.get_user_id()
-		Game.user_name = DiscordManager.get_user_name()
-		ui_manager.name_label.text = Game.user_name
-		ui_manager.main_menu_node.show()
-		ui_manager.play_button.grab_focus()
+		Game.user_id = DiscordManager.GetUserId()
+		Game.user_name = DiscordManager.GetUserName()
+		ui_manager.show_user_and_menu()
 
 func handle_message(message):
 	var data = bytes2var(message)
@@ -62,12 +60,12 @@ func handle_message(message):
 
 func handle_connect(id, name):
 	ui_manager.add_message(name + " joined the lobby")
-	if DiscordManager.is_lobby_owner():
+	if DiscordManager.IsLobbyOwner():
 		var welcome_data = {
 			"paddles": paddle_manager.paddles,
 			"map": Game.map,
 		}
-		DiscordManager.send(id, welcome_data, true)
+		DiscordManager.Send(id, welcome_data, true)
 
 func handle_disconnect(id, name):
 	paddle_manager.remove_paddles(id)
@@ -99,7 +97,8 @@ func update_objects(paddles, balls):
 		ball_manager.update_balls(balls)
 
 func unload_game(msg):
-	Game.reset()
+	DiscordManager.LeaveLobby()
+	Game.is_playing = false
 	camera.reset()
 	map_manager.reset()
 	paddle_manager.reset()
