@@ -1,7 +1,7 @@
 # PaddleBattle
 A multiplayer action game with pong-like mechanics (in early development).
 
-PaddleBattle is a hobby project of mine. It's my first dive into game development, and I've been really enjoying it so far. I mostly just add/edit stuff that I want to add/edit. I do want the game to eventually have items/powerups, maps/gamemodes, and some type of singleplayer experience.
+PaddleBattle is a hobby project of mine. It's my first dive into game development, and I've been really enjoying it so far. I mostly just add/edit stuff that I want to add/edit. I do want the game to eventually have items/powerups, gamemodes/more maps, and some type of singleplayer experience.
 
 With that being said, I hope you find enjoyment in PaddleBattle. Any feedback, be it praise, suggestions, or criticisms, is greatly appreciated.
 
