@@ -1,6 +1,6 @@
 extends Node
 
-const VERSION = "0.6.0"
+const VERSION = "0.6.1"
 const MAX_HEALTH = 3
 const MOVE_SPEED = 600
 

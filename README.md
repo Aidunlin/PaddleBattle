@@ -7,11 +7,11 @@ With that being said, I hope you find enjoyment in PaddleBattle. Any feedback, b
 
 ## How to play
 
-Simply download the project, unzip, and run `godot.exe`! Releases prior to 0.6.0 require a couple more steps to run the game. Note that you may need to download and install [.NET Core SDK](https://dotnet.microsoft.com/download/dotnet-core) to run.
+Simply download the game from the releases page, extract everything into a folder, and run the executable! If you want to run the game from source code, you will need the [.NET Core SDK](https://dotnet.microsoft.com/download/dotnet-core) to build the game within the included editor.
 
 0.6.0 implements the Discord Game SDK! Discord's networking layer replaces LAN multiplayer (introduced in 0.4.0). You can send and receive invites in-game, and your in-game username is copied straight from Discord. Additionally, if the lobby creator leaves, the game will (almost seamlessly) switch to a new owner.
 
-When the game is running in debug mode (i.e. with a console output), the game will make you choose the Discord instance to connect to. If you haven't installed another version of Discord, just choose `Discord 0`.
+When the game is running in debug mode (i.e. with a console output), the game will make you choose the Discord instance to connect to. If you ever come across this and you haven't installed another version of Discord, just choose `Discord 0`.
 
 Your objective is to bounce balls off of the enemy paddle's back side, causing them to lose health. How you do this is up to you. Good luck and have fun!
 
