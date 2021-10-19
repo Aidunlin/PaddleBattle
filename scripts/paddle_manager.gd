@@ -152,15 +152,20 @@ func set_paddle_inputs(paddle, inputs):
 			get_node(paddle).set_inputs(inputs)
 
 func damage_paddle(paddle):
+	var paddle_node = get_node(paddle)
 	paddles[paddle].health -= 1
+	var crack_opacity = 1.0 - (paddles[paddle].health / float(Game.MAX_HEALTH))
+	crack_opacity *= 0.7
+	if paddles[paddle].health == 1:
+		crack_opacity = 1
+	paddle_node.get_node("Crack").modulate.a = crack_opacity
 	if paddles[paddle].health < 1:
 		emit_signal("paddle_destroyed", paddles[paddle].name + " was destroyed")
 		if DiscordManager.IsLobbyOwner():
-			var paddle_node = get_node(paddle)
 			paddle_node.position = spawns[paddle_node.get_index()].position
 			paddle_node.rotation = spawns[paddle_node.get_index()].rotation
+		paddle_node.get_node("Crack").modulate.a = 0
 		paddles[paddle].health = Game.MAX_HEALTH
-	emit_signal("paddle_damaged", paddle, paddles[paddle].health)
 	if DiscordManager.IsLobbyOwner():
 		var paddle_data = {
 			"paddle": paddle,

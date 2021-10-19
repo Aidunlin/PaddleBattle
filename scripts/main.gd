@@ -18,7 +18,6 @@ func _ready():
 	paddle_manager.connect("options_requested", ui_manager, "show_options")
 	paddle_manager.connect("paddle_destroyed", ui_manager, "add_message")
 	paddle_manager.connect("paddle_created", hud_manager, "create_hud")
-	paddle_manager.connect("paddle_damaged", hud_manager, "update_hud")
 	paddle_manager.connect("paddle_removed", hud_manager, "remove_hud")
 	ui_manager.connect("map_switched", self, "switch_map")
 	ui_manager.connect("end_requested", self, "unload_game", ["You left the lobby"])

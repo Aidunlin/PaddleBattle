@@ -1171,7 +1171,7 @@
         </member>
         <member name="P:Godot.EditorProperty.DrawRed">
             <summary>
-            <para>Used by the inspector, set to <c>true</c> when the property must draw with error color. This is used for editable children's properties.</para>
+            <para>Used by the inspector, set to <c>true</c> when the property is drawn with the editor theme's warning color. This is used for editable children's properties.</para>
             </summary>
         </member>
         <member name="P:Godot.EditorProperty.Keying">

@@ -14,6 +14,26 @@ __meta__ = {
 "_edit_use_anchors_": false
 }
 
+[node name="MessageWrap" type="MarginContainer" parent="."]
+margin_right = 416.0
+margin_bottom = 166.0
+custom_constants/margin_right = 8
+custom_constants/margin_top = 8
+custom_constants/margin_left = 8
+custom_constants/margin_bottom = 8
+__meta__ = {
+"_edit_lock_": true,
+"_edit_use_anchors_": false
+}
+
+[node name="MessageView" type="VBoxContainer" parent="MessageWrap"]
+margin_left = 8.0
+margin_top = 8.0
+margin_right = 408.0
+margin_bottom = 158.0
+rect_min_size = Vector2( 400, 150 )
+custom_constants/separation = -8
+
 [node name="Menu" type="CenterContainer" parent="."]
 anchor_right = 1.0
 anchor_bottom = 1.0
@@ -179,26 +199,6 @@ margin_top = 461.0
 margin_right = 300.0
 margin_bottom = 504.0
 text = "Leave"
-
-[node name="MessageWrap" type="MarginContainer" parent="."]
-margin_right = 408.0
-margin_bottom = 158.0
-custom_constants/margin_right = 8
-custom_constants/margin_top = 8
-custom_constants/margin_left = 8
-custom_constants/margin_bottom = 8
-__meta__ = {
-"_edit_lock_": true,
-"_edit_use_anchors_": false
-}
-
-[node name="MessageView" type="VBoxContainer" parent="MessageWrap"]
-margin_left = 8.0
-margin_top = 8.0
-margin_right = 408.0
-margin_bottom = 158.0
-rect_min_size = Vector2( 400, 150 )
-custom_constants/separation = -8
 
 [node name="InviteWrap" type="MarginContainer" parent="."]
 anchor_top = 1.0
