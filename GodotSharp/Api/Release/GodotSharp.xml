@@ -2087,6 +2087,7 @@
         <member name="M:Godot.Node.RemoveChild(Godot.Node)">
             <summary>
             <para>Removes a child node. The node is NOT deleted and must be deleted manually.</para>
+            <para>Note: This function may set the <see cref="P:Godot.Node.Owner"/> of the removed Node (or its descendants) to be <c>null</c>, if that <see cref="P:Godot.Node.Owner"/> is no longer a parent or ancestor.</para>
             </summary>
         </member>
         <member name="M:Godot.Node.GetChildCount">
@@ -10703,11 +10704,13 @@
         <member name="M:Godot.AcceptDialog.GetOk">
             <summary>
             <para>Returns the OK <see cref="T:Godot.Button"/> instance.</para>
+            <para>Warning: This is a required internal node, removing and freeing it may cause a crash. If you wish to hide it or any of its children, use their <see cref="P:Godot.CanvasItem.Visible"/> property.</para>
             </summary>
         </member>
         <member name="M:Godot.AcceptDialog.GetLabel">
             <summary>
             <para>Returns the label used for built-in text.</para>
+            <para>Warning: This is a required internal node, removing and freeing it may cause a crash. If you wish to hide it or any of its children, use their <see cref="P:Godot.CanvasItem.Visible"/> property.</para>
             </summary>
         </member>
         <member name="M:Godot.AcceptDialog.AddButton(System.String,System.Boolean,System.String)">
@@ -12785,12 +12788,14 @@
         </member>
         <member name="M:Godot.Area.GetOverlappingBodies">
             <summary>
-            <para>Returns a list of intersecting <see cref="T:Godot.PhysicsBody"/>s. For performance reasons (collisions are all processed at the same time) this list is modified once during the physics step, not immediately after objects are moved. Consider using signals instead.</para>
+            <para>Returns a list of intersecting <see cref="T:Godot.PhysicsBody"/>s. The overlapping body's <see cref="P:Godot.CollisionObject.CollisionLayer"/> must be part of this area's <see cref="P:Godot.CollisionObject.CollisionMask"/> in order to be detected.</para>
+            <para>For performance reasons (collisions are all processed at the same time) this list is modified once during the physics step, not immediately after objects are moved. Consider using signals instead.</para>
             </summary>
         </member>
         <member name="M:Godot.Area.GetOverlappingAreas">
             <summary>
-            <para>Returns a list of intersecting <see cref="T:Godot.Area"/>s. For performance reasons (collisions are all processed at the same time) this list is modified once during the physics step, not immediately after objects are moved. Consider using signals instead.</para>
+            <para>Returns a list of intersecting <see cref="T:Godot.Area"/>s. The overlapping area's <see cref="P:Godot.CollisionObject.CollisionLayer"/> must be part of this area's <see cref="P:Godot.CollisionObject.CollisionMask"/> in order to be detected.</para>
+            <para>For performance reasons (collisions are all processed at the same time) this list is modified once during the physics step, not immediately after objects are moved. Consider using signals instead.</para>
             </summary>
         </member>
         <member name="M:Godot.Area.OverlapsBody(Godot.Node)">
@@ -12900,12 +12905,14 @@
         </member>
         <member name="M:Godot.Area2D.GetOverlappingBodies">
             <summary>
-            <para>Returns a list of intersecting <see cref="T:Godot.PhysicsBody2D"/>s. For performance reasons (collisions are all processed at the same time) this list is modified once during the physics step, not immediately after objects are moved. Consider using signals instead.</para>
+            <para>Returns a list of intersecting <see cref="T:Godot.PhysicsBody2D"/>s. The overlapping body's <see cref="P:Godot.CollisionObject2D.CollisionLayer"/> must be part of this area's <see cref="P:Godot.CollisionObject2D.CollisionMask"/> in order to be detected.</para>
+            <para>For performance reasons (collisions are all processed at the same time) this list is modified once during the physics step, not immediately after objects are moved. Consider using signals instead.</para>
             </summary>
         </member>
         <member name="M:Godot.Area2D.GetOverlappingAreas">
             <summary>
-            <para>Returns a list of intersecting <see cref="T:Godot.Area2D"/>s. For performance reasons (collisions are all processed at the same time) this list is modified once during the physics step, not immediately after objects are moved. Consider using signals instead.</para>
+            <para>Returns a list of intersecting <see cref="T:Godot.Area2D"/>s. The overlapping area's <see cref="P:Godot.CollisionObject2D.CollisionLayer"/> must be part of this area's <see cref="P:Godot.CollisionObject2D.CollisionMask"/> in order to be detected.</para>
+            <para>For performance reasons (collisions are all processed at the same time) this list is modified once during the physics step, not immediately after objects are moved. Consider using signals instead.</para>
             </summary>
         </member>
         <member name="M:Godot.Area2D.OverlapsBody(Godot.Node)">
@@ -14506,7 +14513,7 @@
         </member>
         <member name="F:Godot.AudioStreamPlayer3D.AttenuationModelEnum.Disabled">
             <summary>
-            <para>No dampening of loudness according to distance. The sound will still be heard positionally, unlike an <see cref="T:Godot.AudioStreamPlayer"/>.</para>
+            <para>No dampening of loudness according to distance. The sound will still be heard positionally, unlike an <see cref="T:Godot.AudioStreamPlayer"/>. <see cref="F:Godot.AudioStreamPlayer3D.AttenuationModelEnum.Disabled"/> can be combined with a <see cref="P:Godot.AudioStreamPlayer3D.MaxDistance"/> value greater than <c>0.0</c> to achieve linear attenuation clamped to a sphere of a defined size.</para>
             </summary>
         </member>
         <member name="F:Godot.AudioStreamPlayer3D.OutOfRangeModeEnum.Mix">
@@ -14847,6 +14854,16 @@
             <para>Returns if user cancels baking.</para>
             </summary>
         </member>
+        <member name="F:Godot.BakedLightmap.BakeError.NoLightmapper">
+            <summary>
+            <para>Returns if lightmapper can't be created. Unless you are using a custom lightmapper, please report this as bug.</para>
+            </summary>
+        </member>
+        <member name="F:Godot.BakedLightmap.BakeError.NoRoot">
+            <summary>
+            <para>There is no root node to start baking from. Either provide <c>from_node</c> argument or attach this node to a parent that should be used as root.</para>
+            </summary>
+        </member>
         <member name="F:Godot.BakedLightmap.EnvironmentModeEnum.Disabled">
             <summary>
             <para>No environment is used during baking.</para>
@@ -14986,7 +15003,7 @@
         </member>
         <member name="M:Godot.BakedLightmap.Bake(Godot.Node,System.String)">
             <summary>
-            <para>Bakes the lightmap, scanning from the given <c>from_node</c> root and saves the resulting <see cref="T:Godot.BakedLightmapData"/> in <c>data_save_path</c>. If no save path is provided it will try to match the path from the current <see cref="P:Godot.BakedLightmap.LightData"/>.</para>
+            <para>Bakes the lightmap, scanning from the given <c>from_node</c> root and saves the resulting <see cref="T:Godot.BakedLightmapData"/> in <c>data_save_path</c>. If no root node is provided, parent of this node will be used as root instead. If no save path is provided it will try to match the path from the current <see cref="P:Godot.BakedLightmap.LightData"/>.</para>
             </summary>
         </member>
         <member name="P:Godot.BakedLightmapData.Energy">
@@ -15161,7 +15178,7 @@
         </member>
         <member name="M:Godot.BitMap.GrowMask(System.Int32,Godot.Rect2)">
             <summary>
-            <para>Applies morphological dilation to the bitmap. The first argument is the dilation amount, Rect2 is the area where the dilation will be applied.</para>
+            <para>Applies morphological dilation or erosion to the bitmap. If <c>pixels</c> is positive, dilation is applied to the bitmap. If <c>pixels</c> is negative, erosion is applied to the bitmap. <c>rect</c> defines the area where the morphological operation is applied. Pixels located outside the <c>rect</c> are unaffected by <see cref="M:Godot.BitMap.GrowMask(System.Int32,Godot.Rect2)"/>.</para>
             </summary>
         </member>
         <member name="T:Godot.BitmapFont">
@@ -17935,7 +17952,7 @@
         </member>
         <member name="P:Godot.CharFXTransform.ElapsedTime">
             <summary>
-            <para>The time elapsed since the <see cref="T:Godot.RichTextLabel"/> was added to the scene tree (in seconds). Time stops when the project is paused, unless the <see cref="T:Godot.RichTextLabel"/>'s <see cref="P:Godot.Node.PauseMode"/> is set to <see cref="F:Godot.Node.PauseModeEnum.Process"/>.</para>
+            <para>The time elapsed since the <see cref="T:Godot.RichTextLabel"/> was added to the scene tree (in seconds). Time stops when the <see cref="T:Godot.RichTextLabel"/> is paused (see <see cref="P:Godot.Node.PauseMode"/>). Resets when the text in the <see cref="T:Godot.RichTextLabel"/> is changed.</para>
             <para>Note: Time still passes while the <see cref="T:Godot.RichTextLabel"/> is hidden.</para>
             </summary>
         </member>
@@ -18555,11 +18572,13 @@
         <member name="M:Godot.ColorPickerButton.GetPicker">
             <summary>
             <para>Returns the <see cref="T:Godot.ColorPicker"/> that this node toggles.</para>
+            <para>Warning: This is a required internal node, removing and freeing it may cause a crash. If you wish to hide it or any of its children, use their <see cref="P:Godot.CanvasItem.Visible"/> property.</para>
             </summary>
         </member>
         <member name="M:Godot.ColorPickerButton.GetPopup">
             <summary>
             <para>Returns the control's <see cref="T:Godot.PopupPanel"/> which allows you to connect to popup signals. This allows you to handle events when the ColorPicker is shown or hidden.</para>
+            <para>Warning: This is a required internal node, removing and freeing it may cause a crash. If you wish to hide it or any of its children, use their <see cref="P:Godot.CanvasItem.Visible"/> property.</para>
             </summary>
         </member>
         <member name="T:Godot.ColorRect">
@@ -18822,6 +18841,7 @@
         <member name="M:Godot.ConfirmationDialog.GetCancel">
             <summary>
             <para>Returns the cancel button.</para>
+            <para>Warning: This is a required internal node, removing and freeing it may cause a crash. If you wish to hide it or any of its children, use their <see cref="P:Godot.CanvasItem.Visible"/> property.</para>
             </summary>
         </member>
         <member name="T:Godot.Container">
@@ -21531,6 +21551,11 @@
             <para>Note: When using the GLES2 renderer, this is only available if the GPU supports the <c>GL_EXT_gpu_shader4</c> extension.</para>
             </summary>
         </member>
+        <member name="P:Godot.Environment.GlowHighQuality">
+            <summary>
+            <para>Takes more samples during downsample pass of glow. This ensures that single pixels are captured by glow which makes the glow look smoother and more stable during movement. However, it is very expensive and makes the glow post process take twice as long.</para>
+            </summary>
+        </member>
         <member name="P:Godot.Environment.AdjustmentEnabled">
             <summary>
             <para>If <c>true</c>, enables the <c>adjustment_*</c> properties provided by this resource. If <c>false</c>, modifications to the <c>adjustment_*</c> properties will have no effect on the rendered scene.</para>
@@ -21727,11 +21752,13 @@
         <member name="M:Godot.FileDialog.GetVbox">
             <summary>
             <para>Returns the vertical box container of the dialog, custom controls can be added to it.</para>
+            <para>Warning: This is a required internal node, removing and freeing it may cause a crash. If you wish to hide it or any of its children, use their <see cref="P:Godot.CanvasItem.Visible"/> property.</para>
             </summary>
         </member>
         <member name="M:Godot.FileDialog.GetLineEdit">
             <summary>
             <para>Returns the LineEdit for the selected file.</para>
+            <para>Warning: This is a required internal node, removing and freeing it may cause a crash. If you wish to hide it or any of its children, use their <see cref="P:Godot.CanvasItem.Visible"/> property.</para>
             </summary>
         </member>
         <member name="M:Godot.FileDialog.DeselectItems">
@@ -22799,8 +22826,8 @@
         </member>
         <member name="M:Godot.GraphEdit.GetZoomHbox">
             <summary>
-            <para>Gets the <see cref="T:Godot.HBoxContainer"/> that contains the zooming and grid snap controls in the top left of the graph.</para>
-            <para>Warning: The intended usage of this function is to allow you to reposition or add your own custom controls to the container. This is an internal control and as such should not be freed. If you wish to hide this or any of its children, use their <see cref="P:Godot.CanvasItem.Visible"/> property instead.</para>
+            <para>Gets the <see cref="T:Godot.HBoxContainer"/> that contains the zooming and grid snap controls in the top left of the graph. You can use this method to reposition the toolbar or to add your own custom controls to it.</para>
+            <para>Warning: This is a required internal node, removing and freeing it may cause a crash. If you wish to hide it or any of its children, use their <see cref="P:Godot.CanvasItem.Visible"/> property.</para>
             </summary>
         </member>
         <member name="M:Godot.GraphEdit.SetSelected(Godot.Node)">
@@ -23839,10 +23866,6 @@
                 add_child(texture_rect)
                 texture_rect.texture = texture
             </code></para>
-            <para>Gzipped response bodies</para>
-            <para>HttpRequest will automatically handle decompression of response bodies.</para>
-            <para>A "Accept-Encoding" header will be automatically added to each of your requests, unless one is already specified.</para>
-            <para>Any response with a "Content-Encoding: gzip" header will automatically be decompressed and delivered to you as a uncompressed bytes.</para>
             </summary>
         </member>
         <member name="F:Godot.HTTPRequest.Result.Success">
@@ -23916,31 +23939,15 @@
             <para>If <c>true</c>, multithreading is used to improve performance.</para>
             </summary>
         </member>
-        <member name="P:Godot.HTTPRequest.AcceptGzip">
-            <summary>
-            <para>If <c>true</c>, this header will be added to each request: <c>Accept-Encoding: gzip, deflate</c> telling servers that it's okay to compress response bodies.</para>
-            <para>Any Reponse body declaring a <c>Content-Encoding</c> of either <c>gzip</c> or <c>deflate</c> will then be automatically decompressed, and the uncompressed bytes will be delivered via <c>request_completed</c>.</para>
-            <para>If the user has specified their own <c>Accept-Encoding</c> header, then no header will be added regaurdless of <c>accept_gzip</c>.</para>
-            <para>If <c>false</c> no header will be added, and no decompression will be performed on response bodies. The raw bytes of the response body will be returned via <c>request_completed</c>.</para>
-            </summary>
-        </member>
         <member name="P:Godot.HTTPRequest.BodySizeLimit">
             <summary>
-            <para>Maximum allowed size for response bodies. If the response body is compressed, this will be used as the maximum allowed size for the decompressed body.</para>
+            <para>Maximum allowed size for response bodies.</para>
             </summary>
         </member>
         <member name="P:Godot.HTTPRequest.MaxRedirects">
             <summary>
             <para>Maximum number of allowed redirects.</para>
             </summary>
-        </member>
-        <member name="M:Godot.HTTPRequest.Request(System.String,System.String[],System.Boolean,Godot.HTTPClient.Method,System.String)">
-            <summary>
-            <para>Creates request on the underlying <see cref="T:Godot.HTTPClient"/>. If there is no configuration errors, it tries to connect using <see cref="M:Godot.HTTPClient.ConnectToHost(System.String,System.Int32,System.Boolean,System.Boolean)"/> and passes parameters onto <see cref="M:Godot.HTTPClient.Request(Godot.HTTPClient.Method,System.String,System.String[],System.String)"/>.</para>
-            <para>Returns <c>OK</c> if request is successfully created. (Does not imply that the server has responded), <c>ERR_UNCONFIGURED</c> if not in the tree, <c>ERR_BUSY</c> if still processing previous request, <c>ERR_INVALID_PARAMETER</c> if given string is not a valid URL format, or <c>ERR_CANT_CONNECT</c> if not using thread and the <see cref="T:Godot.HTTPClient"/> cannot connect to host.</para>
-            <para>Note: When <c>method</c> is <see cref="F:Godot.HTTPClient.Method.Get"/>, the payload sent via <c>request_data</c> might be ignored by the server or even cause the server to reject the request (check <a href="https://datatracker.ietf.org/doc/html/rfc7231#section-4.3.1">RFC 7231 section 4.3.1</a> for more details). As a workaround, you can send data as a query string in the URL. See <c>String.http_escape</c> for an example.</para>
-            </summary>
-            <param name="customHeaders">If the parameter is null, then the default value is Array.Empty&lt;string&gt;()</param>
         </member>
         <member name="M:Godot.HTTPRequest.RequestRaw(System.String,System.String[],System.Boolean,Godot.HTTPClient.Method,System.Byte[])">
             <summary>
@@ -23949,6 +23956,14 @@
             </summary>
             <param name="customHeaders">If the parameter is null, then the default value is Array.Empty&lt;string&gt;()</param>
             <param name="requestDataRaw">If the parameter is null, then the default value is Array.Empty&lt;byte&gt;()</param>
+        </member>
+        <member name="M:Godot.HTTPRequest.Request(System.String,System.String[],System.Boolean,Godot.HTTPClient.Method,System.String)">
+            <summary>
+            <para>Creates request on the underlying <see cref="T:Godot.HTTPClient"/>. If there is no configuration errors, it tries to connect using <see cref="M:Godot.HTTPClient.ConnectToHost(System.String,System.Int32,System.Boolean,System.Boolean)"/> and passes parameters onto <see cref="M:Godot.HTTPClient.Request(Godot.HTTPClient.Method,System.String,System.String[],System.String)"/>.</para>
+            <para>Returns <c>OK</c> if request is successfully created. (Does not imply that the server has responded), <c>ERR_UNCONFIGURED</c> if not in the tree, <c>ERR_BUSY</c> if still processing previous request, <c>ERR_INVALID_PARAMETER</c> if given string is not a valid URL format, or <c>ERR_CANT_CONNECT</c> if not using thread and the <see cref="T:Godot.HTTPClient"/> cannot connect to host.</para>
+            <para>Note: When <c>method</c> is <see cref="F:Godot.HTTPClient.Method.Get"/>, the payload sent via <c>request_data</c> might be ignored by the server or even cause the server to reject the request (check <a href="https://datatracker.ietf.org/doc/html/rfc7231#section-4.3.1">RFC 7231 section 4.3.1</a> for more details). As a workaround, you can send data as a query string in the URL. See <c>String.http_escape</c> for an example.</para>
+            </summary>
+            <param name="customHeaders">If the parameter is null, then the default value is Array.Empty&lt;string&gt;()</param>
         </member>
         <member name="M:Godot.HTTPRequest.CancelRequest">
             <summary>
@@ -24402,6 +24417,7 @@
         <member name="F:Godot.Image.Format.R8">
             <summary>
             <para>OpenGL texture format <c>RED</c> with a single component and a bitdepth of 8.</para>
+            <para>Note: When using the GLES2 backend, this uses the alpha channel instead of the red channel for storage.</para>
             </summary>
         </member>
         <member name="F:Godot.Image.Format.Rg8">
@@ -25308,6 +25324,30 @@
             <para>Note: This method only works on Android and iOS. On other platforms, it always returns <c>Vector3.ZERO</c>.</para>
             </summary>
         </member>
+        <member name="M:Godot.Input.SetGravity(Godot.Vector3)">
+            <summary>
+            <para>Sets the gravity value of the accelerometer sensor. Can be used for debugging on devices without a hardware sensor, for example in an editor on a PC.</para>
+            <para>Note: This value can be immediately overwritten by the hardware sensor value on Android and iOS.</para>
+            </summary>
+        </member>
+        <member name="M:Godot.Input.SetAccelerometer(Godot.Vector3)">
+            <summary>
+            <para>Sets the acceleration value of the accelerometer sensor. Can be used for debugging on devices without a hardware sensor, for example in an editor on a PC.</para>
+            <para>Note: This value can be immediately overwritten by the hardware sensor value on Android and iOS.</para>
+            </summary>
+        </member>
+        <member name="M:Godot.Input.SetMagnetometer(Godot.Vector3)">
+            <summary>
+            <para>Sets the value of the magnetic field of the magnetometer sensor. Can be used for debugging on devices without a hardware sensor, for example in an editor on a PC.</para>
+            <para>Note: This value can be immediately overwritten by the hardware sensor value on Android and iOS.</para>
+            </summary>
+        </member>
+        <member name="M:Godot.Input.SetGyroscope(Godot.Vector3)">
+            <summary>
+            <para>Sets the value of the rotation rate of the gyroscope sensor. Can be used for debugging on devices without a hardware sensor, for example in an editor on a PC.</para>
+            <para>Note: This value can be immediately overwritten by the hardware sensor value on Android and iOS.</para>
+            </summary>
+        </member>
         <member name="M:Godot.Input.GetLastMouseSpeed">
             <summary>
             <para>Returns the mouse speed for the last time the cursor was moved, and this until the next frame where the mouse moves. This means that even if the mouse is not moving, this function will still return the value of the last motion.</para>
@@ -25383,6 +25423,12 @@
             <summary>
             <para>Enables or disables the accumulation of similar input events sent by the operating system. When input accumulation is enabled, all input events generated during a frame will be merged and emitted when the frame is done rendering. Therefore, this limits the number of input method calls per second to the rendering FPS.</para>
             <para>Input accumulation is enabled by default. It can be disabled to get slightly more precise/reactive input at the cost of increased CPU usage. In applications where drawing freehand lines is required, input accumulation should generally be disabled while the user is drawing the line to get results that closely follow the actual input.</para>
+            </summary>
+        </member>
+        <member name="M:Godot.Input.FlushBufferedEvents">
+            <summary>
+            <para>Sends all input events which are in the current buffer to the game loop. These events may have been buffered as a result of accumulated input (<see cref="M:Godot.Input.SetUseAccumulatedInput(System.Boolean)"/>) or agile input flushing ().</para>
+            <para>The engine will already do this itself at key execution points (at least once per frame). However, this can be useful in advanced cases where you want precise control over the timing of event handling.</para>
             </summary>
         </member>
         <member name="T:Godot.InputEvent">
@@ -25651,7 +25697,7 @@
         </member>
         <member name="P:Godot.InputEventScreenDrag.Relative">
             <summary>
-            <para>The drag position relative to its start position.</para>
+            <para>The drag position relative to the previous position (position at the last frame).</para>
             </summary>
         </member>
         <member name="P:Godot.InputEventScreenDrag.Speed">
@@ -26118,6 +26164,7 @@
         <member name="M:Godot.ItemList.GetVScroll">
             <summary>
             <para>Returns the <see cref="T:Godot.Object"/> ID associated with the list.</para>
+            <para>Warning: This is a required internal node, removing and freeing it may cause a crash. If you wish to hide it or any of its children, use their <see cref="P:Godot.CanvasItem.Visible"/> property.</para>
             </summary>
         </member>
         <member name="T:Godot.JNISingleton">
@@ -27626,6 +27673,7 @@
         <member name="M:Godot.LineEdit.GetMenu">
             <summary>
             <para>Returns the <see cref="T:Godot.PopupMenu"/> of this <see cref="T:Godot.LineEdit"/>. By default, this menu is displayed when right-clicking on the <see cref="T:Godot.LineEdit"/>.</para>
+            <para>Warning: This is a required internal node, removing and freeing it may cause a crash. If you wish to hide it or any of its children, use their <see cref="P:Godot.CanvasItem.Visible"/> property.</para>
             </summary>
         </member>
         <member name="T:Godot.LineShape2D">
@@ -27972,6 +28020,7 @@
         <member name="M:Godot.MenuButton.GetPopup">
             <summary>
             <para>Returns the <see cref="T:Godot.PopupMenu"/> contained in this button.</para>
+            <para>Warning: This is a required internal node, removing and freeing it may cause a crash. If you wish to hide it or any of its children, use their <see cref="P:Godot.CanvasItem.Visible"/> property.</para>
             </summary>
         </member>
         <member name="M:Godot.MenuButton.SetDisableShortcuts(System.Boolean)">
@@ -30257,6 +30306,7 @@
         <member name="M:Godot.OptionButton.GetPopup">
             <summary>
             <para>Returns the <see cref="T:Godot.PopupMenu"/> contained in this button.</para>
+            <para>Warning: This is a required internal node, removing and freeing it may cause a crash. If you wish to hide it or any of its children, use their <see cref="P:Godot.CanvasItem.Visible"/> property.</para>
             </summary>
         </member>
         <member name="T:Godot.PCKPacker">
@@ -35505,6 +35555,7 @@
             <para>Capture its surroundings as a dual paraboloid image, and stores versions of it with increasing levels of blur to simulate different material roughnesses.</para>
             <para>The <see cref="T:Godot.ReflectionProbe"/> is used to create high-quality reflections at the cost of performance. It can be combined with <see cref="T:Godot.GIProbe"/>s and Screen Space Reflections to achieve high quality reflections. <see cref="T:Godot.ReflectionProbe"/>s render all objects within their <see cref="P:Godot.ReflectionProbe.CullMask"/>, so updating them can be quite expensive. It is best to update them once with the important static objects and then leave them.</para>
             <para>Note: By default Godot will only render 16 reflection probes. If you need more, increase the number of atlas subdivisions. This setting can be found in .</para>
+            <para>Note: The GLES2 backend will only display two reflection probes at the same time for a single mesh. If possible, split up large meshes that span over multiple reflection probes into smaller ones.</para>
             </summary>
         </member>
         <member name="F:Godot.ReflectionProbe.UpdateModeEnum.Once">
@@ -36250,6 +36301,7 @@
         <member name="M:Godot.RichTextLabel.GetVScroll">
             <summary>
             <para>Returns the vertical scrollbar.</para>
+            <para>Warning: This is a required internal node, removing and freeing it may cause a crash. If you wish to hide it or any of its children, use their <see cref="P:Godot.CanvasItem.Visible"/> property.</para>
             </summary>
         </member>
         <member name="M:Godot.RichTextLabel.ScrollToLine(System.Int32)">
@@ -37208,8 +37260,10 @@
             <summary>
             <para>Calls <c>method</c> on each member of the given group, respecting the given <see cref="T:Godot.SceneTree.GroupCallFlags"/>. You can pass arguments to <c>method</c> by specifying them at the end of the method call.</para>
             <para>Note: <c>method</c> may only have 5 arguments at most (8 arguments passed to this method in total).</para>
+            <para>Note: Due to design limitations, <see cref="M:Godot.SceneTree.CallGroupFlags(System.Int32,System.String,System.String,System.Object[])"/> will fail silently if one of the arguments is <c>null</c>.</para>
             <para><code>
-            get_tree().call_group_flags(SceneTree.GROUP_CALL_REALTIME | SceneTree.GROUP_CALL_REVERSE, "bases", "destroy") # Call the method immediately and in reverse order.
+            # Call the method immediately and in reverse order.
+            get_tree().call_group_flags(SceneTree.GROUP_CALL_REALTIME | SceneTree.GROUP_CALL_REVERSE, "bases", "destroy")
             </code></para>
             </summary>
         </member>
@@ -37227,6 +37281,7 @@
             <summary>
             <para>Calls <c>method</c> on each member of the given group. You can pass arguments to <c>method</c> by specifying them at the end of the method call. This method is equivalent of calling <see cref="M:Godot.SceneTree.CallGroupFlags(System.Int32,System.String,System.String,System.Object[])"/> with <see cref="F:Godot.SceneTree.GroupCallFlags.Default"/> flag.</para>
             <para>Note: <c>method</c> may only have 5 arguments at most (7 arguments passed to this method in total).</para>
+            <para>Note: Due to design limitations, <see cref="M:Godot.SceneTree.CallGroup(System.String,System.String,System.Object[])"/> will fail silently if one of the arguments is <c>null</c>.</para>
             <para>Note: <see cref="M:Godot.SceneTree.CallGroup(System.String,System.String,System.Object[])"/> will always call methods with an one-frame delay, in a way similar to <see cref="M:Godot.Object.CallDeferred(System.String,System.Object[])"/>. To call methods immediately, use <see cref="M:Godot.SceneTree.CallGroupFlags(System.Int32,System.String,System.String,System.Object[])"/> with the <see cref="F:Godot.SceneTree.GroupCallFlags.Realtime"/> flag.</para>
             </summary>
         </member>
@@ -37426,11 +37481,13 @@
         <member name="M:Godot.ScrollContainer.GetHScrollbar">
             <summary>
             <para>Returns the horizontal scrollbar <see cref="T:Godot.HScrollBar"/> of this <see cref="T:Godot.ScrollContainer"/>.</para>
+            <para>Warning: This is a required internal node, removing and freeing it may cause a crash. If you wish to disable the horizontal scrollbar, use <see cref="P:Godot.ScrollContainer.ScrollHorizontalEnabled"/>. If you want to only hide it instead, use its <see cref="P:Godot.CanvasItem.Visible"/> property.</para>
             </summary>
         </member>
         <member name="M:Godot.ScrollContainer.GetVScrollbar">
             <summary>
             <para>Returns the vertical scrollbar <see cref="T:Godot.VScrollBar"/> of this <see cref="T:Godot.ScrollContainer"/>.</para>
+            <para>Warning: This is a required internal node, removing and freeing it may cause a crash. If you wish to disable the vertical scrollbar, use <see cref="P:Godot.ScrollContainer.ScrollVerticalEnabled"/>. If you want to only hide it instead, use its <see cref="P:Godot.CanvasItem.Visible"/> property.</para>
             </summary>
         </member>
         <member name="M:Godot.ScrollContainer.EnsureControlVisible(Godot.Control)">
@@ -39568,6 +39625,7 @@
         <member name="M:Godot.SpinBox.GetLineEdit">
             <summary>
             <para>Returns the <see cref="T:Godot.LineEdit"/> instance from this <see cref="T:Godot.SpinBox"/>. You can use it to access properties and methods of <see cref="T:Godot.LineEdit"/>.</para>
+            <para>Warning: This is a required internal node, removing and freeing it may cause a crash. If you wish to hide it or any of its children, use their <see cref="P:Godot.CanvasItem.Visible"/> property.</para>
             </summary>
         </member>
         <member name="T:Godot.SplitContainer">
@@ -41116,6 +41174,7 @@
         <member name="M:Godot.TabContainer.GetPopup">
             <summary>
             <para>Returns the <see cref="T:Godot.Popup"/> node instance if one has been set already with <see cref="M:Godot.TabContainer.SetPopup(Godot.Node)"/>.</para>
+            <para>Warning: This is a required internal node, removing and freeing it may cause a crash. If you wish to hide it or any of its children, use their <see cref="P:Godot.CanvasItem.Visible"/> property.</para>
             </summary>
         </member>
         <member name="M:Godot.TabContainer.SetTabsRearrangeGroup(System.Int32)">
@@ -41765,6 +41824,7 @@
         <member name="M:Godot.TextEdit.GetMenu">
             <summary>
             <para>Returns the <see cref="T:Godot.PopupMenu"/> of this <see cref="T:Godot.TextEdit"/>. By default, this menu is displayed when right-clicking on the <see cref="T:Godot.TextEdit"/>.</para>
+            <para>Warning: This is a required internal node, removing and freeing it may cause a crash. If you wish to hide it or any of its children, use their <see cref="P:Godot.CanvasItem.Visible"/> property.</para>
             </summary>
         </member>
         <member name="M:Godot.TextEdit.GetBreakpoints">
@@ -43257,7 +43317,8 @@
         </member>
         <member name="P:Godot.Timer.WaitTime">
             <summary>
-            <para>Wait time in seconds.</para>
+            <para>The wait time in seconds.</para>
+            <para>Note: Timers can only emit once per rendered frame at most (or once per physics frame if <see cref="P:Godot.Timer.ProcessMode"/> is <see cref="F:Godot.Timer.TimerProcessMode.Physics"/>). This means very low wait times (lower than 0.05 seconds) will behave in significantly different ways depending on the rendered framerate. For very low wait times, it is recommended to use a process loop in a script instead of using a Timer node.</para>
             </summary>
         </member>
         <member name="P:Godot.Timer.OneShot">
@@ -49914,7 +49975,7 @@
             <para>Sets the values to be used with the "DoF Far Blur" post-process effect. See <see cref="T:Godot.Environment"/> for more details.</para>
             </summary>
         </member>
-        <member name="M:Godot.VisualServer.EnvironmentSetGlow(Godot.RID,System.Boolean,System.Int32,System.Single,System.Single,System.Single,Godot.VisualServer.EnvironmentGlowBlendMode,System.Single,System.Single,System.Single,System.Boolean)">
+        <member name="M:Godot.VisualServer.EnvironmentSetGlow(Godot.RID,System.Boolean,System.Int32,System.Single,System.Single,System.Single,Godot.VisualServer.EnvironmentGlowBlendMode,System.Single,System.Single,System.Single,System.Boolean,System.Boolean)">
             <summary>
             <para>Sets the variables to be used with the "glow" post-process effect. See <see cref="T:Godot.Environment"/> for more details.</para>
             </summary>
@@ -52301,7 +52362,7 @@
         </member>
         <member name="T:Godot.WebSocketPeer">
             <summary>
-            <para>This class represent a specific WebSocket connection, you can do lower level operations with it.</para>
+            <para>This class represents a specific WebSocket connection, allowing you to do lower level operations with it.</para>
             <para>You can choose to write to the socket in binary or text mode, and you can recognize the mode used for writing by the other peer.</para>
             </summary>
         </member>
@@ -52613,6 +52674,7 @@
         <member name="M:Godot.WindowDialog.GetCloseButton">
             <summary>
             <para>Returns the close <see cref="T:Godot.TextureButton"/>.</para>
+            <para>Warning: This is a required internal node, removing and freeing it may cause a crash. If you wish to hide it or any of its children, use their <see cref="P:Godot.CanvasItem.Visible"/> property.</para>
             </summary>
         </member>
         <member name="T:Godot.World">
@@ -55181,13 +55243,20 @@
         </member>
         <member name="M:Godot.Thread.IsActive">
             <summary>
-            <para>Returns <c>true</c> if this <see cref="T:Godot.Thread"/> is currently active. An active <see cref="T:Godot.Thread"/> cannot start work on a new method but can be joined with <see cref="M:Godot.Thread.WaitToFinish"/>.</para>
+            <para>Returns <c>true</c> if this <see cref="T:Godot.Thread"/> has been started. Once started, this will return <c>true</c> until it is joined using <see cref="M:Godot.Thread.WaitToFinish"/>. For checking if a <see cref="T:Godot.Thread"/> is still executing its task, use <see cref="M:Godot.Thread.IsAlive"/>.</para>
+            </summary>
+        </member>
+        <member name="M:Godot.Thread.IsAlive">
+            <summary>
+            <para>Returns <c>true</c> if this <see cref="T:Godot.Thread"/> is currently running. This is useful for determining if <see cref="M:Godot.Thread.WaitToFinish"/> can be called without blocking the calling thread.</para>
+            <para>To check if a <see cref="T:Godot.Thread"/> is joinable, use <see cref="M:Godot.Thread.IsActive"/>.</para>
             </summary>
         </member>
         <member name="M:Godot.Thread.WaitToFinish">
             <summary>
-            <para>Joins the <see cref="T:Godot.Thread"/> and waits for it to finish. Returns what the method called returned.</para>
+            <para>Joins the <see cref="T:Godot.Thread"/> and waits for it to finish. Returns the output of the method passed to <see cref="M:Godot.Thread.Start(Godot.Object,System.String,System.Object,Godot.Thread.Priority)"/>.</para>
             <para>Should either be used when you want to retrieve the value returned from the method called by the <see cref="T:Godot.Thread"/> or before freeing the instance that contains the <see cref="T:Godot.Thread"/>.</para>
+            <para>To determine if this can be called without blocking the calling thread, check if <see cref="M:Godot.Thread.IsAlive"/> is <c>false</c>.</para>
             <para>Note: After the <see cref="T:Godot.Thread"/> finishes joining it will be disposed. If you want to use it again you will have to create a new instance of it.</para>
             </summary>
         </member>
