@@ -14,7 +14,7 @@ var paddles = {}
 var spawns = []
 
 func _physics_process(_delta):
-    if Game.is_playing:
+    if Game.IsPlaying:
         if Input.is_key_pressed(KEY_ENTER) and not -1 in input_list.values():
             create_paddle_from_input(-1)
         for pad in Input.get_connected_joypads():
@@ -29,8 +29,8 @@ func _physics_process(_delta):
 func create_paddle_from_input(pad):
     if not pad in used_inputs:
         var new_paddle_data = {
-            "name": Game.user_name,
-            "id": Game.user_id,
+            "name": Game.UserName,
+            "id": Game.UserId,
             "pad": pad,
         }
         used_inputs.append(pad)
@@ -62,7 +62,7 @@ func create_paddle(data):
         else:
             paddle_node.modulate = Color.from_hsv(randf(), 0.8, 1)
         paddle_node.connect("damaged", self, "damage_paddle", [new_name])
-        if Game.user_id == data.id and "pad" in data:
+        if Game.UserId == data.id and "pad" in data:
             input_list[new_name] = data.pad
         paddles[new_name] = {
             "id": data.id,
@@ -73,17 +73,17 @@ func create_paddle(data):
         }
         if "health" in data:
             paddles[new_name].health = data.health
-            var crack_opacity = 1.0 - (paddles[new_name].health / float(Game.MAX_HEALTH))
+            var crack_opacity = 1.0 - (paddles[new_name].health / float(Game.MaxHealth))
             crack_opacity *= 0.7
             if paddles[new_name].health == 1:
                 crack_opacity = 1
             paddle_node.get_node("Crack").modulate.a = crack_opacity
         else:
-            paddles[new_name].health = Game.MAX_HEALTH
+            paddles[new_name].health = Game.MaxHealth
         emit_signal("paddle_created", paddles[new_name])
         if DiscordManager.IsLobbyOwner():
             var new_data = paddles[new_name].duplicate(true)
-            if Game.user_id != data.id and "pad" in data:
+            if Game.UserId != data.id and "pad" in data:
                 new_data.pad = data.pad
             DiscordManager.SendAll(new_data, true)
         add_child(paddle_node)
@@ -107,14 +107,14 @@ func update_paddles(new_paddles):
         if DiscordManager.IsLobbyOwner():
             paddles[paddle].position = paddle_node.position
             paddles[paddle].rotation = paddle_node.rotation
-            if Game.user_id == new_paddles[paddle].id:
+            if Game.UserId == new_paddles[paddle].id:
                 set_paddle_inputs(paddle, get_paddle_inputs(paddle))
         else:
             paddles[paddle].position = new_paddles[paddle].position
             paddles[paddle].rotation = new_paddles[paddle].rotation
             paddle_node.position = new_paddles[paddle].position
             paddle_node.rotation = new_paddles[paddle].rotation
-            if Game.user_id == new_paddles[paddle].id:
+            if Game.UserId == new_paddles[paddle].id:
                 var input_data = {
                     "paddle": paddle,
                     "inputs": get_paddle_inputs(paddle),
@@ -137,14 +137,14 @@ func get_paddle_inputs(paddle):
     if pad == -1:
         inputs.velocity.x = get_key(KEY_D) - get_key(KEY_A)
         inputs.velocity.y = get_key(KEY_S) - get_key(KEY_W)
-        inputs.velocity = inputs.velocity.normalized() * Game.MOVE_SPEED
+        inputs.velocity = inputs.velocity.normalized() * Game.MoveSpeed
         inputs.dash = Input.is_key_pressed(KEY_SHIFT)
         inputs.rotation = deg2rad((get_key(KEY_PERIOD) - get_key(KEY_COMMA)) * 4)
     else:
         var left_stick = Vector2(get_axis(pad, JOY_ANALOG_LX), get_axis(pad, JOY_ANALOG_LY))
         var right_stick = Vector2(get_axis(pad, JOY_ANALOG_RX), get_axis(pad, JOY_ANALOG_RY))
         if left_stick.length() > 0.2:
-            inputs.velocity = left_stick * Game.MOVE_SPEED
+            inputs.velocity = left_stick * Game.MoveSpeed
         inputs.dash = Input.is_joy_button_pressed(pad, JOY_L2)
         if right_stick.length() > 0.7:
             var paddle_node = get_node(paddle)
@@ -159,7 +159,7 @@ func set_paddle_inputs(paddle, inputs):
 func damage_paddle(paddle):
     var paddle_node = get_node(paddle)
     paddles[paddle].health -= 1
-    var crack_opacity = 1.0 - (paddles[paddle].health / float(Game.MAX_HEALTH))
+    var crack_opacity = 1.0 - (paddles[paddle].health / float(Game.MaxHealth))
     crack_opacity *= 0.7
     if paddles[paddle].health == 1:
         crack_opacity = 1
@@ -170,7 +170,7 @@ func damage_paddle(paddle):
             paddle_node.position = spawns[paddle_node.get_index()].position
             paddle_node.rotation = spawns[paddle_node.get_index()].rotation
         paddle_node.get_node("Crack").modulate.a = 0
-        paddles[paddle].health = Game.MAX_HEALTH
+        paddles[paddle].health = Game.MaxHealth
     if DiscordManager.IsLobbyOwner():
         var paddle_data = {
             "paddle": paddle,

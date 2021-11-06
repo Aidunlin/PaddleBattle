@@ -42,23 +42,29 @@ func _ready():
     discord_0_button.grab_focus()
     discord_0_button.connect("pressed", self, "start_discord", ["0"])
     discord_1_button.connect("pressed", self, "start_discord", ["1"])
-    map_button.connect("pressed", self, "emit_signal", ["map_switched"])
-    map_button.text = Game.map
+    map_button.connect("pressed", self, "switch_map")
+    map_button.text = Game.Map
     play_button.connect("pressed", DiscordManager, "CreateLobby")
     quit_button.connect("pressed", get_tree(), "quit")
-    version_node.text = Game.VERSION
+    version_node.text = Game.Version
     refresh_button.connect("pressed", self, "update_friends")
     back_button.connect("pressed", self, "hide_options")
-    leave_button.connect("pressed", self, "emit_signal", ["end_requested"])
+    leave_button.connect("pressed", self, "request_end")
     if not OS.is_debug_build():
         start_discord("0")
+
+func switch_map():
+    emit_signal("map_switched")
+
+func request_end():
+    emit_signal("end_requested")
 
 func start_discord(instance):
     DiscordManager.Start(instance)
     discord_menu_node.hide()
 
 func show_user_and_menu():
-    name_label.text = Game.user_name
+    name_label.text = Game.UserName
     main_menu_node.show()
     play_button.grab_focus()
 
@@ -109,7 +115,7 @@ func update_friends():
 func show_invite(user_id, user_name):
     invited_by = user_id
     invite_name.text = "Invited by " + user_name
-    if not Game.is_playing or options_menu_node.visible:
+    if not Game.IsPlaying or options_menu_node.visible:
         invite_wrap.show()
 
 func accept_invite():
