@@ -11,22 +11,22 @@ public class DiscordManager : Node
     [Signal] public delegate void MessageReceived();
     [Signal] public delegate void InviteReceived();
 
-    public enum ChannelType
+    private enum ChannelType
     {
         Unreliable,
         Reliable,
     }
 
-    public Discord.Discord discord;
-    public ActivityManager activityManager;
-    public LobbyManager lobbyManager;
-    public UserManager userManager;
-    public RelationshipManager relationshipManager;
+    private Discord.Discord discord;
+    private ActivityManager activityManager;
+    private LobbyManager lobbyManager;
+    private UserManager userManager;
+    private RelationshipManager relationshipManager;
 
-    public long discordId = 862090452361674762;
-    public long lobbyOwnerId = 0;
-    public long currentLobbyId = 0;
-    public bool isRunning = false;
+    private long discordId = 862090452361674762;
+    private long lobbyOwnerId = 0;
+    private long currentLobbyId = 0;
+    private bool isRunning = false;
 
     public override void _PhysicsProcess(float delta)
     {
@@ -43,16 +43,24 @@ public class DiscordManager : Node
         {
             GD.Print("Discord: ", level, " - ", message);
         });
-        activityManager = discord.GetActivityManager();
-        lobbyManager = discord.GetLobbyManager();
+
         userManager = discord.GetUserManager();
-        relationshipManager = discord.GetRelationshipManager();
-        userManager.OnCurrentUserUpdate += () => EmitSignal("UserUpdated");
-        activityManager.OnActivityJoin += secret => JoinLobby(secret);
+        userManager.OnCurrentUserUpdate += () =>
+        {
+            EmitSignal("UserUpdated");
+        };
+
+        activityManager = discord.GetActivityManager();
+        activityManager.OnActivityJoin += (secret) =>
+        {
+            JoinLobby(secret);
+        };
         activityManager.OnActivityInvite += (ActivityActionType type, ref User user, ref Activity activity) =>
         {
             EmitSignal("InviteReceived", user.Id, user.Username);
         };
+
+        lobbyManager = discord.GetLobbyManager();
         lobbyManager.OnNetworkMessage += (lobbyId, userId, channelId, data) =>
         {
             EmitSignal("MessageReceived", data);
@@ -61,21 +69,36 @@ public class DiscordManager : Node
         {
             UpdateActivity(true);
             userManager.GetUser(userId, (Result result, ref User user) =>
-         {
-             if (result == Result.Ok) EmitSignal("MemberConnected", userId, user.Username);
-         });
+            {
+                if (result == Result.Ok)
+                {
+                    EmitSignal("MemberConnected", userId, user.Username);
+                }
+            });
         };
         lobbyManager.OnMemberDisconnect += (lobbyId, userId) =>
         {
             UpdateActivity(true);
             lobbyOwnerId = GetLobbyOwnerId();
             userManager.GetUser(userId, (Result result, ref User user) =>
-         {
-             if (result == Result.Ok) EmitSignal("MemberDisconnected", userId, user.Username);
-         });
+            {
+                if (result == Result.Ok)
+                {
+                    EmitSignal("MemberDisconnected", userId, user.Username);
+                }
+            });
         };
-        relationshipManager.OnRefresh += () => UpdateRelationships();
-        relationshipManager.OnRelationshipUpdate += (ref Relationship rel) => UpdateRelationships();
+
+        relationshipManager = discord.GetRelationshipManager();
+        relationshipManager.OnRefresh += () =>
+        {
+            UpdateRelationships();
+        };
+        relationshipManager.OnRelationshipUpdate += (ref Relationship rel) =>
+        {
+            UpdateRelationships();
+        };
+
         UpdateActivity(false);
         isRunning = true;
     }
@@ -89,12 +112,19 @@ public class DiscordManager : Node
             activity.Party.Id = currentLobbyId.ToString();
             activity.Party.Size.CurrentSize = lobbyManager.MemberCount(currentLobbyId);
             activity.Party.Size.MaxSize = 8;
+            activity.State = "Battling it out";
         }
-        activity.State = inLobby ? "Battling it out" : "Thinking about battles";
+        else
+        {
+            activity.State = "Thinking about battles";
+        }
         activity.Assets.LargeImage = "paddlebattle";
         activityManager.UpdateActivity(activity, (result) =>
         {
-            if (result != Result.Ok) EmitSignal("Error", "Failed to update activity: " + result);
+            if (result != Result.Ok)
+            {
+                EmitSignal("Error", "Failed to update activity: " + result);
+            }
         });
     }
 
@@ -117,7 +147,14 @@ public class DiscordManager : Node
 
     public long GetLobbyOwnerId()
     {
-        return currentLobbyId == 0 ? 0 : lobbyManager.GetLobby(currentLobbyId).OwnerId;
+        if (currentLobbyId == 0)
+        {
+            return 0;
+        }
+        else
+        {
+            return lobbyManager.GetLobby(currentLobbyId).OwnerId;
+        }
     }
 
     public bool IsLobbyOwner()
@@ -127,8 +164,14 @@ public class DiscordManager : Node
 
     public void Send(long userId, object data, bool reliable)
     {
-        var channelType = reliable ? ChannelType.Reliable : ChannelType.Unreliable;
-        lobbyManager.SendNetworkMessage(currentLobbyId, userId, (byte)channelType, GD.Var2Bytes(data));
+        if (reliable)
+        {
+            lobbyManager.SendNetworkMessage(currentLobbyId, userId, (byte)ChannelType.Reliable, GD.Var2Bytes(data));
+        }
+        else
+        {
+            lobbyManager.SendNetworkMessage(currentLobbyId, userId, (byte)ChannelType.Unreliable, GD.Var2Bytes(data));
+        }
     }
 
     public void SendOwner(object data, bool reliable)
@@ -138,10 +181,12 @@ public class DiscordManager : Node
 
     public void SendAll(object data, bool reliable)
     {
-        if (currentLobbyId == 0) return;
-        foreach (var user in lobbyManager.GetMemberUsers(currentLobbyId))
+        if (currentLobbyId != 0)
         {
-            Send(user.Id, data, reliable);
+            foreach (var user in lobbyManager.GetMemberUsers(currentLobbyId))
+            {
+                Send(user.Id, data, reliable);
+            }
         }
     }
 
@@ -159,7 +204,10 @@ public class DiscordManager : Node
                 UpdateActivity(true);
                 EmitSignal("LobbyCreated");
             }
-            else EmitSignal("Error", "Failed to create lobby: " + result);
+            else
+            {
+                EmitSignal("Error", "Failed to create lobby: " + result);
+            }
         });
     }
 
@@ -175,23 +223,31 @@ public class DiscordManager : Node
                 InitNetworking();
                 UpdateActivity(true);
             }
-            else EmitSignal("Error", "Failed to join lobby: " + result);
+            else
+            {
+                EmitSignal("Error", "Failed to join lobby: " + result);
+            }
         });
     }
 
     public void LeaveLobby()
     {
-        if (currentLobbyId == 0) return;
-        lobbyManager.DisconnectLobby(currentLobbyId, result =>
+        if (currentLobbyId != 0)
         {
-            if (result == Result.Ok)
+            lobbyManager.DisconnectLobby(currentLobbyId, result =>
             {
-                currentLobbyId = 0;
-                lobbyOwnerId = 0;
-                UpdateActivity(false);
-            }
-            else EmitSignal("Error", "Failed to leave lobby: " + result);
-        });
+                if (result == Result.Ok)
+                {
+                    currentLobbyId = 0;
+                    lobbyOwnerId = 0;
+                    UpdateActivity(false);
+                }
+                else
+                {
+                    EmitSignal("Error", "Failed to leave lobby: " + result);
+                }
+            });
+        }
     }
 
     public void UpdateRelationships()
@@ -217,7 +273,10 @@ public class DiscordManager : Node
     {
         activityManager.SendInvite(userId, ActivityActionType.Join, "", result =>
         {
-            if (result != Result.Ok) EmitSignal("Error", "Failed to send invite");
+            if (result != Result.Ok)
+            {
+                EmitSignal("Error", "Failed to send invite");
+            }
         });
     }
 
@@ -225,7 +284,10 @@ public class DiscordManager : Node
     {
         activityManager.AcceptInvite(userId, result =>
         {
-            if (result != Result.Ok) EmitSignal("Error", "Failed to accept invite");
+            if (result != Result.Ok)
+            {
+                EmitSignal("Error", "Failed to accept invite");
+            }
         });
     }
 }

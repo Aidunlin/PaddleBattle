@@ -35,6 +35,8 @@ func _ready():
     main_menu_node.hide()
     options_menu_node.hide()
     invite_wrap.hide()
+    DiscordManager.connect("Error", self, "add_message")
+    DiscordManager.connect("InviteReceived", self, "show_invite")
     accept_button.connect("pressed", self, "accept_invite")
     decline_button.connect("pressed", self, "decline_invite")
     discord_0_button.grab_focus()

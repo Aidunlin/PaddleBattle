@@ -55,7 +55,6 @@ margin_right = 300.0
 margin_bottom = 43.0
 size_flags_horizontal = 3
 text = "Discord 0"
-flat = true
 
 [node name="Discord1" type="Button" parent="Menu/Discord"]
 margin_top = 47.0
@@ -63,7 +62,6 @@ margin_right = 300.0
 margin_bottom = 90.0
 size_flags_horizontal = 3
 text = "Discord 1"
-flat = true
 
 [node name="Main" type="VBoxContainer" parent="Menu"]
 margin_left = 490.0
@@ -118,21 +116,18 @@ margin_right = 300.0
 margin_bottom = 145.0
 size_flags_horizontal = 3
 text = "BigMap"
-flat = true
 
 [node name="Play" type="Button" parent="Menu/Main"]
 margin_top = 149.0
 margin_right = 300.0
 margin_bottom = 192.0
 text = "Play"
-flat = true
 
 [node name="Quit" type="Button" parent="Menu/Main"]
 margin_top = 196.0
 margin_right = 300.0
 margin_bottom = 239.0
 text = "Quit"
-flat = true
 
 [node name="HSeparator2" type="HSeparator" parent="Menu/Main"]
 margin_top = 243.0
@@ -238,11 +233,9 @@ margin_top = 55.0
 margin_right = 300.0
 margin_bottom = 98.0
 text = "Accept"
-flat = true
 
 [node name="Decline" type="Button" parent="InviteWrap/InviteView"]
 margin_top = 102.0
 margin_right = 300.0
 margin_bottom = 145.0
 text = "Decline"
-flat = true

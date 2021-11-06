@@ -8,13 +8,11 @@ onready var hud_manager = $HUDManager
 onready var ui_manager = $CanvasLayer/UIManager
 
 func _ready():
-    DiscordManager.connect("Error", ui_manager, "add_message")
     DiscordManager.connect("UserUpdated", self, "get_user")
     DiscordManager.connect("LobbyCreated", self, "create_game")
     DiscordManager.connect("MemberConnected", self, "handle_connect")
     DiscordManager.connect("MemberDisconnected", self, "handle_disconnect")
     DiscordManager.connect("MessageReceived", self, "handle_message")
-    DiscordManager.connect("InviteReceived", ui_manager, "show_invite")
     paddle_manager.connect("options_requested", ui_manager, "show_options")
     paddle_manager.connect("paddle_destroyed", ui_manager, "add_message")
     paddle_manager.connect("paddle_created", hud_manager, "create_hud")
