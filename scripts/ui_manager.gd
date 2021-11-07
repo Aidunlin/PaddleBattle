@@ -50,8 +50,6 @@ func _ready():
     refresh_button.connect("pressed", self, "update_friends")
     back_button.connect("pressed", self, "hide_options")
     leave_button.connect("pressed", self, "request_end")
-    if not OS.is_debug_build():
-        start_discord("0")
 
 func switch_map():
     emit_signal("map_switched")

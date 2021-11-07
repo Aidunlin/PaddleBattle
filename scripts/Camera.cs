@@ -1,21 +1,23 @@
 using Godot;
 using System;
+using Godot.Collections;
+using Array = Godot.Collections.Array;
 
 public class Camera : Camera2D
 {
-    public Vector2 Spawn = Vector2.Zero;
+    public Vector2 Spawn = new Vector2();
 
-    public void MoveAndZoom(Godot.Collections.Array<Node2D> paddles)
+    public void MoveAndZoom(Array<Node2D> paddles)
     {
         Vector2 newZoom = Vector2.One;
         if (paddles.Count > 0)
         {
-            Vector2 average = Vector2.Zero;
+            Vector2 average = new Vector2();
             float maxX = float.MinValue;
             float MinX = float.MaxValue;
             float maxY = float.MinValue;
             float MinY = float.MaxValue;
-            foreach (var paddle in paddles)
+            foreach (Node2D paddle in paddles)
             {
                 average += paddle.Position;
                 maxX = Math.Max(paddle.Position.x, maxX);
@@ -43,10 +45,12 @@ public class Camera : Camera2D
 
     public void Reset(Vector2 newSpawn)
     {
-        if (newSpawn != null)
-        {
-            Spawn = newSpawn;
-        }
+        Spawn = newSpawn;
+        Position = newSpawn;
+    }
+
+    public void ResetNoSpawn()
+    {
         Position = Spawn;
     }
 }

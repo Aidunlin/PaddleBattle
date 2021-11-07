@@ -1,11 +1,13 @@
 using Godot;
 using System;
+using Godot.Collections;
+using Array = Godot.Collections.Array;
 
 public class HUDManager : Control
 {
-    public Godot.Collections.Dictionary<string, VBoxContainer> HUDs = new Godot.Collections.Dictionary<string, VBoxContainer>();
+    public Dictionary<string, VBoxContainer> HUDs = new Dictionary<string, VBoxContainer>();
 
-    public void CreateHUD(Godot.Collections.Dictionary data)
+    public void CreateHUD(Dictionary data)
     {
         VBoxContainer hud = new VBoxContainer();
         hud.Name = (string)data["name"];
@@ -21,22 +23,15 @@ public class HUDManager : Control
         HUDs.Add(hud.Name, hud);
     }
 
-    public void MoveHUDs(Godot.Collections.Dictionary<string, Godot.Collections.Dictionary> paddles)
+    public void MoveHUDs(Dictionary<string, Dictionary> paddles)
     {
-        foreach (var paddleName in paddles.Keys)
+        foreach (string paddleName in paddles.Keys)
         {
-            VBoxContainer hud = HUDs[(string)paddleName];
+            VBoxContainer hud = HUDs[paddleName];
             Vector2 offset = new Vector2(hud.RectSize.x / 2, 90);
-            Vector2 paddlePos = (Vector2)paddles[(string)paddleName]["position"];
+            Vector2 paddlePos = (Vector2)paddles[paddleName]["position"];
             hud.RectPosition = paddlePos - offset;
         }
-        // foreach (var paddle in paddles)
-        // {
-        //     VBoxContainer hud = HUDs[paddle.Key];
-        //     Vector2 offset = new Vector2(hud.RectSize.x / 2, 90);
-        //     Vector2 paddlePos = paddle.Value.Position;
-        //     hud.RectPosition = paddlePos - offset;
-        // }
     }
 
     public void RemoveHUD(string paddle)

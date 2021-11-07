@@ -1,5 +1,7 @@
 using Godot;
 using System;
+using Godot.Collections;
+using Array = Godot.Collections.Array;
 
 public class Game : Node
 {
@@ -10,5 +12,5 @@ public class Game : Node
     public bool IsPlaying = false;
     public string Map = "BigMap";
     public string UserName = "";
-    public int UserId = 0;
+    public long UserId = 0;
 }

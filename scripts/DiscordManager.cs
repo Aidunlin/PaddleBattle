@@ -1,5 +1,8 @@
 using Godot;
+using System;
 using Discord;
+using Godot.Collections;
+using Array = Godot.Collections.Array;
 
 public class DiscordManager : Node
 {
@@ -11,26 +14,26 @@ public class DiscordManager : Node
     [Signal] public delegate void MessageReceived();
     [Signal] public delegate void InviteReceived();
 
-    private enum ChannelType
+    public enum ChannelType
     {
         Unreliable,
         Reliable,
     }
 
-    private Discord.Discord discord;
-    private ActivityManager activityManager;
-    private LobbyManager lobbyManager;
-    private UserManager userManager;
-    private RelationshipManager relationshipManager;
+    public Discord.Discord discord;
+    public ActivityManager activityManager;
+    public LobbyManager lobbyManager;
+    public UserManager userManager;
+    public RelationshipManager relationshipManager;
 
-    private long discordId = 862090452361674762;
-    private long lobbyOwnerId = 0;
-    private long currentLobbyId = 0;
-    private bool isRunning = false;
+    public long DiscordId = 862090452361674762;
+    public long LobbyOwnerId = 0;
+    public long CurrentLobbyId = 0;
+    public bool IsRunning = false;
 
     public override void _PhysicsProcess(float delta)
     {
-        if (!isRunning) return;
+        if (!IsRunning) return;
         discord.RunCallbacks();
         lobbyManager.FlushNetwork();
     }
@@ -38,7 +41,7 @@ public class DiscordManager : Node
     public void Start(string instance)
     {
         System.Environment.SetEnvironmentVariable("DISCORD_INSTANCE_ID", instance);
-        discord = new Discord.Discord(discordId, (ulong)CreateFlags.Default);
+        discord = new Discord.Discord(DiscordId, (ulong)CreateFlags.Default);
         discord.SetLogHook(LogLevel.Debug, (LogLevel level, string message) =>
         {
             GD.Print("Discord: ", level, " - ", message);
@@ -79,7 +82,7 @@ public class DiscordManager : Node
         lobbyManager.OnMemberDisconnect += (lobbyId, userId) =>
         {
             UpdateActivity(true);
-            lobbyOwnerId = GetLobbyOwnerId();
+            LobbyOwnerId = GetLobbyOwnerId();
             userManager.GetUser(userId, (Result result, ref User user) =>
             {
                 if (result == Result.Ok)
@@ -100,17 +103,17 @@ public class DiscordManager : Node
         };
 
         UpdateActivity(false);
-        isRunning = true;
+        IsRunning = true;
     }
 
     public void UpdateActivity(bool inLobby)
     {
-        var activity = new Activity();
+        Activity activity = new Activity();
         if (inLobby)
         {
-            activity.Secrets.Join = lobbyManager.GetLobbyActivitySecret(currentLobbyId);
-            activity.Party.Id = currentLobbyId.ToString();
-            activity.Party.Size.CurrentSize = lobbyManager.MemberCount(currentLobbyId);
+            activity.Secrets.Join = lobbyManager.GetLobbyActivitySecret(CurrentLobbyId);
+            activity.Party.Id = CurrentLobbyId.ToString();
+            activity.Party.Size.CurrentSize = lobbyManager.MemberCount(CurrentLobbyId);
             activity.Party.Size.MaxSize = 8;
             activity.State = "Battling it out";
         }
@@ -130,9 +133,9 @@ public class DiscordManager : Node
 
     public void InitNetworking()
     {
-        lobbyManager.ConnectNetwork(currentLobbyId);
-        lobbyManager.OpenNetworkChannel(currentLobbyId, (byte)ChannelType.Unreliable, false);
-        lobbyManager.OpenNetworkChannel(currentLobbyId, (byte)ChannelType.Reliable, true);
+        lobbyManager.ConnectNetwork(CurrentLobbyId);
+        lobbyManager.OpenNetworkChannel(CurrentLobbyId, (byte)ChannelType.Unreliable, false);
+        lobbyManager.OpenNetworkChannel(CurrentLobbyId, (byte)ChannelType.Reliable, true);
     }
 
     public string GetUserName()
@@ -147,13 +150,13 @@ public class DiscordManager : Node
 
     public long GetLobbyOwnerId()
     {
-        if (currentLobbyId == 0)
+        if (CurrentLobbyId == 0)
         {
             return 0;
         }
         else
         {
-            return lobbyManager.GetLobby(currentLobbyId).OwnerId;
+            return lobbyManager.GetLobby(CurrentLobbyId).OwnerId;
         }
     }
 
@@ -166,11 +169,11 @@ public class DiscordManager : Node
     {
         if (reliable)
         {
-            lobbyManager.SendNetworkMessage(currentLobbyId, userId, (byte)ChannelType.Reliable, GD.Var2Bytes(data));
+            lobbyManager.SendNetworkMessage(CurrentLobbyId, userId, (byte)ChannelType.Reliable, GD.Var2Bytes(data));
         }
         else
         {
-            lobbyManager.SendNetworkMessage(currentLobbyId, userId, (byte)ChannelType.Unreliable, GD.Var2Bytes(data));
+            lobbyManager.SendNetworkMessage(CurrentLobbyId, userId, (byte)ChannelType.Unreliable, GD.Var2Bytes(data));
         }
     }
 
@@ -181,9 +184,9 @@ public class DiscordManager : Node
 
     public void SendAll(object data, bool reliable)
     {
-        if (currentLobbyId != 0)
+        if (CurrentLobbyId != 0)
         {
-            foreach (var user in lobbyManager.GetMemberUsers(currentLobbyId))
+            foreach (User user in lobbyManager.GetMemberUsers(CurrentLobbyId))
             {
                 Send(user.Id, data, reliable);
             }
@@ -192,14 +195,14 @@ public class DiscordManager : Node
 
     public void CreateLobby()
     {
-        var txn = lobbyManager.GetLobbyCreateTransaction();
+        LobbyTransaction txn = lobbyManager.GetLobbyCreateTransaction();
         txn.SetCapacity(8);
         lobbyManager.CreateLobby(txn, (Result result, ref Lobby lobby) =>
         {
             if (result == Result.Ok)
             {
-                currentLobbyId = lobby.Id;
-                lobbyOwnerId = lobby.OwnerId;
+                CurrentLobbyId = lobby.Id;
+                LobbyOwnerId = lobby.OwnerId;
                 InitNetworking();
                 UpdateActivity(true);
                 EmitSignal("LobbyCreated");
@@ -218,8 +221,8 @@ public class DiscordManager : Node
         {
             if (result == Result.Ok)
             {
-                currentLobbyId = lobby.Id;
-                lobbyOwnerId = GetLobbyOwnerId();
+                CurrentLobbyId = lobby.Id;
+                LobbyOwnerId = GetLobbyOwnerId();
                 InitNetworking();
                 UpdateActivity(true);
             }
@@ -232,14 +235,14 @@ public class DiscordManager : Node
 
     public void LeaveLobby()
     {
-        if (currentLobbyId != 0)
+        if (CurrentLobbyId != 0)
         {
-            lobbyManager.DisconnectLobby(currentLobbyId, result =>
+            lobbyManager.DisconnectLobby(CurrentLobbyId, result =>
             {
                 if (result == Result.Ok)
                 {
-                    currentLobbyId = 0;
-                    lobbyOwnerId = 0;
+                    CurrentLobbyId = 0;
+                    LobbyOwnerId = 0;
                     UpdateActivity(false);
                 }
                 else
@@ -258,12 +261,12 @@ public class DiscordManager : Node
         });
     }
 
-    public Godot.Collections.Dictionary GetFriends()
+    public Dictionary GetFriends()
     {
-        var friends = new Godot.Collections.Dictionary();
+        Dictionary friends = new Dictionary();
         for (int i = 0; i < relationshipManager.Count(); i++)
         {
-            var rel = relationshipManager.GetAt((uint)i);
+            Relationship rel = relationshipManager.GetAt((uint)i);
             friends.Add(rel.User.Username, rel.User.Id);
         }
         return friends;

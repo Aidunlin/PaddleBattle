@@ -61,7 +61,7 @@ func create_paddle(data):
             paddle_node.modulate = data.color
         else:
             paddle_node.modulate = Color.from_hsv(randf(), 0.8, 1)
-        paddle_node.connect("damaged", self, "damage_paddle", [new_name])
+        paddle_node.connect("Damaged", self, "damage_paddle", [new_name])
         if Game.UserId == data.id and "pad" in data:
             input_list[new_name] = data.pad
         paddles[new_name] = {
@@ -153,8 +153,8 @@ func get_paddle_inputs(paddle):
 
 func set_paddle_inputs(paddle, inputs):
     if has_node(paddle):
-        if get_node(paddle).has_method("set_inputs"):
-            get_node(paddle).set_inputs(inputs)
+        if get_node(paddle).has_method("SetInputs"):
+            get_node(paddle).SetInputs(inputs)
 
 func damage_paddle(paddle):
     var paddle_node = get_node(paddle)

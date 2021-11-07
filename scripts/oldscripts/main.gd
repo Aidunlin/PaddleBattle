@@ -19,20 +19,22 @@ func _ready():
     paddle_manager.connect("paddle_removed", hud_manager, "RemoveHUD")
     ui_manager.connect("map_switched", self, "switch_map")
     ui_manager.connect("end_requested", self, "unload_game", ["You left the lobby"])
+    if not OS.is_debug_build():
+        ui_manager.start_discord("0")
 
 func _physics_process(_delta):
     if Game.IsPlaying:
         if DiscordManager.IsLobbyOwner():
             var object_data = {
                 "paddles": paddle_manager.paddles,
-                "balls": ball_manager.balls,
+                "balls": ball_manager.Balls,
             }
             DiscordManager.SendAll(object_data, false)
-            update_objects(paddle_manager.paddles, ball_manager.balls)
+            update_objects(paddle_manager.paddles, ball_manager.Balls)
         camera.MoveAndZoom(paddle_manager.get_children())
 
 func switch_map():
-    ui_manager.map_button.text = map_manager.switch()
+    ui_manager.map_button.text = map_manager.Switch()
 
 func get_user():
     if not Game.IsPlaying and not ui_manager.main_menu_node.visible:
@@ -78,11 +80,11 @@ func create_game(map_name = Game.Map):
     load_game(map_name, Color.from_hsv(randf(), 0.5, 1))
 
 func load_game(map_name, map_color):
-    map_manager.load_map(map_name, map_color)
-    camera.Reset(map_manager.get_camera_spawn())
-    paddle_manager.spawns = map_manager.get_paddle_spawns()
-    ball_manager.spawns = map_manager.get_ball_spawns()
-    ball_manager.create_balls()
+    map_manager.LoadMap(map_name, map_color)
+    camera.Reset(map_manager.GetCameraSpawn())
+    paddle_manager.spawns = map_manager.GetPaddleSpawns()
+    ball_manager.Spawns = map_manager.GetBallSpawns()
+    ball_manager.CreateBalls()
     ui_manager.add_message("Press A/Enter to join")
     ui_manager.main_menu_node.hide()
     Game.IsPlaying = true
@@ -91,14 +93,14 @@ func update_objects(paddles, balls):
     if Game.IsPlaying:
         paddle_manager.update_paddles(paddles)
         hud_manager.MoveHUDs(paddles)
-        ball_manager.update_balls(balls)
+        ball_manager.UpdateBalls(balls)
 
 func unload_game(msg):
     DiscordManager.LeaveLobby()
     Game.IsPlaying = false
     camera.Reset(null)
-    map_manager.reset()
+    map_manager.Reset()
     paddle_manager.reset()
-    ball_manager.reset()
+    ball_manager.Reset()
     hud_manager.Reset()
     ui_manager.reset(msg)
