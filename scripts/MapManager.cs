@@ -1,11 +1,9 @@
 using Godot;
-using System;
-using Godot.Collections;
-using Array = Godot.Collections.Array;
+using GColl = Godot.Collections;
 
 public class MapManager : Node
 {
-    public Array<Dictionary> Maps = new Array<Dictionary>();
+    public GColl.Array<GColl.Dictionary> Maps = new GColl.Array<GColl.Dictionary>();
 
     public Node2D Map = null;
     public Color MapColor = new Color();
@@ -16,12 +14,12 @@ public class MapManager : Node
     {
         game = GetNode<Game>("/root/Game");
 
-        Dictionary bigMapDict = new Dictionary();
+        GColl.Dictionary bigMapDict = new GColl.Dictionary();
         bigMapDict.Add("name", "BigMap");
         bigMapDict.Add("scene", (PackedScene)GD.Load("res://maps/big_map.tscn"));
         Maps.Add(bigMapDict);
 
-        Dictionary smallMapDict = new Dictionary();
+        GColl.Dictionary smallMapDict = new GColl.Dictionary();
         smallMapDict.Add("name", "SmallMap");
         smallMapDict.Add("scene", (PackedScene)GD.Load("res://maps/small_map.tscn"));
         Maps.Add(smallMapDict);
@@ -30,7 +28,7 @@ public class MapManager : Node
     public void LoadMap(string newMap, Color newColor)
     {
         MapColor = newColor;
-        foreach (Dictionary map in Maps)
+        foreach (GColl.Dictionary map in Maps)
         {
             if (((string)map["name"]).Equals(newMap))
             {
@@ -67,12 +65,12 @@ public class MapManager : Node
         return Map.GetNode<Node2D>("CameraSpawn").Position;
     }
 
-    public Array GetPaddleSpawns()
+    public GColl.Array GetPaddleSpawns()
     {
         return Map.GetNode("PaddleSpawns").GetChildren();
     }
 
-    public Array GetBallSpawns()
+    public GColl.Array GetBallSpawns()
     {
         return Map.GetNode("BallSpawns").GetChildren();
     }

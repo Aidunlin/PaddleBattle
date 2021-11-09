@@ -32,7 +32,6 @@ DiscordManager="*res://scripts/DiscordManager.cs"
 [debug]
 
 settings/fps/force_fps=120
-settings/stdout/verbose_stdout=true
 gdscript/warnings/return_value_discarded=false
 
 [display]

@@ -1,8 +1,6 @@
 using Godot;
-using System;
 using Discord;
-using Godot.Collections;
-using Array = Godot.Collections.Array;
+using GColl = Godot.Collections;
 
 public class DiscordManager : Node
 {
@@ -66,7 +64,16 @@ public class DiscordManager : Node
         lobbyManager = discord.GetLobbyManager();
         lobbyManager.OnNetworkMessage += (lobbyId, userId, channelId, data) =>
         {
-            EmitSignal("MessageReceived", data);
+            GColl.Dictionary decoded = (GColl.Dictionary)(GD.Bytes2Var(data));
+            try
+            {
+                EmitSignal("MessageReceived", data);
+            }
+            catch (System.Exception exc)
+            {
+                GD.Print(decoded.ToString());
+                GD.Print(exc.ToString());
+            }
         };
         lobbyManager.OnMemberConnect += (lobbyId, userId) =>
         {
@@ -165,24 +172,22 @@ public class DiscordManager : Node
         return GetLobbyOwnerId() == userManager.GetCurrentUser().Id;
     }
 
-    public void Send(long userId, object data, bool reliable)
+    public void Send(long userId, GColl.Dictionary data, bool reliable)
     {
-        if (reliable)
-        {
-            lobbyManager.SendNetworkMessage(CurrentLobbyId, userId, (byte)ChannelType.Reliable, GD.Var2Bytes(data));
-        }
-        else
-        {
-            lobbyManager.SendNetworkMessage(CurrentLobbyId, userId, (byte)ChannelType.Unreliable, GD.Var2Bytes(data));
-        }
+        lobbyManager.SendNetworkMessage(
+            CurrentLobbyId,
+            userId,
+            (byte)(reliable ? ChannelType.Reliable : ChannelType.Unreliable),
+            GD.Var2Bytes(data)
+        );
     }
 
-    public void SendOwner(object data, bool reliable)
+    public void SendOwner(GColl.Dictionary data, bool reliable)
     {
         Send(GetLobbyOwnerId(), data, reliable);
     }
 
-    public void SendAll(object data, bool reliable)
+    public void SendAll(GColl.Dictionary data, bool reliable)
     {
         if (CurrentLobbyId != 0)
         {
@@ -261,13 +266,16 @@ public class DiscordManager : Node
         });
     }
 
-    public Dictionary GetFriends()
+    public GColl.Array GetFriends()
     {
-        Dictionary friends = new Dictionary();
+        GColl.Array friends = new GColl.Array();
         for (int i = 0; i < relationshipManager.Count(); i++)
         {
             Relationship rel = relationshipManager.GetAt((uint)i);
-            friends.Add(rel.User.Username, rel.User.Id);
+            GColl.Dictionary friend = new GColl.Dictionary();
+            friend.Add("user_name", rel.User.Username);
+            friend.Add("id", rel.User.Id.ToString());
+            friends.Add(friend);
         }
         return friends;
     }

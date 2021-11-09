@@ -1,7 +1,5 @@
 using Godot;
-using System;
-using Godot.Collections;
-using Array = Godot.Collections.Array;
+using GColl = Godot.Collections;
 
 public class Paddle : KinematicBody2D
 {
@@ -100,7 +98,7 @@ public class Paddle : KinematicBody2D
         }
     }
 
-    public void SetInputs(Dictionary inputs)
+    public void SetInputs(GColl.Dictionary inputs)
     {
         if (discordManager.IsLobbyOwner())
         {

@@ -1,13 +1,12 @@
 using Godot;
 using System;
-using Godot.Collections;
-using Array = Godot.Collections.Array;
+using GColl = Godot.Collections;
 
 public class Camera : Camera2D
 {
     public Vector2 Spawn = new Vector2();
 
-    public void MoveAndZoom(Array<Node2D> paddles)
+    public void MoveAndZoom(GColl.Array paddles)
     {
         Vector2 newZoom = Vector2.One;
         if (paddles.Count > 0)

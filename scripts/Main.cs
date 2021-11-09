@@ -1,47 +1,47 @@
 using Godot;
-using System;
-using Godot.Collections;
-using Array = Godot.Collections.Array;
+using GColl = Godot.Collections;
 
 public class Main : Node
 {
-    public Camera2D camera;
-    public Node mapManager;
-    public Node paddleManager;
-    public Node ballManager;
-    public Control hudManager;
-    public Control uiManager;
-    public DiscordManager discordManager;
     public Game game;
+    public DiscordManager discordManager;
+
+    public Camera camera;
+    public MapManager mapManager;
+    public PaddleManager paddleManager;
+    public BallManager ballManager;
+    public HUDManager hudManager;
+    public MenuManager menuManager;
 
     public override void _Ready()
     {
-        camera = GetNode<Camera2D>("Camera");
-        mapManager = GetNode<Node>("MapManager");
-        paddleManager = GetNode<Node>("PaddleManager");
-        ballManager = GetNode<Node>("BallManager");
-        hudManager = GetNode<Control>("HUDManager");
-        uiManager = GetNode<Control>("CanvasLayer/UIManager");
-        discordManager = GetNode<DiscordManager>("/root/DiscordManager");
         game = GetNode<Game>("/root/Game");
+        discordManager = GetNode<DiscordManager>("/root/DiscordManager");
+        
+        camera = GetNode<Camera>("Camera");
+        mapManager = GetNode<MapManager>("MapManager");
+        paddleManager = GetNode<PaddleManager>("PaddleManager");
+        ballManager = GetNode<BallManager>("BallManager");
+        hudManager = GetNode<HUDManager>("HUDManager");
+        menuManager = GetNode<MenuManager>("CanvasLayer/MenuManager");
 
         discordManager.Connect("UserUpdated", this, "GetUser");
-        discordManager.Connect("LobbyCreated", this, "CreateGame", new Array(){null});
+        discordManager.Connect("LobbyCreated", this, "CreateGame", new GColl.Array(){null});
         discordManager.Connect("MemberConnected", this, "HandleConnect");
         discordManager.Connect("MemberDisconnected", this, "HandleDisconnect");
-        discordManager.Connect("MessageReceived", this, "HandleMessage");
+        discordManager.Connect("MessageReceived", this, "HandleNetworkMessage");
 
-        paddleManager.Connect("options_requested", uiManager, "show_options");
-        paddleManager.Connect("paddle_destroyed", uiManager, "add_message");
-        paddleManager.Connect("paddle_created", hudManager, "CreateHUD");
-        paddleManager.Connect("paddle_removed", hudManager, "RemoveHUD");
+        paddleManager.Connect("OptionsRequested", menuManager, "ShowOptions");
+        paddleManager.Connect("PaddleDestroyed", menuManager, "AddMessage");
+        paddleManager.Connect("PaddleCreated", hudManager, "CreateHUD");
+        paddleManager.Connect("PaddleRemoved", hudManager, "RemoveHUD");
 
-        uiManager.Connect("map_switched", this, "SwitchMap");
-        uiManager.Connect("end_requested", this, "UnloadGame", new Array(){"You left the lobby"});
+        menuManager.Connect("MapSwitched", this, "SwitchMap");
+        menuManager.Connect("EndRequested", this, "UnloadGame", new GColl.Array(){"You left the lobby"});
 
         if (!OS.IsDebugBuild())
         {
-            uiManager.Call("start_discord");
+            menuManager.StartDiscord("0");
         }
     }
 
@@ -51,74 +51,68 @@ public class Main : Node
         {
             if (discordManager.IsLobbyOwner())
             {
-                Dictionary objectData = new Dictionary();
-                objectData.Add("paddles", paddleManager.Get("paddles"));
-                objectData.Add("balls", ballManager.Get("Balls"));
+                GColl.Dictionary objectData = new GColl.Dictionary();
+                objectData.Add("paddles", paddleManager.Paddles);
+                objectData.Add("balls", ballManager.Balls);
                 discordManager.SendAll(objectData, false);
-                var paddles = paddleManager.Get("paddles");
-                var balls = ballManager.Get("Balls");
-                UpdateObjects(
-                    paddleManager.Get("paddles"),
-                    ballManager.Get("Balls")
-                );
+                UpdateObjects(paddleManager.Paddles, ballManager.Balls);
             }
-            camera.Call("MoveAndZoom", paddleManager.GetChildren());
+            camera.MoveAndZoom(paddleManager.GetChildren());
         }
     }
 
     public void SwitchMap()
     {
-        Button mapButton = (Button)uiManager.Get("map_button");
-        mapButton.Text = (string)mapManager.Call("Switch");
+        menuManager.MapButton.Text = mapManager.Switch();
     }
 
     public void GetUser()
     {
-        VBoxContainer mainMenuMode = (VBoxContainer)uiManager.Get("main_menu_node");
-        if (!game.IsPlaying && !mainMenuMode.Visible)
+        if (!game.IsPlaying && !menuManager.MainMenuNode.Visible)
         {
             game.UserId = discordManager.GetUserId();
             game.UserName = discordManager.GetUserName();
         }
-        uiManager.Call("show_user_and_menu");
+        menuManager.ShowUserAndMenu();
     }
 
-    public void HandleMessage(byte[] message)
+    public void HandleNetworkMessage(byte[] message)
     {
-        Dictionary data = (Dictionary)GD.Bytes2Var(message);
+        object dataObject = GD.Bytes2Var(message);
+        GColl.Dictionary data = dataObject as GColl.Dictionary;
         if (data.Contains("paddles") && data.Contains("balls"))
         {
-            UpdateObjects((Dictionary)data["paddles"], (Array<Dictionary>)data["balls"]);
+            UpdateObjects(data["paddles"] as GColl.Array, data["balls"] as GColl.Array);
         }
         else if (data.Contains("paddle") && data.Contains("inputs"))
         {
-            paddleManager.Call("set_paddle_inputs", data["paddle"], data["inputs"]);
+            paddleManager.SetPaddleInputs(data["paddle"] as string, data["inputs"] as GColl.Dictionary);
         }
         else if (data.Contains("paddles") && data.Contains("map"))
         {
-            JoinGame((Dictionary)data["paddles"], (string)data["map"]);
+            JoinGame(data["paddles"] as GColl.Array, data["map"] as string);
         }
         else if (data.Contains("reason"))
         {
-            UnloadGame((string)data["reason"]);
+            UnloadGame(data["reason"] as string);
         }
         else if (data.Contains("paddle"))
         {
-            paddleManager.Call("damage_paddle", data["paddle"]);
+            paddleManager.DamagePaddle(data["paddle"] as string);
         }
-        else if (data.Contains("name"))
+        else if (data.Contains("paddle_data"))
         {
-            paddleManager.Call("create_paddle", data);
+            paddleManager.CreatePaddle(data["paddle_data"] as GColl.Dictionary);
         }
     }
 
     public void HandleConnect(long id, string name)
     {
-        uiManager.Call("add_message", name + " joined the lobby");
+        menuManager.AddMessage(name + " joined the lobby");
         if (discordManager.IsLobbyOwner())
         {
-            Dictionary welcomeData = new Dictionary();
-            welcomeData.Add("paddles", paddleManager.Get("paddles"));
+            GColl.Dictionary welcomeData = new GColl.Dictionary();
+            welcomeData.Add("paddles", paddleManager.Paddles);
             welcomeData.Add("map", game.Map);
             discordManager.Send(id, welcomeData, true);
         }
@@ -126,16 +120,16 @@ public class Main : Node
 
     public void HandleDisconnect(long id, string name)
     {
-        paddleManager.Call("remove_paddles", id);
-        uiManager.Call("add_message", name + " left the lobby");
+        paddleManager.RemovePaddles(id);
+        menuManager.AddMessage(name + " left the lobby");;
     }
 
-    public void JoinGame(Dictionary paddles, string mapName)
+    public void JoinGame(GColl.Array paddles, string mapName)
     {
         CreateGame(mapName);
-        foreach (Dictionary paddle in paddles)
+        foreach (var paddle in paddles)
         {
-            paddleManager.Call("create_paddle", paddle);
+            paddleManager.CreatePaddle((GColl.Dictionary)paddle);
         }
     }
 
@@ -147,23 +141,23 @@ public class Main : Node
 
     public void LoadGame(string mapName, Color mapColor)
     {
-        mapManager.Call("LoadMap", mapName, mapColor);
-        camera.Call("Reset", mapManager.Call("GetCameraSpawn"));
-        paddleManager.Set("spawns", mapManager.Call("GetPaddleSpawns"));
-        ballManager.Set("Spawns", mapManager.Call("GetBallSpawns"));
-        ballManager.Call("CreateBalls");
-        uiManager.Call("add_message", "Press A/Enter to join");
-        ((VBoxContainer)uiManager.Get("main_menu_node")).Hide();
+        mapManager.LoadMap(mapName, mapColor);
+        camera.Reset(mapManager.GetCameraSpawn());
+        paddleManager.Spawns = mapManager.GetPaddleSpawns();
+        ballManager.Spawns = mapManager.GetBallSpawns();
+        ballManager.CreateBalls();
+        menuManager.AddMessage("Press A/Enter to join");
+        menuManager.MainMenuNode.Hide();
         game.IsPlaying = true;
     }
 
-    public void UpdateObjects(object paddles, object balls)
+    public void UpdateObjects(GColl.Array paddles, GColl.Array balls)
     {
         if (game.IsPlaying)
         {
-            paddleManager.Call("update_paddles", paddles);
-            hudManager.Call("MoveHUDs", paddles);
-            ballManager.Call("UpdateBalls", balls);
+            paddleManager.UpdatePaddles(paddles);
+            hudManager.MoveHUDs(paddles);
+            ballManager.UpdateBalls(balls);
         }
     }
 
@@ -171,11 +165,11 @@ public class Main : Node
     {
         discordManager.LeaveLobby();
         game.IsPlaying = false;
-        camera.Call("ResetNoSpawn");
-        mapManager.Call("Reset");
-        paddleManager.Call("reset");
-        ballManager.Call("Reset");
-        hudManager.Call("Reset");
-        uiManager.Call("reset", msg);
+        camera.ResetNoSpawn();
+        mapManager.Reset();
+        paddleManager.Reset();
+        ballManager.Reset();
+        hudManager.Reset();
+        menuManager.Reset(msg);
     }
 }
