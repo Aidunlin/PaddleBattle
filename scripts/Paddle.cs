@@ -24,18 +24,16 @@ public class Paddle : KinematicBody2D
     public override void _Ready()
     {
         discordManager = GetNode<DiscordManager>("/root/DiscordManager");
-
         BackNode = GetNode<Area2D>("Back");
-        BackNode.Connect("body_entered", this, "BackCollided");
-
         SafeTimer = GetNode<Timer>("SafeTimer");
+        DashTimer = GetNode<Timer>("DashTimer");
+        DashResetTimer = GetNode<Timer>("DashResetTimer");
+
+
+        BackNode.Connect("body_entered", this, "BackCollided");
         SafeTimer.Connect("timeout", this, "SafeTimeout");
         SafeTimer.Start(3);
-
-        DashTimer = GetNode<Timer>("DashTimer");
         DashTimer.Connect("timeout", this, "DashTimeout");
-
-        DashResetTimer = GetNode<Timer>("DashResetTimer");
         DashResetTimer.Connect("timeout", this, "DashResetTimeout");
     }
 

@@ -1,6 +1,6 @@
 using Godot;
 using Discord;
-using GColl = Godot.Collections;
+using Godot.Collections;
 
 public class DiscordManager : Node
 {
@@ -64,7 +64,7 @@ public class DiscordManager : Node
         lobbyManager = discord.GetLobbyManager();
         lobbyManager.OnNetworkMessage += (lobbyId, userId, channelId, data) =>
         {
-            GColl.Dictionary decoded = (GColl.Dictionary)(GD.Bytes2Var(data));
+            Dictionary decoded = GD.Bytes2Var(data) as Dictionary;
             try
             {
                 EmitSignal("MessageReceived", data);
@@ -172,7 +172,7 @@ public class DiscordManager : Node
         return GetLobbyOwnerId() == userManager.GetCurrentUser().Id;
     }
 
-    public void Send(long userId, GColl.Dictionary data, bool reliable)
+    public void Send(long userId, Dictionary data, bool reliable)
     {
         lobbyManager.SendNetworkMessage(
             CurrentLobbyId,
@@ -182,12 +182,12 @@ public class DiscordManager : Node
         );
     }
 
-    public void SendOwner(GColl.Dictionary data, bool reliable)
+    public void SendOwner(Dictionary data, bool reliable)
     {
         Send(GetLobbyOwnerId(), data, reliable);
     }
 
-    public void SendAll(GColl.Dictionary data, bool reliable)
+    public void SendAll(Dictionary data, bool reliable)
     {
         if (CurrentLobbyId != 0)
         {
@@ -266,13 +266,13 @@ public class DiscordManager : Node
         });
     }
 
-    public GColl.Array GetFriends()
+    public Array GetFriends()
     {
-        GColl.Array friends = new GColl.Array();
+        Array friends = new Array();
         for (int i = 0; i < relationshipManager.Count(); i++)
         {
             Relationship rel = relationshipManager.GetAt((uint)i);
-            GColl.Dictionary friend = new GColl.Dictionary();
+            Dictionary friend = new Dictionary();
             friend.Add("user_name", rel.User.Username);
             friend.Add("id", rel.User.Id.ToString());
             friends.Add(friend);

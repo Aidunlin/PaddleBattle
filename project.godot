@@ -12,13 +12,13 @@ config_version=4
 
 config/name="PaddleBattle"
 config/description="A multiplayer action game with pong-like mechanics"
-run/main_scene="res://scenes/main.tscn"
+run/main_scene="res://Scenes/Main.tscn"
 config/use_custom_user_dir=true
 config/custom_user_dir_name="PaddleBattle"
-boot_splash/image="res://assets/icon.png"
+boot_splash/image="res://Assets/Icon.png"
 boot_splash/fullsize=false
 boot_splash/bg_color=Color( 0.901961, 0.901961, 0.901961, 1 )
-config/icon="res://assets/icon.png"
+config/icon="res://Assets/Icon.png"
 
 [audio]
 
@@ -26,8 +26,8 @@ default_bus_layout=""
 
 [autoload]
 
-Game="*res://scripts/Game.cs"
-DiscordManager="*res://scripts/DiscordManager.cs"
+Game="*res://Scripts/Game.cs"
+DiscordManager="*res://Scripts/DiscordManager.cs"
 
 [debug]
 

@@ -1,5 +1,5 @@
 using Godot;
-using GColl = Godot.Collections;
+using Godot.Collections;
 
 public class Main : Node
 {
@@ -26,7 +26,7 @@ public class Main : Node
         menuManager = GetNode<MenuManager>("CanvasLayer/MenuManager");
 
         discordManager.Connect("UserUpdated", this, "GetUser");
-        discordManager.Connect("LobbyCreated", this, "CreateGame", new GColl.Array(){null});
+        discordManager.Connect("LobbyCreated", this, "CreateGame", new Array(){null});
         discordManager.Connect("MemberConnected", this, "HandleConnect");
         discordManager.Connect("MemberDisconnected", this, "HandleDisconnect");
         discordManager.Connect("MessageReceived", this, "HandleNetworkMessage");
@@ -37,7 +37,7 @@ public class Main : Node
         paddleManager.Connect("PaddleRemoved", hudManager, "RemoveHUD");
 
         menuManager.Connect("MapSwitched", this, "SwitchMap");
-        menuManager.Connect("EndRequested", this, "UnloadGame", new GColl.Array(){"You left the lobby"});
+        menuManager.Connect("EndRequested", this, "UnloadGame", new Array(){"You left the lobby"});
 
         if (!OS.IsDebugBuild())
         {
@@ -51,7 +51,7 @@ public class Main : Node
         {
             if (discordManager.IsLobbyOwner())
             {
-                GColl.Dictionary objectData = new GColl.Dictionary();
+                Dictionary objectData = new Dictionary();
                 objectData.Add("paddles", paddleManager.Paddles);
                 objectData.Add("balls", ballManager.Balls);
                 discordManager.SendAll(objectData, false);
@@ -79,30 +79,30 @@ public class Main : Node
     public void HandleNetworkMessage(byte[] message)
     {
         object dataObject = GD.Bytes2Var(message);
-        GColl.Dictionary data = dataObject as GColl.Dictionary;
+        Dictionary data = (Dictionary)dataObject;
         if (data.Contains("paddles") && data.Contains("balls"))
         {
-            UpdateObjects(data["paddles"] as GColl.Array, data["balls"] as GColl.Array);
+            UpdateObjects((Array)data["paddles"], (Array)data["balls"]);
         }
         else if (data.Contains("paddle") && data.Contains("inputs"))
         {
-            paddleManager.SetPaddleInputs(data["paddle"] as string, data["inputs"] as GColl.Dictionary);
+            paddleManager.SetPaddleInputs((string)data["paddle"], (Dictionary)data["inputs"]);
         }
         else if (data.Contains("paddles") && data.Contains("map"))
         {
-            JoinGame(data["paddles"] as GColl.Array, data["map"] as string);
+            JoinGame((Array)data["paddles"], (string)data["map"]);
         }
         else if (data.Contains("reason"))
         {
-            UnloadGame(data["reason"] as string);
+            UnloadGame((string)data["reason"]);
         }
         else if (data.Contains("paddle"))
         {
-            paddleManager.DamagePaddle(data["paddle"] as string);
+            paddleManager.DamagePaddle((string)data["paddle"]);
         }
         else if (data.Contains("paddle_data"))
         {
-            paddleManager.CreatePaddle(data["paddle_data"] as GColl.Dictionary);
+            paddleManager.CreatePaddle((Dictionary)data["paddle_data"]);
         }
     }
 
@@ -111,7 +111,7 @@ public class Main : Node
         menuManager.AddMessage(name + " joined the lobby");
         if (discordManager.IsLobbyOwner())
         {
-            GColl.Dictionary welcomeData = new GColl.Dictionary();
+            Dictionary welcomeData = new Dictionary();
             welcomeData.Add("paddles", paddleManager.Paddles);
             welcomeData.Add("map", game.Map);
             discordManager.Send(id, welcomeData, true);
@@ -124,12 +124,12 @@ public class Main : Node
         menuManager.AddMessage(name + " left the lobby");;
     }
 
-    public void JoinGame(GColl.Array paddles, string mapName)
+    public void JoinGame(Array paddles, string mapName)
     {
         CreateGame(mapName);
         foreach (var paddle in paddles)
         {
-            paddleManager.CreatePaddle((GColl.Dictionary)paddle);
+            paddleManager.CreatePaddle((Dictionary)paddle);
         }
     }
 
@@ -151,7 +151,7 @@ public class Main : Node
         game.IsPlaying = true;
     }
 
-    public void UpdateObjects(GColl.Array paddles, GColl.Array balls)
+    public void UpdateObjects(Array paddles, Array balls)
     {
         if (game.IsPlaying)
         {

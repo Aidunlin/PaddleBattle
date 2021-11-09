@@ -1,12 +1,12 @@
 using Godot;
-using GColl = Godot.Collections;
+using Godot.Collections;
 
 public class BallManager : Node
 {
-    public PackedScene BallScene = (PackedScene)GD.Load("res://scenes/ball.tscn");
+    public PackedScene BallScene = (PackedScene)GD.Load("res://Scenes/Ball.tscn");
 
-    public GColl.Array Balls = new GColl.Array();
-    public GColl.Array Spawns = new GColl.Array();
+    public Array Balls = new Array();
+    public Array Spawns = new Array();
     
     public DiscordManager discordManager;
 
@@ -26,9 +26,10 @@ public class BallManager : Node
         }
     }
 
-    public void UpdateBalls(GColl.Array newBalls)
+    public void UpdateBalls(Array newBalls)
     {
-        for (int i = 0; i < GetChildCount(); i++)
+        int ballCount = GetChildCount();
+        for (int i = 0; i < ballCount; i++)
         {
             RigidBody2D ballNode = GetChildOrNull<RigidBody2D>(i);
             if (ballNode != null)

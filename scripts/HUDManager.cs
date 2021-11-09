@@ -1,11 +1,11 @@
 using Godot;
-using GColl = Godot.Collections;
+using Godot.Collections;
 
 public class HUDManager : Control
 {
-    public GColl.Dictionary<string, VBoxContainer> HUDs = new GColl.Dictionary<string, VBoxContainer>();
+    public Dictionary HUDs = new Dictionary();
 
-    public void CreateHUD(GColl.Dictionary data)
+    public void CreateHUD(Dictionary data)
     {
         VBoxContainer hud = new VBoxContainer();
         hud.Name = (string)data["name"];
@@ -21,14 +21,14 @@ public class HUDManager : Control
         HUDs.Add(hud.Name, hud);
     }
 
-    public void MoveHUDs(GColl.Array paddles)
+    public void MoveHUDs(Array paddles)
     {
-        foreach (GColl.Dictionary paddle in paddles)
+        foreach (object paddle in paddles)
         {
-            VBoxContainer hud = HUDs[(string)paddle["name"]];
-            Vector2 offset = new Vector2(hud.RectSize.x / 2, 90);
-            Vector2 paddlePos = (Vector2)paddle["position"];
-            hud.RectPosition = paddlePos - offset;
+            var paddleName = (string)((Dictionary)paddle)["name"];
+            Vector2 offset = new Vector2(((VBoxContainer)HUDs[paddleName]).RectSize.x / 2, 90);
+            Vector2 paddlePos = (Vector2)((Dictionary)paddle)["position"];
+            ((VBoxContainer)HUDs[paddleName]).RectPosition = paddlePos - offset;
         }
     }
 

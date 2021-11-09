@@ -2,15 +2,15 @@
 
 importer="texture"
 type="StreamTexture"
-path="res://.import/crack.png-c57940df98ba36872b5bf7801bd392a6.stex"
+path="res://.import/Crack.png-bdb3cf62ab6165f550ea89b0c5ae6e59.stex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://assets/crack.png"
-dest_files=[ "res://.import/crack.png-c57940df98ba36872b5bf7801bd392a6.stex" ]
+source_file="res://Assets/Crack.png"
+dest_files=[ "res://.import/Crack.png-bdb3cf62ab6165f550ea89b0c5ae6e59.stex" ]
 
 [params]
 

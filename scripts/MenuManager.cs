@@ -1,5 +1,5 @@
 using Godot;
-using GColl = Godot.Collections;
+using Godot.Collections;
 
 public class MenuManager : Node
 {
@@ -75,8 +75,8 @@ public class MenuManager : Node
         AcceptButton.Connect("pressed", this, "AcceptInvite");
         DeclineButton.Connect("pressed", this, "DeclineInvite");
         Discord0Button.GrabFocus();
-        Discord0Button.Connect("pressed", this, "StartDiscord", new GColl.Array(){"0"});
-        Discord1Button.Connect("pressed", this, "StartDiscord", new GColl.Array(){"1"});
+        Discord0Button.Connect("pressed", this, "StartDiscord", new Array(){"0"});
+        Discord1Button.Connect("pressed", this, "StartDiscord", new Array(){"1"});
         MapButton.Connect("pressed", this, "SwitchMap");
         MapButton.Text = game.Map;
         PlayButton.Connect("pressed", discordManager, "CreateLobby");
@@ -168,12 +168,12 @@ public class MenuManager : Node
         {
             friend.QueueFree();
         }
-        GColl.Array friends = discordManager.GetFriends();
-        foreach (GColl.Dictionary friend in friends)
+        Array friends = discordManager.GetFriends();
+        foreach (Dictionary friend in friends)
         {
             Button friendButton = new Button();
             friendButton.Text = (string)friend["user_name"];
-            friendButton.Connect("pressed", this, "FriendPressed", new GColl.Array(){friendButton, friend["id"]});
+            friendButton.Connect("pressed", this, "FriendPressed", new Array(){friendButton, friend["id"]});
             FriendsList.AddChild(friendButton);
         }
     }

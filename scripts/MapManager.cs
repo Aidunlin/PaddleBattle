@@ -1,9 +1,9 @@
 using Godot;
-using GColl = Godot.Collections;
+using Godot.Collections;
 
 public class MapManager : Node
 {
-    public GColl.Array<GColl.Dictionary> Maps = new GColl.Array<GColl.Dictionary>();
+    public Array Maps = new Array();
 
     public Node2D Map = null;
     public Color MapColor = new Color();
@@ -14,21 +14,21 @@ public class MapManager : Node
     {
         game = GetNode<Game>("/root/Game");
 
-        GColl.Dictionary bigMapDict = new GColl.Dictionary();
+        Dictionary bigMapDict = new Dictionary();
         bigMapDict.Add("name", "BigMap");
-        bigMapDict.Add("scene", (PackedScene)GD.Load("res://maps/big_map.tscn"));
+        bigMapDict.Add("scene", (PackedScene)GD.Load("res://Maps/BigMap.tscn"));
         Maps.Add(bigMapDict);
 
-        GColl.Dictionary smallMapDict = new GColl.Dictionary();
+        Dictionary smallMapDict = new Dictionary();
         smallMapDict.Add("name", "SmallMap");
-        smallMapDict.Add("scene", (PackedScene)GD.Load("res://maps/small_map.tscn"));
+        smallMapDict.Add("scene", (PackedScene)GD.Load("res://Maps/SmallMap.tscn"));
         Maps.Add(smallMapDict);
     }
 
     public void LoadMap(string newMap, Color newColor)
     {
         MapColor = newColor;
-        foreach (GColl.Dictionary map in Maps)
+        foreach (Dictionary map in Maps)
         {
             if (((string)map["name"]).Equals(newMap))
             {
@@ -45,7 +45,7 @@ public class MapManager : Node
         int mapIndex = 0;
         for (; mapIndex < Maps.Count; mapIndex++)
         {
-            if ((string)Maps[mapIndex]["name"] == game.Map)
+            if ((string)((Dictionary)Maps[mapIndex])["name"] == game.Map)
             {
                 break;
             }
@@ -55,7 +55,7 @@ public class MapManager : Node
         {
             newIndex = mapIndex + 1;
         }
-        string newMapName = (string)Maps[newIndex]["name"];
+        string newMapName = (string)((Dictionary)Maps[mapIndex])["name"];
         game.Map = newMapName;
         return newMapName;
     }
@@ -65,12 +65,12 @@ public class MapManager : Node
         return Map.GetNode<Node2D>("CameraSpawn").Position;
     }
 
-    public GColl.Array GetPaddleSpawns()
+    public Array GetPaddleSpawns()
     {
         return Map.GetNode("PaddleSpawns").GetChildren();
     }
 
-    public GColl.Array GetBallSpawns()
+    public Array GetBallSpawns()
     {
         return Map.GetNode("BallSpawns").GetChildren();
     }

@@ -1,12 +1,11 @@
 using Godot;
-using System;
-using GColl = Godot.Collections;
+using Godot.Collections;
 
 public class Camera : Camera2D
 {
     public Vector2 Spawn = new Vector2();
 
-    public void MoveAndZoom(GColl.Array paddles)
+    public void MoveAndZoom(Array paddles)
     {
         Vector2 newZoom = Vector2.One;
         if (paddles.Count > 0)
@@ -19,19 +18,19 @@ public class Camera : Camera2D
             foreach (Node2D paddle in paddles)
             {
                 average += paddle.Position;
-                maxX = Math.Max(paddle.Position.x, maxX);
-                MinX = Math.Min(paddle.Position.x, MinX);
-                maxY = Math.Max(paddle.Position.y, maxY);
-                MinY = Math.Min(paddle.Position.y, MinY);
+                maxX = System.Math.Max(paddle.Position.x, maxX);
+                MinX = System.Math.Min(paddle.Position.x, MinX);
+                maxY = System.Math.Max(paddle.Position.y, maxY);
+                MinY = System.Math.Min(paddle.Position.y, MinY);
             }
             average /= paddles.Count;
-            float largestX = 2 * Math.Max(maxX - average.x, average.x - MinX);
-            float largestY = 2 * Math.Max(maxY - average.y, average.y - MinY);
+            float largestX = 2 * System.Math.Max(maxX - average.x, average.x - MinX);
+            float largestY = 2 * System.Math.Max(maxY - average.y, average.y - MinY);
             float marginX = OS.WindowSize.x * 2 / 3;
             float marginY = OS.WindowSize.y * 2 / 3;
             newZoom.x = (largestX + marginX) / OS.WindowSize.x;
             newZoom.y = (largestY + marginY) / OS.WindowSize.y;
-            float largestZoom = Math.Max(newZoom.x, newZoom.y);
+            float largestZoom = System.Math.Max(newZoom.x, newZoom.y);
             newZoom = new Vector2(largestZoom, largestZoom);
             if (newZoom < Vector2.One)
             {
