@@ -1,92 +1,100 @@
 using Godot;
 using Godot.Collections;
 
-public class MenuManager : Node
+public class MenuManager : Control
 {
-    [Signal] public delegate void MapSwitched();
-    [Signal] public delegate void EndRequested();
-
     public Game game;
     public DiscordManager discordManager;
 
-    public long InvitedBy = 0;
+    [Signal] public delegate void MapSwitched();
+    [Signal] public delegate void EndRequested();
 
-    public Control MessageWrap;
-    public Control MessageView;
-    public Control InviteWrap;
-    public Label InviteName;
-    public Control AcceptButton;
-    public Control DeclineButton;
-    public Control MenuNode;
+    public MarginContainer MessageWrap;
+    public VBoxContainer MessageView;
 
-    public Control DiscordMenuNode;
-    public Control Discord0Button;
-    public Control Discord1Button;
+    public CenterContainer CenterMenuNode;
 
-    public Control MainMenuNode;
+    public VBoxContainer DiscordMenuNode;
+    public Button Discord0Button;
+    public Button Discord1Button;
+
+    public VBoxContainer MainMenuNode;
     public Label NameLabel;
     public Button MapButton;
-    public Control PlayButton;
-    public Control QuitButton;
+    public Button PlayButton;
+    public Button QuitButton;
     public Label VersionNode;
 
-    public Control OptionsMenuNode;
-    public Control FriendsList;
-    public Control RefreshButton;
-    public Control BackButton;
-    public Control LeaveButton;
+    public VBoxContainer OptionsMenuNode;
+    public VBoxContainer FriendsList;
+    public Button RefreshButton;
+    public Button BackButton;
+    public Button LeaveButton;
+
+    public MarginContainer InviteWrap;
+    public Label InviteName;
+    public Button AcceptButton;
+    public Button DeclineButton;
+
+    public long InvitedBy = 0;
 
     public override void _Ready()
     {
         game = GetNode<Game>("/root/Game");
         discordManager = GetNode<DiscordManager>("/root/DiscordManager");
 
-        MessageWrap = GetNode<Control>("MessageWrap");
-        MessageView = GetNode<Control>("MessageWrap/MessageView");
-        InviteWrap = GetNode<Control>("InviteWrap");
-        InviteName = GetNode<Label>("InviteWrap/InviteView/Name");
-        AcceptButton = GetNode<Control>("InviteWrap/InviteView/Accept");
-        DeclineButton = GetNode<Control>("InviteWrap/InviteView/Decline");
-        MenuNode = GetNode<Control>("Menu");
+        MessageWrap = GetNode<MarginContainer>("MessageWrap");
+        MessageView = MessageWrap.GetNode<VBoxContainer>("MessageView");
 
-        DiscordMenuNode = GetNode<Control>("Menu/Discord");
-        Discord0Button = GetNode<Control>("Menu/Discord/Discord0");
-        Discord1Button = GetNode<Control>("Menu/Discord/Discord1");
+        CenterMenuNode = GetNode<CenterContainer>("CenterMenu");
 
-        MainMenuNode = GetNode<Control>("Menu/Main");
-        NameLabel = GetNode<Label>("Menu/Main/Name");
-        MapButton = GetNode<Button>("Menu/Main/Map");
-        PlayButton = GetNode<Control>("Menu/Main/Play");
-        QuitButton = GetNode<Control>("Menu/Main/Quit");
-        VersionNode = GetNode<Label>("Menu/Main/Version");
+        DiscordMenuNode = CenterMenuNode.GetNode<VBoxContainer>("Discord");
+        Discord0Button = DiscordMenuNode.GetNode<Button>("Discord0");
+        Discord1Button = DiscordMenuNode.GetNode<Button>("Discord1");
 
-        OptionsMenuNode = GetNode<Control>("Menu/Options");
-        FriendsList = GetNode<Control>("Menu/Options/FriendsWrap/Friends");
-        RefreshButton = GetNode<Control>("Menu/Options/Refresh");
-        BackButton = GetNode<Control>("Menu/Options/Back");
-        LeaveButton = GetNode<Control>("Menu/Options/Leave");
+        MainMenuNode = CenterMenuNode.GetNode<VBoxContainer>("Main");
+        NameLabel = MainMenuNode.GetNode<Label>("Name");
+        MapButton = MainMenuNode.GetNode<Button>("Map");
+        PlayButton = MainMenuNode.GetNode<Button>("Play");
+        QuitButton = MainMenuNode.GetNode<Button>("Quit");
+        VersionNode = MainMenuNode.GetNode<Label>("Version");
 
-        DiscordMenuNode.Show();;
-        MainMenuNode.Hide();
-        OptionsMenuNode.Hide();
-        InviteWrap.Hide();
+        OptionsMenuNode = CenterMenuNode.GetNode<VBoxContainer>("Options");
+        FriendsList = OptionsMenuNode.GetNode<VBoxContainer>("FriendsWrap/Friends");
+        RefreshButton = OptionsMenuNode.GetNode<Button>("Refresh");
+        BackButton = OptionsMenuNode.GetNode<Button>("Back");
+        LeaveButton = OptionsMenuNode.GetNode<Button>("Leave");
+
+        InviteWrap = GetNode<MarginContainer>("InviteWrap");
+        InviteName = InviteWrap.GetNode<Label>("InviteView/Name");
+        AcceptButton = InviteWrap.GetNode<Button>("InviteView/Accept");
+        DeclineButton = InviteWrap.GetNode<Button>("InviteView/Decline");
+
         discordManager.Connect("Error", this, "AddMessage");
         discordManager.Connect("InviteReceived", this, "ShowInvite");
-        AcceptButton.Connect("pressed", this, "AcceptInvite");
-        DeclineButton.Connect("pressed", this, "DeclineInvite");
+
+        DiscordMenuNode.Show();
+        Discord0Button.Connect("pressed", this, "StartDiscord", new Array() { "0" });
+        Discord1Button.Connect("pressed", this, "StartDiscord", new Array() { "1" });
         Discord0Button.GrabFocus();
-        Discord0Button.Connect("pressed", this, "StartDiscord", new Array(){"0"});
-        Discord1Button.Connect("pressed", this, "StartDiscord", new Array(){"1"});
+
+        MainMenuNode.Hide();
         MapButton.Connect("pressed", this, "SwitchMap");
         MapButton.Text = game.Map;
         PlayButton.Connect("pressed", discordManager, "CreateLobby");
         QuitButton.Connect("pressed", GetTree(), "quit");
         VersionNode.Text = Game.Version;
+
+        OptionsMenuNode.Hide();
         RefreshButton.Connect("pressed", this, "UpdateFriends");
         BackButton.Connect("pressed", this, "HideOptions");
         LeaveButton.Connect("pressed", this, "RequestEnd");
-    }
 
+        InviteWrap.Hide();
+        AcceptButton.Connect("pressed", this, "AcceptInvite");
+        DeclineButton.Connect("pressed", this, "DeclineInvite");
+    }
+    
     public void SwitchMap()
     {
         EmitSignal("MapSwitched");
@@ -173,7 +181,7 @@ public class MenuManager : Node
         {
             Button friendButton = new Button();
             friendButton.Text = (string)friend["user_name"];
-            friendButton.Connect("pressed", this, "FriendPressed", new Array(){friendButton, friend["id"]});
+            friendButton.Connect("pressed", this, "FriendPressed", new Array() { friendButton, friend["id"] });
             FriendsList.AddChild(friendButton);
         }
     }

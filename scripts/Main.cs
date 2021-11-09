@@ -17,7 +17,7 @@ public class Main : Node
     {
         game = GetNode<Game>("/root/Game");
         discordManager = GetNode<DiscordManager>("/root/DiscordManager");
-        
+
         camera = GetNode<Camera>("Camera");
         mapManager = GetNode<MapManager>("MapManager");
         paddleManager = GetNode<PaddleManager>("PaddleManager");
@@ -26,7 +26,7 @@ public class Main : Node
         menuManager = GetNode<MenuManager>("CanvasLayer/MenuManager");
 
         discordManager.Connect("UserUpdated", this, "GetUser");
-        discordManager.Connect("LobbyCreated", this, "CreateGame", new Array(){null});
+        discordManager.Connect("LobbyCreated", this, "CreateGame", new Array() { null });
         discordManager.Connect("MemberConnected", this, "HandleConnect");
         discordManager.Connect("MemberDisconnected", this, "HandleDisconnect");
         discordManager.Connect("MessageReceived", this, "HandleNetworkMessage");
@@ -37,7 +37,7 @@ public class Main : Node
         paddleManager.Connect("PaddleRemoved", hudManager, "RemoveHUD");
 
         menuManager.Connect("MapSwitched", this, "SwitchMap");
-        menuManager.Connect("EndRequested", this, "UnloadGame", new Array(){"You left the lobby"});
+        menuManager.Connect("EndRequested", this, "UnloadGame", new Array() { "You left the lobby" });
 
         if (!OS.IsDebugBuild())
         {
@@ -53,9 +53,9 @@ public class Main : Node
             {
                 Dictionary objectData = new Dictionary();
                 objectData.Add("paddles", paddleManager.Paddles);
-                objectData.Add("balls", ballManager.Balls);
+                objectData.Add("balls", ballManager.GetBalls());
                 discordManager.SendAll(objectData, false);
-                UpdateObjects(paddleManager.Paddles, ballManager.Balls);
+                UpdateObjects(paddleManager.Paddles, ballManager.GetBalls());
             }
             camera.MoveAndZoom(paddleManager.GetChildren());
         }
@@ -121,7 +121,7 @@ public class Main : Node
     public void HandleDisconnect(long id, string name)
     {
         paddleManager.RemovePaddles(id);
-        menuManager.AddMessage(name + " left the lobby");;
+        menuManager.AddMessage(name + " left the lobby"); ;
     }
 
     public void JoinGame(Array paddles, string mapName)

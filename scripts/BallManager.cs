@@ -3,12 +3,11 @@ using Godot.Collections;
 
 public class BallManager : Node
 {
+    public DiscordManager discordManager;
+
     public PackedScene BallScene = (PackedScene)GD.Load("res://Scenes/Ball.tscn");
 
-    public Array Balls = new Array();
-    public Array Spawns = new Array();
-    
-    public DiscordManager discordManager;
+    [Export] public Array Spawns = new Array();
 
     public override void _Ready()
     {
@@ -20,10 +19,19 @@ public class BallManager : Node
         foreach (Node2D spawn in Spawns)
         {
             RigidBody2D ballNode = BallScene.Instance<RigidBody2D>();
-            Balls.Add(new Vector2());
             ballNode.Position = spawn.Position;
             AddChild(ballNode);
         }
+    }
+
+    public Array GetBalls()
+    {
+        Array balls = new Array();
+        foreach (RigidBody2D ball in GetChildren())
+        {
+            balls.Add(ball.Position);
+        }
+        return balls;
     }
 
     public void UpdateBalls(Array newBalls)
@@ -44,13 +52,11 @@ public class BallManager : Node
                         newBallNode.Position = ((Node2D)Spawns[i]).Position;
                         AddChild(newBallNode);
                     }
-                    Balls[i] = ballNode.Position;
                 }
                 else
                 {
                     ballNode.Mode = RigidBody2D.ModeEnum.Kinematic;
-                    Balls[i] = (Vector2)newBalls[i];
-                    ballNode.Position = (Vector2)Balls[i];
+                    ballNode.Position = (Vector2)newBalls[i];
                 }
             }
         }
@@ -62,7 +68,6 @@ public class BallManager : Node
         {
             ball.QueueFree();
         }
-        Balls.Clear();
         Spawns.Clear();
     }
 }

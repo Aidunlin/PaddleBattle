@@ -3,6 +3,9 @@ using Godot.Collections;
 
 public class PaddleManager : Node
 {
+    public Game game;
+    public DiscordManager discordManager;
+    
     [Signal] public delegate void OptionsRequested();
     [Signal] public delegate void PaddleCreated();
     [Signal] public delegate void PaddleDamaged();
@@ -11,13 +14,10 @@ public class PaddleManager : Node
 
     public PackedScene PaddleScene = (PackedScene)GD.Load("res://Scenes/Paddle.tscn");
 
-    public Dictionary<string, int> InputList = new Dictionary<string, int>();
-    public Array UsedInputs = new Array();
-    public Array Paddles = new Array();
-    public Array Spawns = new Array();
-
-    public Game game;
-    public DiscordManager discordManager;
+    [Export] public Dictionary<string, int> InputList = new Dictionary<string, int>();
+    [Export] public Array UsedInputs = new Array();
+    [Export] public Array Paddles = new Array();
+    [Export] public Array Spawns = new Array();
 
     public override void _Ready()
     {
@@ -74,8 +74,6 @@ public class PaddleManager : Node
             newPaddle.Add("name", game.UserName);
             newPaddle.Add("id", game.UserId.ToString());
             newPaddle.Add("pad", pad);
-            newPaddle.Add("has_pad", true);
-            newPaddle.Add("already_exists", false);
             UsedInputs.Add(pad);
             if (discordManager.IsLobbyOwner())
             {
@@ -110,7 +108,7 @@ public class PaddleManager : Node
                 newName += nameCount.ToString();
             }
             paddleNode.Name = newName;
-            if ((bool)newPaddle["already_exists"])
+            if (newPaddle.Contains("position") && newPaddle.Contains("rotation"))
             {
                 paddleNode.Position = (Vector2)newPaddle["position"];
                 paddleNode.Rotation = (float)newPaddle["rotation"];
@@ -120,7 +118,7 @@ public class PaddleManager : Node
                 paddleNode.Position = ((Node2D)Spawns[paddleCount]).Position;
                 paddleNode.Rotation = ((Node2D)Spawns[paddleCount]).Rotation;
             }
-            if ((bool)newPaddle["already_exists"])
+            if (newPaddle.Contains("color"))
             {
                 paddleNode.Modulate = (Color)newPaddle["color"];
             }
@@ -128,18 +126,18 @@ public class PaddleManager : Node
             {
                 paddleNode.Modulate = Color.FromHsv(GD.Randf(), (float)0.8, 1);
             }
-            paddleNode.Connect("Damaged", this, "DamagePaddle", new Array(){newName});
-            if (game.UserId == long.Parse((string)newPaddle["id"]) && (bool)newPaddle["has_pad"])
+            paddleNode.Connect("Damaged", this, "DamagePaddle", new Array() { newName });
+            if (game.UserId == long.Parse((string)newPaddle["id"]) && newPaddle.Contains("pad"))
             {
                 InputList.Add(newName, (int)newPaddle["pad"]);
             }
             Dictionary paddleToAddToArray = new Dictionary();
-            paddleToAddToArray["id"]  = newPaddle["id"];
-            paddleToAddToArray["name"]  = newName;
-            paddleToAddToArray["position"]  = paddleNode.Position;
-            paddleToAddToArray["rotation"]  = paddleNode.Rotation;
-            paddleToAddToArray["color"]  = paddleNode.Modulate;
-            if ((bool)newPaddle["already_exists"])
+            paddleToAddToArray["id"] = newPaddle["id"];
+            paddleToAddToArray["name"] = newName;
+            paddleToAddToArray["position"] = paddleNode.Position;
+            paddleToAddToArray["rotation"] = paddleNode.Rotation;
+            paddleToAddToArray["color"] = paddleNode.Modulate;
+            if (newPaddle.Contains("health"))
             {
                 paddleToAddToArray["health"] = newPaddle["health"];
                 float crackOpacity = (float)1.0 - ((int)newPaddle["health"] / (float)Game.MaxHealth);
@@ -157,15 +155,10 @@ public class PaddleManager : Node
             EmitSignal("PaddleCreated", paddleToAddToArray);
             if (discordManager.IsLobbyOwner())
             {
-                paddleToAddToArray["already_exists"] = true;
                 Dictionary newData = paddleToAddToArray.Duplicate(true);
-                if (game.UserId == long.Parse((string)newPaddle["id"]) && (bool)newPaddle["has_pad"])
+                if (game.UserId != long.Parse((string)newPaddle["id"]) && newPaddle.Contains("pad"))
                 {
                     newData["pad"] = newPaddle["pad"];
-                }
-                else
-                {
-                    newData["has_pad"] = false;
                 }
                 Dictionary paddleData = new Dictionary();
                 paddleData.Add("paddle_data", newData);
@@ -173,22 +166,6 @@ public class PaddleManager : Node
             }
             Paddles.Add(paddleToAddToArray);
             AddChild(paddleNode);
-        }
-    }
-
-    public void RemovePaddles(long id)
-    {
-        Array paddlesToClear = new Array();
-        foreach (var paddle in Paddles)
-        {
-            if (id == long.Parse((string)((Dictionary)paddle)["id"]))
-            {
-                paddlesToClear.Add(paddle);
-            }
-        }
-        foreach (var paddle in paddlesToClear)
-        {
-            Paddles.Remove(paddle);
         }
     }
 
@@ -226,6 +203,19 @@ public class PaddleManager : Node
         }
     }
 
+    public void RemovePaddles(long id)
+    {
+        foreach (Dictionary paddle in Paddles)
+        {
+            if (id == long.Parse((string)paddle["id"]))
+            {
+                Paddles.Remove(paddle);
+                GetNode((string)paddle["name"]).QueueFree();
+                EmitSignal("PaddleRemoved", (string)paddle["name"]);
+            }
+        }
+    }
+
     public int GetKey(int key)
     {
         return Input.IsKeyPressed(key) ? 1 : 0;
@@ -242,7 +232,7 @@ public class PaddleManager : Node
         inputs.Add("velocity", new Vector2());
         inputs.Add("rotation", (float)0.0);
         inputs.Add("dash", false);
-        if (!game.IsPlaying) return inputs;
+        if (!InputList.ContainsKey(paddle) || !game.IsPlaying) return inputs;
         int pad = InputList[paddle];
         if (pad == -1)
         {

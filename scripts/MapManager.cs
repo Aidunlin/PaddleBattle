@@ -3,12 +3,11 @@ using Godot.Collections;
 
 public class MapManager : Node
 {
-    public Array Maps = new Array();
-
-    public Node2D Map = null;
-    public Color MapColor = new Color();
-
     public Game game;
+
+    [Export] public Array Maps = new Array();
+    [Export] public Node2D Map = null;
+    [Export] public Color MapColor = new Color();
 
     public override void _Ready()
     {

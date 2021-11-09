@@ -2,5 +2,5 @@
 .mono/
 .vs/
 .vscode/
-export/
+Export/
 *.cfg

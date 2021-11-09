@@ -3,7 +3,7 @@ using Godot.Collections;
 
 public class Camera : Camera2D
 {
-    public Vector2 Spawn = new Vector2();
+    [Export] public Vector2 Spawn = new Vector2();
 
     public void MoveAndZoom(Array paddles)
     {

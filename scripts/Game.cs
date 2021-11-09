@@ -6,8 +6,8 @@ public class Game : Node
     public const int MaxHealth = 3;
     public const int MoveSpeed = 600;
 
-    public bool IsPlaying = false;
-    public string Map = "BigMap";
-    public string UserName = "";
-    public long UserId = 0;
+    [Export] public bool IsPlaying = false;
+    [Export] public string Map = "BigMap";
+    [Export] public string UserName = "";
+    [Export] public long UserId = 0;
 }

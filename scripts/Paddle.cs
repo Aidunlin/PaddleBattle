@@ -1,34 +1,34 @@
 using Godot;
-using GColl = Godot.Collections;
+using Godot.Collections;
 
 public class Paddle : KinematicBody2D
 {
+    public DiscordManager discordManager;
+
     [Signal] public delegate void Collided();
     [Signal] public delegate void Damaged();
 
-    public bool IsSafe = true;
-    public bool IsDashing = false;
-    public bool WasDashing = false;
-    public bool CanDash = true;
-    public Vector2 Velocity = new Vector2();
-    public Vector2 InputVelocity = new Vector2();
-    public float InputRotation = 0;
+    [Export] public bool IsSafe = true;
+    [Export] public bool IsDashing = false;
+    [Export] public bool WasDashing = false;
+    [Export] public bool CanDash = true;
+    [Export] public Vector2 Velocity = new Vector2();
+    [Export] public Vector2 InputVelocity = new Vector2();
+    [Export] public float InputRotation = 0;
 
     public Area2D BackNode;
     public Timer SafeTimer;
     public Timer DashTimer;
     public Timer DashResetTimer;
-    
-    public DiscordManager discordManager;
 
     public override void _Ready()
     {
         discordManager = GetNode<DiscordManager>("/root/DiscordManager");
+
         BackNode = GetNode<Area2D>("Back");
         SafeTimer = GetNode<Timer>("SafeTimer");
         DashTimer = GetNode<Timer>("DashTimer");
         DashResetTimer = GetNode<Timer>("DashResetTimer");
-
 
         BackNode.Connect("body_entered", this, "BackCollided");
         SafeTimer.Connect("timeout", this, "SafeTimeout");
@@ -70,7 +70,7 @@ public class Paddle : KinematicBody2D
             IsSafe = true;
         }
     }
-    
+
     public void SafeTimeout()
     {
         if (discordManager.IsLobbyOwner())
@@ -96,7 +96,7 @@ public class Paddle : KinematicBody2D
         }
     }
 
-    public void SetInputs(GColl.Dictionary inputs)
+    public void SetInputs(Dictionary inputs)
     {
         if (discordManager.IsLobbyOwner())
         {

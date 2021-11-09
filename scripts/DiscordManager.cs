@@ -24,44 +24,49 @@ public class DiscordManager : Node
     public UserManager userManager;
     public RelationshipManager relationshipManager;
 
-    public long DiscordId = 862090452361674762;
-    public long LobbyOwnerId = 0;
-    public long CurrentLobbyId = 0;
-    public bool IsRunning = false;
+    [Export] public long DiscordId = 862090452361674762;
+    [Export] public long LobbyOwnerId = 0;
+    [Export] public long CurrentLobbyId = 0;
+    [Export] public bool IsRunning = false;
 
     public override void _PhysicsProcess(float delta)
     {
-        if (!IsRunning) return;
-        discord.RunCallbacks();
-        lobbyManager.FlushNetwork();
+        if (IsRunning)
+        {
+            discord.RunCallbacks();
+            lobbyManager.FlushNetwork();
+        }
     }
 
     public void Start(string instance)
     {
         System.Environment.SetEnvironmentVariable("DISCORD_INSTANCE_ID", instance);
         discord = new Discord.Discord(DiscordId, (ulong)CreateFlags.Default);
-        discord.SetLogHook(LogLevel.Debug, (LogLevel level, string message) =>
+        userManager = discord.GetUserManager();
+        activityManager = discord.GetActivityManager();
+        lobbyManager = discord.GetLobbyManager();
+        relationshipManager = discord.GetRelationshipManager();
+
+        discord.SetLogHook(LogLevel.Debug, (level, message) =>
         {
             GD.Print("Discord: ", level, " - ", message);
         });
 
-        userManager = discord.GetUserManager();
         userManager.OnCurrentUserUpdate += () =>
         {
             EmitSignal("UserUpdated");
         };
 
-        activityManager = discord.GetActivityManager();
         activityManager.OnActivityJoin += (secret) =>
         {
             JoinLobby(secret);
         };
+
         activityManager.OnActivityInvite += (ActivityActionType type, ref User user, ref Activity activity) =>
         {
             EmitSignal("InviteReceived", user.Id, user.Username);
         };
 
-        lobbyManager = discord.GetLobbyManager();
         lobbyManager.OnNetworkMessage += (lobbyId, userId, channelId, data) =>
         {
             Dictionary decoded = GD.Bytes2Var(data) as Dictionary;
@@ -75,6 +80,7 @@ public class DiscordManager : Node
                 GD.Print(exc.ToString());
             }
         };
+
         lobbyManager.OnMemberConnect += (lobbyId, userId) =>
         {
             UpdateActivity(true);
@@ -86,6 +92,7 @@ public class DiscordManager : Node
                 }
             });
         };
+
         lobbyManager.OnMemberDisconnect += (lobbyId, userId) =>
         {
             UpdateActivity(true);
@@ -99,11 +106,11 @@ public class DiscordManager : Node
             });
         };
 
-        relationshipManager = discord.GetRelationshipManager();
         relationshipManager.OnRefresh += () =>
         {
             UpdateRelationships();
         };
+
         relationshipManager.OnRelationshipUpdate += (ref Relationship rel) =>
         {
             UpdateRelationships();
@@ -127,6 +134,10 @@ public class DiscordManager : Node
         else
         {
             activity.State = "Thinking about battles";
+        }
+        if (OS.IsDebugBuild())
+        {
+            activity.Details = "Debugging";
         }
         activity.Assets.LargeImage = "paddlebattle";
         activityManager.UpdateActivity(activity, (result) =>
