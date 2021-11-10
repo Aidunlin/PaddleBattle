@@ -10,4 +10,9 @@ public class Game : Node
     [Export] public string Map = "BigMap";
     [Export] public string UserName = "";
     [Export] public long UserId = 0;
+
+    public void Reset()
+    {
+        IsPlaying = false;
+    }
 }

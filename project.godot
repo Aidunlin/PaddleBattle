@@ -27,6 +27,7 @@ default_bus_layout=""
 
 Game="*res://Scripts/Game.cs"
 DiscordManager="*res://Scripts/DiscordManager.cs"
+InputManager="*res://Scripts/InputManager.cs"
 
 [debug]
 

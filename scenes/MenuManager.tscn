@@ -15,6 +15,7 @@ __meta__ = {
 }
 
 [node name="MessageWrap" type="MarginContainer" parent="."]
+visible = false
 margin_right = 416.0
 margin_bottom = 166.0
 custom_constants/margin_right = 8
@@ -64,7 +65,6 @@ size_flags_horizontal = 3
 text = "Discord 1"
 
 [node name="Main" type="VBoxContainer" parent="CenterMenu"]
-visible = false
 margin_left = 490.0
 margin_top = 221.0
 margin_right = 790.0
@@ -132,6 +132,7 @@ text = "NO VERSION"
 align = 1
 
 [node name="Settings" type="VBoxContainer" parent="CenterMenu"]
+visible = false
 margin_left = 490.0
 margin_top = 240.0
 margin_right = 790.0
@@ -224,6 +225,7 @@ margin_bottom = 504.0
 text = "Leave"
 
 [node name="InviteWrap" type="MarginContainer" parent="."]
+visible = false
 anchor_top = 1.0
 anchor_bottom = 1.0
 margin_top = -161.0
@@ -233,6 +235,7 @@ custom_constants/margin_top = 8
 custom_constants/margin_left = 8
 custom_constants/margin_bottom = 8
 __meta__ = {
+"_edit_lock_": true,
 "_edit_use_anchors_": false
 }
 

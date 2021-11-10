@@ -5,8 +5,8 @@ public class PaddleManager : Node
 {
     public Game game;
     public DiscordManager discordManager;
+    public InputManager inputManager;
 
-    [Signal] public delegate void OptionsRequested();
     [Signal] public delegate void PaddleCreated();
     [Signal] public delegate void PaddleDamaged();
     [Signal] public delegate void PaddleDestroyed();
@@ -14,66 +14,24 @@ public class PaddleManager : Node
 
     public PackedScene PaddleScene = (PackedScene)GD.Load("res://Scenes/Paddle.tscn");
 
-    [Export] public Dictionary<string, int> InputList = new Dictionary<string, int>();
-    [Export] public Array UsedInputs = new Array();
     [Export] public Array Spawns = new Array();
 
     public override void _Ready()
     {
         game = GetNode<Game>("/root/Game");
         discordManager = GetNode<DiscordManager>("/root/DiscordManager");
-    }
-
-    public bool InputListHasPad(int pad)
-    {
-        foreach (var item in InputList)
-        {
-            if (item.Value == pad)
-            {
-                return true;
-            }
-        }
-        return false;
-    }
-
-    public override void _PhysicsProcess(float delta)
-    {
-        if (game.IsPlaying)
-        {
-            if (Input.IsKeyPressed((int)KeyList.Enter) && !InputListHasPad(-1))
-            {
-                CreatePaddleFromInput(-1);
-            }
-            foreach (int pad in Input.GetConnectedJoypads())
-            {
-                if (Input.IsJoyButtonPressed(pad, (int)JoystickList.Button0) && !InputListHasPad(pad))
-                {
-                    CreatePaddleFromInput(pad);
-                }
-            }
-            if (Input.IsKeyPressed((int)KeyList.Escape) && UsedInputs.Contains(-1))
-            {
-                EmitSignal("OptionsRequested");
-            }
-            foreach (int pad in UsedInputs)
-            {
-                if (Input.IsJoyButtonPressed(pad, (int)JoystickList.Start))
-                {
-                    EmitSignal("OptionsRequested");
-                }
-            }
-        }
+        inputManager = GetNode<InputManager>("/root/InputManager");
     }
 
     public void CreatePaddleFromInput(int pad)
     {
-        if (!UsedInputs.Contains(pad))
+        if (!inputManager.UsedInputs.Contains(pad))
         {
             Dictionary newPaddle = new Dictionary();
             newPaddle.Add("Name", game.UserName);
             newPaddle.Add("Id", game.UserId.ToString());
             newPaddle.Add("Pad", pad);
-            UsedInputs.Add(pad);
+            inputManager.UsedInputs.Add(pad);
             if (discordManager.IsLobbyOwner())
             {
                 CreatePaddle(newPaddle);
@@ -135,7 +93,7 @@ public class PaddleManager : Node
             paddleNode.Connect("Damaged", this, "DamagePaddle", new Array() { newName });
             if (game.UserId == long.Parse((string)newPaddle["Id"]) && newPaddle.Contains("Pad"))
             {
-                InputList.Add(newName, (int)newPaddle["Pad"]);
+                inputManager.InputList.Add(newName, (int)newPaddle["Pad"]);
                 paddleNode.Pad = (int)newPaddle["Pad"];
             }
             if (newPaddle.Contains("MaxHealth"))
@@ -213,7 +171,7 @@ public class PaddleManager : Node
             {
                 if (game.UserId == long.Parse((string)newPaddle["Id"]))
                 {
-                    SetPaddleInputs(paddleName, GetPaddleInputs(paddleName));
+                    SetPaddleInputs(paddleName, inputManager.GetPaddleInputs(paddleName));
                 }
             }
             else
@@ -224,7 +182,7 @@ public class PaddleManager : Node
                 {
                     Dictionary inputData = new Dictionary();
                     inputData.Add("Paddle", paddleName);
-                    inputData.Add("Inputs", GetPaddleInputs(paddleName));
+                    inputData.Add("Inputs", inputManager.GetPaddleInputs(paddleName));
                     discordManager.SendOwner(inputData, false);
                 }
             }
@@ -241,62 +199,6 @@ public class PaddleManager : Node
                 GetNode(paddle.Name).QueueFree();
             }
         }
-    }
-
-    public int GetKey(int key)
-    {
-        return Input.IsKeyPressed(key) ? 1 : 0;
-    }
-
-    public float GetAxis(int pad, int axis)
-    {
-        return Input.GetJoyAxis(pad, axis);
-    }
-
-    public Dictionary GetPaddleInputs(string paddleName)
-    {
-        Dictionary inputs = new Dictionary();
-        inputs.Add("Velocity", new Vector2());
-        inputs.Add("Rotation", (float)0.0);
-        inputs.Add("Dash", false);
-        if (!InputList.ContainsKey(paddleName) || !game.IsPlaying)
-        {
-            return inputs;
-        }
-        int pad = InputList[paddleName];
-        if (pad == -1)
-        {
-            inputs["Velocity"] = new Vector2(
-                GetKey((int)KeyList.D) - GetKey((int)KeyList.A),
-                GetKey((int)KeyList.S) - GetKey((int)KeyList.W)
-            ).Normalized() * Game.MoveSpeed;
-            inputs["Dash"] = Input.IsKeyPressed((int)KeyList.Shift);
-            inputs["Rotation"] = Mathf.Deg2Rad(
-                (GetKey((int)KeyList.Period) - GetKey((int)KeyList.Comma)) * 4
-            );
-        }
-        else
-        {
-            Vector2 leftStick = new Vector2(
-                GetAxis(pad, (int)JoystickList.AnalogLx),
-                GetAxis(pad, (int)JoystickList.AnalogLy)
-            );
-            Vector2 rightStick = new Vector2(
-                GetAxis(pad, (int)JoystickList.AnalogRx),
-                GetAxis(pad, (int)JoystickList.AnalogRy)
-            );
-            if (leftStick.Length() > 0.2)
-            {
-                inputs["Velocity"] = leftStick * Game.MoveSpeed;
-            }
-            inputs["Dash"] = Input.IsJoyButtonPressed(pad, (int)JoystickList.L2);
-            if (rightStick.Length() > 0.7)
-            {
-                Paddle paddleNode = GetNode<Paddle>(paddleName);
-                inputs["Rotation"] = paddleNode.GetAngleTo(paddleNode.Position + rightStick) * 0.1;
-            }
-        }
-        return inputs;
     }
 
     public void SetPaddleInputs(string paddle, Dictionary inputs)
@@ -336,8 +238,6 @@ public class PaddleManager : Node
 
     public void Reset()
     {
-        InputList.Clear();
-        UsedInputs.Clear();
         foreach (Node paddle in GetChildren())
         {
             paddle.QueueFree();

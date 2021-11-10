@@ -5,6 +5,7 @@ public class Main : Node
 {
     public Game game;
     public DiscordManager discordManager;
+    public InputManager inputManager;
 
     public Camera camera;
     public MapManager mapManager;
@@ -17,6 +18,7 @@ public class Main : Node
     {
         game = GetNode<Game>("/root/Game");
         discordManager = GetNode<DiscordManager>("/root/DiscordManager");
+        inputManager = GetNode<InputManager>("/root/InputManager");
 
         camera = GetNode<Camera>("Camera");
         mapManager = GetNode<MapManager>("MapManager");
@@ -32,7 +34,8 @@ public class Main : Node
         discordManager.Connect("MemberDisconnected", this, "HandleDiscordDisconnect");
         discordManager.Connect("MessageReceived", this, "HandleDiscordMessage");
 
-        paddleManager.Connect("OptionsRequested", menuManager, "ShowOptions");
+        inputManager.Connect("CreatePaddleRequested", paddleManager, "CreatePaddleFromInput");
+        inputManager.Connect("OptionsRequested", menuManager, "ShowOptions");
         paddleManager.Connect("PaddleDestroyed", menuManager, "AddMessage");
         paddleManager.Connect("PaddleCreated", hudManager, "CreateHUD");
         paddleManager.Connect("PaddleRemoved", hudManager, "RemoveHUD");
@@ -168,8 +171,9 @@ public class Main : Node
 
     public void UnloadGame(string msg)
     {
+        game.Reset();
         discordManager.LeaveLobby();
-        game.IsPlaying = false;
+        inputManager.Reset();
         camera.ResetNoSpawn();
         mapManager.Reset();
         paddleManager.Reset();
