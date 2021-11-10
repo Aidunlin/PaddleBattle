@@ -16,6 +16,11 @@ public class Paddle : KinematicBody2D
     [Export] public Vector2 InputVelocity = new Vector2();
     [Export] public float InputRotation = 0;
 
+    [Export] public string Id;
+    [Export] public int Pad;
+    [Export] public int MaxHealth;
+    [Export] public int Health;
+
     public Area2D BackNode;
     public Timer SafeTimer;
     public Timer DashTimer;

@@ -8,7 +8,7 @@ public class HUDManager : Control
         VBoxContainer hud = new VBoxContainer();
         hud.Name = (string)data["Name"];
         hud.SizeFlagsHorizontal = (int)VBoxContainer.SizeFlags.ExpandFill;
-        hud.Modulate = (Color)data["Color"];
+        hud.Modulate = (Color)data["Modulate"];
         hud.Alignment = BoxContainer.AlignMode.Center;
         hud.Set("custom_constants/separation", -8);
         AddChild(hud);

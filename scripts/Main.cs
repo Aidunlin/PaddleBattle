@@ -53,10 +53,10 @@ public class Main : Node
             if (discordManager.IsLobbyOwner())
             {
                 Dictionary objectData = new Dictionary();
-                objectData.Add("Paddles", paddleManager.Paddles);
+                objectData.Add("Paddles", paddleManager.GetPaddles());
                 objectData.Add("Balls", ballManager.GetBalls());
                 discordManager.SendAll(objectData, false);
-                UpdateObjects(paddleManager.Paddles, ballManager.GetBalls());
+                UpdateObjects(paddleManager.GetPaddles(), ballManager.GetBalls());
             }
             camera.MoveAndZoom(paddleManager.GetChildren());
         }
@@ -117,7 +117,7 @@ public class Main : Node
         if (discordManager.IsLobbyOwner())
         {
             Dictionary welcomeData = new Dictionary();
-            welcomeData.Add("Paddles", paddleManager.Paddles);
+            welcomeData.Add("Paddles", paddleManager.GetPaddles());
             welcomeData.Add("Map", game.Map);
             discordManager.Send(id, welcomeData, true);
         }
