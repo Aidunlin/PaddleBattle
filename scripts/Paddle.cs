@@ -41,13 +41,12 @@ public class Paddle : KinematicBody2D
     {
         if (discordManager.IsLobbyOwner())
         {
-            Velocity.x = Mathf.Lerp(Velocity.x, InputVelocity.x, (float)0.06);
-            Velocity.y = Mathf.Lerp(Velocity.y, InputVelocity.y, (float)0.06);
+            Velocity = Velocity.LinearInterpolate(InputVelocity, (float)0.06);
             Rotation += InputRotation;
             KinematicCollision2D collision = MoveAndCollide(Velocity * delta, false);
             if (collision != null)
             {
-                if (((Node)collision.Collider).IsInGroup("balls"))
+                if (((Node2D)collision.Collider).IsInGroup("balls"))
                 {
                     int modifier = IsDashing ? 200 : 100;
                     ((RigidBody2D)collision.Collider).ApplyCentralImpulse(-collision.Normal * modifier);
@@ -100,13 +99,13 @@ public class Paddle : KinematicBody2D
     {
         if (discordManager.IsLobbyOwner())
         {
-            InputVelocity = (Vector2)inputs["velocity"];
-            InputRotation = (float)inputs["rotation"];
-            if (!(bool)inputs["dash"])
+            InputVelocity = (Vector2)inputs["Velocity"];
+            InputRotation = (float)inputs["Rotation"];
+            if (!(bool)inputs["Dash"])
             {
                 WasDashing = false;
             }
-            if ((bool)inputs["dash"] && CanDash && !WasDashing)
+            if ((bool)inputs["Dash"] && CanDash && !WasDashing)
             {
                 CanDash = false;
                 IsDashing = true;

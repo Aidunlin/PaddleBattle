@@ -69,14 +69,12 @@ public class DiscordManager : Node
 
         lobbyManager.OnNetworkMessage += (lobbyId, userId, channelId, data) =>
         {
-            Dictionary decoded = GD.Bytes2Var(data) as Dictionary;
             try
             {
                 EmitSignal("MessageReceived", data);
             }
             catch (System.Exception exc)
             {
-                GD.Print(decoded.ToString());
                 GD.Print(exc.ToString());
             }
         };
@@ -95,8 +93,11 @@ public class DiscordManager : Node
 
         lobbyManager.OnMemberDisconnect += (lobbyId, userId) =>
         {
+            if (userId == LobbyOwnerId)
+            {
+                LeaveLobby();
+            }
             UpdateActivity(true);
-            LobbyOwnerId = GetLobbyOwnerId();
             userManager.GetUser(userId, (Result result, ref User user) =>
             {
                 if (result == Result.Ok)
@@ -127,8 +128,6 @@ public class DiscordManager : Node
         {
             activity.Secrets.Join = lobbyManager.GetLobbyActivitySecret(CurrentLobbyId);
             activity.Party.Id = CurrentLobbyId.ToString();
-            activity.Party.Size.CurrentSize = lobbyManager.MemberCount(CurrentLobbyId);
-            activity.Party.Size.MaxSize = 8;
             activity.State = "Battling it out";
         }
         else
@@ -212,7 +211,6 @@ public class DiscordManager : Node
     public void CreateLobby()
     {
         LobbyTransaction txn = lobbyManager.GetLobbyCreateTransaction();
-        txn.SetCapacity(8);
         lobbyManager.CreateLobby(txn, (Result result, ref Lobby lobby) =>
         {
             if (result == Result.Ok)
@@ -284,8 +282,8 @@ public class DiscordManager : Node
         {
             Relationship rel = relationshipManager.GetAt((uint)i);
             Dictionary friend = new Dictionary();
-            friend.Add("user_name", rel.User.Username);
-            friend.Add("id", rel.User.Id.ToString());
+            friend.Add("UserName", rel.User.Username);
+            friend.Add("Id", rel.User.Id.ToString());
             friends.Add(friend);
         }
         return friends;

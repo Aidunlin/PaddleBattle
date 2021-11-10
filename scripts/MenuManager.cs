@@ -22,8 +22,14 @@ public class MenuManager : Control
     public Label NameLabel;
     public Button MapButton;
     public Button PlayButton;
+    public Button SettingsButton;
     public Button QuitButton;
     public Label VersionNode;
+
+    public VBoxContainer SettingsMenuNode;
+    public CheckButton VSyncButton;
+    public CheckButton FullscreenButton;
+    public Button DoneButton;
 
     public VBoxContainer OptionsMenuNode;
     public VBoxContainer FriendsList;
@@ -36,7 +42,7 @@ public class MenuManager : Control
     public Button AcceptButton;
     public Button DeclineButton;
 
-    public long InvitedBy = 0;
+    [Export] public long InvitedBy = 0;
 
     public override void _Ready()
     {
@@ -54,10 +60,16 @@ public class MenuManager : Control
 
         MainMenuNode = CenterMenuNode.GetNode<VBoxContainer>("Main");
         NameLabel = MainMenuNode.GetNode<Label>("Name");
-        MapButton = MainMenuNode.GetNode<Button>("Map");
         PlayButton = MainMenuNode.GetNode<Button>("Play");
+        SettingsButton = MainMenuNode.GetNode<Button>("Settings");
         QuitButton = MainMenuNode.GetNode<Button>("Quit");
         VersionNode = MainMenuNode.GetNode<Label>("Version");
+
+        SettingsMenuNode = CenterMenuNode.GetNode<VBoxContainer>("Settings");
+        VSyncButton = SettingsMenuNode.GetNode<CheckButton>("VSync");
+        FullscreenButton = SettingsMenuNode.GetNode<CheckButton>("Fullscreen");
+        MapButton = SettingsMenuNode.GetNode<Button>("Map");
+        DoneButton = SettingsMenuNode.GetNode<Button>("Done");
 
         OptionsMenuNode = CenterMenuNode.GetNode<VBoxContainer>("Options");
         FriendsList = OptionsMenuNode.GetNode<VBoxContainer>("FriendsWrap/Friends");
@@ -70,7 +82,6 @@ public class MenuManager : Control
         AcceptButton = InviteWrap.GetNode<Button>("InviteView/Accept");
         DeclineButton = InviteWrap.GetNode<Button>("InviteView/Decline");
 
-        discordManager.Connect("Error", this, "AddMessage");
         discordManager.Connect("InviteReceived", this, "ShowInvite");
 
         DiscordMenuNode.Show();
@@ -79,16 +90,27 @@ public class MenuManager : Control
         Discord0Button.GrabFocus();
 
         MainMenuNode.Hide();
-        MapButton.Connect("pressed", this, "SwitchMap");
-        MapButton.Text = game.Map;
         PlayButton.Connect("pressed", discordManager, "CreateLobby");
+        SettingsButton.Connect("pressed", this, "ToggleSettings");
         QuitButton.Connect("pressed", GetTree(), "quit");
         VersionNode.Text = Game.Version;
 
+        SettingsMenuNode.Hide();
+        VSyncButton.Connect("pressed", this, "ToggleVSync");
+        FullscreenButton.Connect("pressed", this, "ToggleFullscreen");
+        MapButton.Connect("pressed", this, "SwitchMap");
+        MapButton.Text = game.Map;
+        DoneButton.Connect("pressed", this, "ToggleSettings");
+
         OptionsMenuNode.Hide();
         RefreshButton.Connect("pressed", this, "UpdateFriends");
+        RefreshButton.FocusNeighbourBottom = BackButton.GetPath();
         BackButton.Connect("pressed", this, "HideOptions");
+        BackButton.FocusNeighbourTop = RefreshButton.GetPath();
+        BackButton.FocusNeighbourBottom = LeaveButton.GetPath();
         LeaveButton.Connect("pressed", this, "RequestEnd");
+        LeaveButton.FocusNeighbourTop = BackButton.GetPath();
+        LeaveButton.FocusNeighbourBottom = LeaveButton.GetPath();
 
         InviteWrap.Hide();
         AcceptButton.Connect("pressed", this, "AcceptInvite");
@@ -118,12 +140,41 @@ public class MenuManager : Control
         PlayButton.GrabFocus();
     }
 
-    public void AddMessage(string msg = "", bool err = false)
+    public void ToggleSettings()
     {
+        if (SettingsMenuNode.Visible)
+        {
+            SettingsMenuNode.Visible = false;
+            MainMenuNode.Visible = true;
+            SettingsButton.GrabFocus();
+        }
+        else
+        {
+            SettingsMenuNode.Visible = true;
+            MainMenuNode.Visible = false;
+            DoneButton.GrabFocus();
+        }
+    }
+
+    public void ToggleVSync()
+    {
+        OS.VsyncEnabled = !OS.VsyncEnabled;
+    }
+
+    public void ToggleFullscreen()
+    {
+        OS.WindowFullscreen = !OS.WindowFullscreen;
+    }
+
+    public void AddMessage(string msg = "")
+    {
+        GD.Print(msg);
+
         Label newMessage = new Label();
         newMessage.Text = msg;
         MessageView.AddChild(newMessage);
         MessageView.MoveChild(newMessage, 0);
+
         Timer messageTimer = new Timer();
         newMessage.AddChild(messageTimer);
         messageTimer.OneShot = true;
@@ -132,14 +183,6 @@ public class MenuManager : Control
         if (MessageView.GetChildCount() > 5)
         {
             MessageView.GetChild(MessageView.GetChildCount() - 1).QueueFree();
-        }
-        if (err)
-        {
-            GD.PrintErr(msg);
-        }
-        else
-        {
-            GD.Print(msg);
         }
     }
 
@@ -180,8 +223,8 @@ public class MenuManager : Control
         foreach (Dictionary friend in friends)
         {
             Button friendButton = new Button();
-            friendButton.Text = (string)friend["user_name"];
-            friendButton.Connect("pressed", this, "FriendPressed", new Array() { friendButton, friend["id"] });
+            friendButton.Text = (string)friend["UserName"];
+            friendButton.Connect("pressed", this, "FriendPressed", new Array() { friendButton, friend["Id"] });
             FriendsList.AddChild(friendButton);
         }
     }

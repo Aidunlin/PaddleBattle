@@ -25,11 +25,12 @@ public class Main : Node
         hudManager = GetNode<HUDManager>("HUDManager");
         menuManager = GetNode<MenuManager>("CanvasLayer/MenuManager");
 
+        discordManager.Connect("Error", this, "HandleDiscordError");
         discordManager.Connect("UserUpdated", this, "GetUser");
         discordManager.Connect("LobbyCreated", this, "CreateGame", new Array() { null });
-        discordManager.Connect("MemberConnected", this, "HandleConnect");
-        discordManager.Connect("MemberDisconnected", this, "HandleDisconnect");
-        discordManager.Connect("MessageReceived", this, "HandleNetworkMessage");
+        discordManager.Connect("MemberConnected", this, "HandleDiscordConnect");
+        discordManager.Connect("MemberDisconnected", this, "HandleDiscordDisconnect");
+        discordManager.Connect("MessageReceived", this, "HandleDiscordMessage");
 
         paddleManager.Connect("OptionsRequested", menuManager, "ShowOptions");
         paddleManager.Connect("PaddleDestroyed", menuManager, "AddMessage");
@@ -52,8 +53,8 @@ public class Main : Node
             if (discordManager.IsLobbyOwner())
             {
                 Dictionary objectData = new Dictionary();
-                objectData.Add("paddles", paddleManager.Paddles);
-                objectData.Add("balls", ballManager.GetBalls());
+                objectData.Add("Paddles", paddleManager.Paddles);
+                objectData.Add("Balls", ballManager.GetBalls());
                 discordManager.SendAll(objectData, false);
                 UpdateObjects(paddleManager.Paddles, ballManager.GetBalls());
             }
@@ -76,52 +77,56 @@ public class Main : Node
         menuManager.ShowUserAndMenu();
     }
 
-    public void HandleNetworkMessage(byte[] message)
+    public void HandleDiscordError(string message)
     {
-        object dataObject = GD.Bytes2Var(message);
-        Dictionary data = (Dictionary)dataObject;
-        if (data.Contains("paddles") && data.Contains("balls"))
+        GD.PrintErr(message);
+    }
+
+    public void HandleDiscordMessage(byte[] message)
+    {
+        Dictionary data = (Dictionary)GD.Bytes2Var(message);
+        if (data.Contains("Paddles") && data.Contains("Balls"))
         {
-            UpdateObjects((Array)data["paddles"], (Array)data["balls"]);
+            UpdateObjects((Array)data["Paddles"], (Array)data["Balls"]);
         }
-        else if (data.Contains("paddle") && data.Contains("inputs"))
+        else if (data.Contains("Paddle") && data.Contains("Inputs"))
         {
-            paddleManager.SetPaddleInputs((string)data["paddle"], (Dictionary)data["inputs"]);
+            paddleManager.SetPaddleInputs((string)data["Paddle"], (Dictionary)data["Inputs"]);
         }
-        else if (data.Contains("paddles") && data.Contains("map"))
+        else if (data.Contains("Paddles") && data.Contains("Map"))
         {
-            JoinGame((Array)data["paddles"], (string)data["map"]);
+            JoinGame((Array)data["Paddles"], (string)data["Map"]);
         }
-        else if (data.Contains("reason"))
+        else if (data.Contains("Reason"))
         {
-            UnloadGame((string)data["reason"]);
+            UnloadGame((string)data["Reason"]);
         }
-        else if (data.Contains("paddle"))
+        else if (data.Contains("Paddle"))
         {
-            paddleManager.DamagePaddle((string)data["paddle"]);
+            paddleManager.DamagePaddle((string)data["Paddle"]);
         }
-        else if (data.Contains("paddle_data"))
+        else if (data.Contains("PaddleData"))
         {
-            paddleManager.CreatePaddle((Dictionary)data["paddle_data"]);
+            paddleManager.CreatePaddle((Dictionary)data["PaddleData"]);
         }
     }
 
-    public void HandleConnect(long id, string name)
+    public void HandleDiscordConnect(long id, string name)
     {
         menuManager.AddMessage(name + " joined the lobby");
         if (discordManager.IsLobbyOwner())
         {
             Dictionary welcomeData = new Dictionary();
-            welcomeData.Add("paddles", paddleManager.Paddles);
-            welcomeData.Add("map", game.Map);
+            welcomeData.Add("Paddles", paddleManager.Paddles);
+            welcomeData.Add("Map", game.Map);
             discordManager.Send(id, welcomeData, true);
         }
     }
 
-    public void HandleDisconnect(long id, string name)
+    public void HandleDiscordDisconnect(long id, string name)
     {
         paddleManager.RemovePaddles(id);
-        menuManager.AddMessage(name + " left the lobby"); ;
+        menuManager.AddMessage(name + " left the lobby");
     }
 
     public void JoinGame(Array paddles, string mapName)

@@ -71,9 +71,9 @@ public class PaddleManager : Node
         if (!UsedInputs.Contains(pad))
         {
             Dictionary newPaddle = new Dictionary();
-            newPaddle.Add("name", game.UserName);
-            newPaddle.Add("id", game.UserId.ToString());
-            newPaddle.Add("pad", pad);
+            newPaddle.Add("Name", game.UserName);
+            newPaddle.Add("Id", game.UserId.ToString());
+            newPaddle.Add("Pad", pad);
             UsedInputs.Add(pad);
             if (discordManager.IsLobbyOwner())
             {
@@ -82,7 +82,7 @@ public class PaddleManager : Node
             else
             {
                 Dictionary paddleData = new Dictionary();
-                paddleData.Add("paddle_data", newPaddle);
+                paddleData.Add("PaddleData", newPaddle);
                 discordManager.SendOwner(paddleData, true);
             }
         }
@@ -97,52 +97,52 @@ public class PaddleManager : Node
             int nameCount = 1;
             foreach (Paddle paddle in GetChildren())
             {
-                if (paddle.Name.Contains((string)newPaddle["name"]))
+                if (paddle.Name.Contains((string)newPaddle["Name"]))
                 {
                     nameCount++;
                 }
             }
-            string newName = (string)newPaddle["name"];
+            string newName = (string)newPaddle["Name"];
             if (nameCount > 1)
             {
                 newName += nameCount.ToString();
             }
             paddleNode.Name = newName;
-            if (newPaddle.Contains("position") && newPaddle.Contains("rotation"))
+            if (newPaddle.Contains("Position") && newPaddle.Contains("Rotation"))
             {
-                paddleNode.Position = (Vector2)newPaddle["position"];
-                paddleNode.Rotation = (float)newPaddle["rotation"];
+                paddleNode.Position = (Vector2)newPaddle["Position"];
+                paddleNode.Rotation = (float)newPaddle["Rotation"];
             }
             else
             {
                 paddleNode.Position = ((Node2D)Spawns[paddleCount]).Position;
                 paddleNode.Rotation = ((Node2D)Spawns[paddleCount]).Rotation;
             }
-            if (newPaddle.Contains("color"))
+            if (newPaddle.Contains("Color"))
             {
-                paddleNode.Modulate = (Color)newPaddle["color"];
+                paddleNode.Modulate = (Color)newPaddle["Color"];
             }
             else
             {
                 paddleNode.Modulate = Color.FromHsv(GD.Randf(), (float)0.8, 1);
             }
             paddleNode.Connect("Damaged", this, "DamagePaddle", new Array() { newName });
-            if (game.UserId == long.Parse((string)newPaddle["id"]) && newPaddle.Contains("pad"))
+            if (game.UserId == long.Parse((string)newPaddle["Id"]) && newPaddle.Contains("Pad"))
             {
-                InputList.Add(newName, (int)newPaddle["pad"]);
+                InputList.Add(newName, (int)newPaddle["Pad"]);
             }
             Dictionary paddleToAddToArray = new Dictionary();
-            paddleToAddToArray["id"] = newPaddle["id"];
-            paddleToAddToArray["name"] = newName;
-            paddleToAddToArray["position"] = paddleNode.Position;
-            paddleToAddToArray["rotation"] = paddleNode.Rotation;
-            paddleToAddToArray["color"] = paddleNode.Modulate;
-            if (newPaddle.Contains("health"))
+            paddleToAddToArray["Id"] = newPaddle["Id"];
+            paddleToAddToArray["Name"] = newName;
+            paddleToAddToArray["Position"] = paddleNode.Position;
+            paddleToAddToArray["Rotation"] = paddleNode.Rotation;
+            paddleToAddToArray["Color"] = paddleNode.Modulate;
+            if (newPaddle.Contains("Health"))
             {
-                paddleToAddToArray["health"] = newPaddle["health"];
-                float crackOpacity = (float)1.0 - ((int)newPaddle["health"] / (float)Game.MaxHealth);
+                paddleToAddToArray["Health"] = newPaddle["Health"];
+                float crackOpacity = (float)1.0 - ((int)newPaddle["Health"] / (float)Game.MaxHealth);
                 crackOpacity *= (float)0.7;
-                if ((int)newPaddle["health"] == 1)
+                if ((int)newPaddle["Health"] == 1)
                 {
                     crackOpacity = 1;
                 }
@@ -150,18 +150,18 @@ public class PaddleManager : Node
             }
             else
             {
-                paddleToAddToArray["health"] = Game.MaxHealth;
+                paddleToAddToArray["Health"] = Game.MaxHealth;
             }
             EmitSignal("PaddleCreated", paddleToAddToArray);
             if (discordManager.IsLobbyOwner())
             {
                 Dictionary newData = paddleToAddToArray.Duplicate(true);
-                if (game.UserId != long.Parse((string)newPaddle["id"]) && newPaddle.Contains("pad"))
+                if (game.UserId != long.Parse((string)newPaddle["Id"]) && newPaddle.Contains("Pad"))
                 {
-                    newData["pad"] = newPaddle["pad"];
+                    newData["Pad"] = newPaddle["Pad"];
                 }
                 Dictionary paddleData = new Dictionary();
-                paddleData.Add("paddle_data", newData);
+                paddleData.Add("PaddleData", newData);
                 discordManager.SendAll(paddleData, true);
             }
             Paddles.Add(paddleToAddToArray);
@@ -175,28 +175,28 @@ public class PaddleManager : Node
         for (int i = 0; i < newPaddles.Count; i++)
         {
             Dictionary newPaddle = (Dictionary)newPaddles[i];
-            string paddleName = (string)newPaddle["name"];
+            string paddleName = (string)newPaddle["Name"];
             Paddle paddleNode = GetNode<Paddle>(paddleName);
             if (discordManager.IsLobbyOwner())
             {
-                ((Dictionary)Paddles[i])["position"] = paddleNode.Position;
-                ((Dictionary)Paddles[i])["rotation"] = paddleNode.Rotation;
-                if (game.UserId == long.Parse((string)newPaddle["id"]))
+                ((Dictionary)Paddles[i])["Position"] = paddleNode.Position;
+                ((Dictionary)Paddles[i])["Rotation"] = paddleNode.Rotation;
+                if (game.UserId == long.Parse((string)newPaddle["Id"]))
                 {
                     SetPaddleInputs(paddleName, GetPaddleInputs(paddleName));
                 }
             }
             else
             {
-                ((Dictionary)Paddles[i])["position"] = newPaddle["position"];
-                ((Dictionary)Paddles[i])["rotation"] = newPaddle["rotation"];
-                paddleNode.Position = (Vector2)newPaddle["position"];
-                paddleNode.Rotation = (float)newPaddle["rotation"];
-                if (game.UserId == long.Parse((string)newPaddle["id"]))
+                ((Dictionary)Paddles[i])["Position"] = newPaddle["Position"];
+                ((Dictionary)Paddles[i])["Rotation"] = newPaddle["Rotation"];
+                paddleNode.Position = (Vector2)newPaddle["Position"];
+                paddleNode.Rotation = (float)newPaddle["Rotation"];
+                if (game.UserId == long.Parse((string)newPaddle["Id"]))
                 {
                     Dictionary inputData = new Dictionary();
-                    inputData.Add("paddle", paddleName);
-                    inputData.Add("inputs", GetPaddleInputs(paddleName));
+                    inputData.Add("Paddle", paddleName);
+                    inputData.Add("Inputs", GetPaddleInputs(paddleName));
                     discordManager.SendOwner(inputData, false);
                 }
             }
@@ -207,11 +207,11 @@ public class PaddleManager : Node
     {
         foreach (Dictionary paddle in Paddles)
         {
-            if (id == long.Parse((string)paddle["id"]))
+            if (id == long.Parse((string)paddle["Id"]))
             {
                 Paddles.Remove(paddle);
-                GetNode((string)paddle["name"]).QueueFree();
-                EmitSignal("PaddleRemoved", (string)paddle["name"]);
+                GetNode((string)paddle["Name"]).QueueFree();
+                EmitSignal("PaddleRemoved", (string)paddle["Name"]);
             }
         }
     }
@@ -229,19 +229,19 @@ public class PaddleManager : Node
     public Dictionary GetPaddleInputs(string paddle)
     {
         Dictionary inputs = new Dictionary();
-        inputs.Add("velocity", new Vector2());
-        inputs.Add("rotation", (float)0.0);
-        inputs.Add("dash", false);
+        inputs.Add("Velocity", new Vector2());
+        inputs.Add("Rotation", (float)0.0);
+        inputs.Add("Dash", false);
         if (!InputList.ContainsKey(paddle) || !game.IsPlaying) return inputs;
         int pad = InputList[paddle];
         if (pad == -1)
         {
-            inputs["velocity"] = new Vector2(
+            inputs["Velocity"] = new Vector2(
                 GetKey((int)KeyList.D) - GetKey((int)KeyList.A),
                 GetKey((int)KeyList.S) - GetKey((int)KeyList.W)
             ).Normalized() * Game.MoveSpeed;
-            inputs["dash"] = Input.IsKeyPressed((int)KeyList.Shift);
-            inputs["rotation"] = Mathf.Deg2Rad(
+            inputs["Dash"] = Input.IsKeyPressed((int)KeyList.Shift);
+            inputs["Rotation"] = Mathf.Deg2Rad(
                 (GetKey((int)KeyList.Period) - GetKey((int)KeyList.Comma)) * 4
             );
         }
@@ -257,13 +257,13 @@ public class PaddleManager : Node
             );
             if (leftStick.Length() > 0.2)
             {
-                inputs["velocity"] = leftStick * Game.MoveSpeed;
+                inputs["Velocity"] = leftStick * Game.MoveSpeed;
             }
-            inputs["dash"] = Input.IsJoyButtonPressed(pad, (int)JoystickList.L2);
+            inputs["Dash"] = Input.IsJoyButtonPressed(pad, (int)JoystickList.L2);
             if (rightStick.Length() > 0.7)
             {
                 Paddle paddleNode = GetNode<Paddle>(paddle);
-                inputs["rotation"] = paddleNode.GetAngleTo(paddleNode.Position + rightStick) * 0.1;
+                inputs["Rotation"] = paddleNode.GetAngleTo(paddleNode.Position + rightStick) * 0.1;
             }
         }
         return inputs;
@@ -280,36 +280,36 @@ public class PaddleManager : Node
         for (; paddleIndex < Paddles.Count; paddleIndex++)
         {
             Dictionary testPaddle = (Dictionary)Paddles[paddleIndex];
-            if (paddleName == (string)testPaddle["name"])
+            if (paddleName == (string)testPaddle["Name"])
             {
                 break;
             }
         }
         Dictionary thing = (Dictionary)Paddles[paddleIndex];
         Paddle paddleNode = GetNode<Paddle>(paddleName);
-        thing["health"] = (int)thing["health"] - 1;
-        float crackOpacity = (float)1.0 - ((int)thing["health"] / (float)Game.MaxHealth);
+        thing["Health"] = (int)thing["Health"] - 1;
+        float crackOpacity = (float)1.0 - ((int)thing["Health"] / (float)Game.MaxHealth);
         crackOpacity *= (float)0.7;
-        if ((int)thing["health"] == 1)
+        if ((int)thing["Health"] == 1)
         {
             crackOpacity = 1;
         }
         paddleNode.GetNode<Sprite>("Crack").Modulate = new Color(1, 1, 1, crackOpacity);
-        if ((int)thing["health"] < 1)
+        if ((int)thing["Health"] < 1)
         {
-            EmitSignal("PaddleDestroyed", thing["name"] + " was destroyed", false);
+            EmitSignal("PaddleDestroyed", thing["Name"] + " was destroyed", false);
             if (discordManager.IsLobbyOwner())
             {
                 paddleNode.Position = ((Node2D)Spawns[paddleNode.GetIndex()]).Position;
                 paddleNode.Rotation = ((Node2D)Spawns[paddleNode.GetIndex()]).Rotation;
             }
             paddleNode.GetNode<Sprite>("Crack").Modulate = new Color(1, 1, 1, 0);
-            thing["health"] = Game.MaxHealth;
+            thing["Health"] = Game.MaxHealth;
         }
         if (discordManager.IsLobbyOwner())
         {
             Dictionary paddleData = new Dictionary();
-            paddleData.Add("paddle", paddleName);
+            paddleData.Add("Paddle", paddleName);
             discordManager.SendAll(paddleData, true);
         }
     }

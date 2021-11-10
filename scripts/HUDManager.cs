@@ -6,15 +6,15 @@ public class HUDManager : Control
     public void CreateHUD(Dictionary data)
     {
         VBoxContainer hud = new VBoxContainer();
-        hud.Name = (string)data["name"];
+        hud.Name = (string)data["Name"];
         hud.SizeFlagsHorizontal = (int)VBoxContainer.SizeFlags.ExpandFill;
-        hud.Modulate = (Color)data["color"];
+        hud.Modulate = (Color)data["Color"];
         hud.Alignment = BoxContainer.AlignMode.Center;
         hud.Set("custom_constants/separation", -8);
         AddChild(hud);
 
         Label label = new Label();
-        label.Text = (string)data["name"];
+        label.Text = (string)data["Name"];
         label.Align = Label.AlignEnum.Center;
         hud.AddChild(label);
     }
@@ -23,9 +23,9 @@ public class HUDManager : Control
     {
         foreach (object paddle in paddles)
         {
-            string paddleName = (string)((Dictionary)paddle)["name"];
+            string paddleName = (string)((Dictionary)paddle)["Name"];
             VBoxContainer hud = GetNode<VBoxContainer>(paddleName);
-            Vector2 paddlePos = (Vector2)((Dictionary)paddle)["position"];
+            Vector2 paddlePos = (Vector2)((Dictionary)paddle)["Position"];
             Vector2 offset = new Vector2(hud.RectSize.x / 2, 90);
             hud.RectPosition = paddlePos - offset;
         }
