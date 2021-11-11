@@ -1,0 +1,271 @@
+[gd_scene load_steps=4 format=2]
+
+[ext_resource path="res://Scripts/MenuManager.cs" type="Script" id=1]
+[ext_resource path="res://Assets/Theme.tres" type="Theme" id=2]
+[ext_resource path="res://Assets/Icon.png" type="Texture" id=4]
+
+[node name="MenuManager" type="Control"]
+anchor_right = 1.0
+anchor_bottom = 1.0
+theme = ExtResource( 2 )
+script = ExtResource( 1 )
+__meta__ = {
+"_edit_lock_": true,
+"_edit_use_anchors_": false
+}
+
+[node name="MessageWrap" type="MarginContainer" parent="."]
+margin_right = 416.0
+margin_bottom = 166.0
+custom_constants/margin_right = 8
+custom_constants/margin_top = 8
+custom_constants/margin_left = 8
+custom_constants/margin_bottom = 8
+__meta__ = {
+"_edit_lock_": true,
+"_edit_use_anchors_": false
+}
+
+[node name="MessageView" type="VBoxContainer" parent="MessageWrap"]
+margin_left = 8.0
+margin_top = 8.0
+margin_right = 408.0
+margin_bottom = 158.0
+rect_min_size = Vector2( 400, 150 )
+custom_constants/separation = -8
+
+[node name="CenterMenu" type="CenterContainer" parent="."]
+anchor_right = 1.0
+anchor_bottom = 1.0
+__meta__ = {
+"_edit_lock_": true,
+"_edit_use_anchors_": false
+}
+
+[node name="Discord" type="VBoxContainer" parent="CenterMenu"]
+visible = false
+margin_left = 490.0
+margin_top = 315.0
+margin_right = 790.0
+margin_bottom = 405.0
+rect_min_size = Vector2( 300, 0 )
+
+[node name="Discord0" type="Button" parent="CenterMenu/Discord"]
+margin_right = 300.0
+margin_bottom = 43.0
+size_flags_horizontal = 3
+text = "Discord 0"
+
+[node name="Discord1" type="Button" parent="CenterMenu/Discord"]
+margin_top = 47.0
+margin_right = 300.0
+margin_bottom = 90.0
+size_flags_horizontal = 3
+text = "Discord 1"
+
+[node name="Main" type="VBoxContainer" parent="CenterMenu"]
+margin_left = 490.0
+margin_top = 221.0
+margin_right = 790.0
+margin_bottom = 499.0
+rect_min_size = Vector2( 300, 0 )
+__meta__ = {
+"_edit_use_anchors_": false
+}
+
+[node name="TitleWrap" type="HBoxContainer" parent="CenterMenu/Main"]
+margin_right = 300.0
+margin_bottom = 43.0
+alignment = 1
+
+[node name="Logo" type="TextureRect" parent="CenterMenu/Main/TitleWrap"]
+margin_left = 50.0
+margin_right = 93.0
+margin_bottom = 43.0
+rect_min_size = Vector2( 43, 43 )
+texture = ExtResource( 4 )
+expand = true
+stretch_mode = 5
+
+[node name="Title" type="Label" parent="CenterMenu/Main/TitleWrap"]
+margin_left = 97.0
+margin_right = 249.0
+margin_bottom = 43.0
+text = "PaddleBattle"
+align = 1
+
+[node name="Name" type="Label" parent="CenterMenu/Main"]
+margin_top = 47.0
+margin_right = 300.0
+margin_bottom = 90.0
+size_flags_horizontal = 3
+text = "NO NAME"
+align = 1
+__meta__ = {
+"_edit_use_anchors_": false
+}
+
+[node name="Play" type="Button" parent="CenterMenu/Main"]
+margin_top = 94.0
+margin_right = 300.0
+margin_bottom = 137.0
+text = "Play"
+
+[node name="Settings" type="Button" parent="CenterMenu/Main"]
+margin_top = 141.0
+margin_right = 300.0
+margin_bottom = 184.0
+text = "Settings"
+
+[node name="Quit" type="Button" parent="CenterMenu/Main"]
+margin_top = 188.0
+margin_right = 300.0
+margin_bottom = 231.0
+text = "Quit"
+
+[node name="Version" type="Label" parent="CenterMenu/Main"]
+margin_top = 235.0
+margin_right = 300.0
+margin_bottom = 278.0
+text = "NO VERSION"
+align = 1
+
+[node name="Settings" type="VBoxContainer" parent="CenterMenu"]
+visible = false
+margin_left = 490.0
+margin_top = 240.0
+margin_right = 790.0
+margin_bottom = 479.0
+rect_min_size = Vector2( 300, 0 )
+
+[node name="Label" type="Label" parent="CenterMenu/Settings"]
+margin_right = 300.0
+margin_bottom = 43.0
+text = "Settings"
+align = 1
+
+[node name="Vsync" type="CheckButton" parent="CenterMenu/Settings"]
+margin_top = 47.0
+margin_right = 300.0
+margin_bottom = 90.0
+text = "Vsync"
+
+[node name="Fullscreen" type="CheckButton" parent="CenterMenu/Settings"]
+margin_top = 94.0
+margin_right = 300.0
+margin_bottom = 137.0
+text = "Fullscreen"
+
+[node name="Map" type="Button" parent="CenterMenu/Settings"]
+margin_top = 141.0
+margin_right = 300.0
+margin_bottom = 184.0
+size_flags_horizontal = 3
+text = "BigMap"
+
+[node name="HSeparator" type="HSeparator" parent="CenterMenu/Settings"]
+margin_top = 188.0
+margin_right = 300.0
+margin_bottom = 192.0
+
+[node name="Done" type="Button" parent="CenterMenu/Settings"]
+margin_top = 196.0
+margin_right = 300.0
+margin_bottom = 239.0
+text = "Done"
+
+[node name="Options" type="VBoxContainer" parent="CenterMenu"]
+visible = false
+margin_left = 490.0
+margin_top = 112.0
+margin_right = 790.0
+margin_bottom = 608.0
+rect_min_size = Vector2( 300, 0 )
+
+[node name="Label" type="Label" parent="CenterMenu/Options"]
+margin_right = 300.0
+margin_bottom = 43.0
+text = "Invite"
+align = 1
+
+[node name="FriendsWrap" type="ScrollContainer" parent="CenterMenu/Options"]
+margin_top = 55.0
+margin_right = 300.0
+margin_bottom = 355.0
+rect_min_size = Vector2( 0, 300 )
+follow_focus = true
+scroll_horizontal_enabled = false
+
+[node name="Friends" type="VBoxContainer" parent="CenterMenu/Options/FriendsWrap"]
+margin_right = 300.0
+size_flags_horizontal = 3
+
+[node name="HSeparator" type="HSeparator" parent="CenterMenu/Options"]
+margin_top = 47.0
+margin_right = 300.0
+margin_bottom = 51.0
+
+[node name="Refresh" type="Button" parent="CenterMenu/Options"]
+margin_top = 367.0
+margin_right = 300.0
+margin_bottom = 410.0
+text = "Refresh"
+
+[node name="Back" type="Button" parent="CenterMenu/Options"]
+margin_top = 414.0
+margin_right = 300.0
+margin_bottom = 457.0
+text = "Back"
+
+[node name="Leave" type="Button" parent="CenterMenu/Options"]
+margin_top = 461.0
+margin_right = 300.0
+margin_bottom = 504.0
+text = "Leave"
+
+[node name="InviteWrap" type="MarginContainer" parent="."]
+visible = false
+anchor_top = 1.0
+anchor_bottom = 1.0
+margin_top = -161.0
+margin_right = 316.0
+custom_constants/margin_right = 8
+custom_constants/margin_top = 8
+custom_constants/margin_left = 8
+custom_constants/margin_bottom = 8
+__meta__ = {
+"_edit_lock_": true,
+"_edit_use_anchors_": false
+}
+
+[node name="InviteView" type="VBoxContainer" parent="InviteWrap"]
+margin_left = 8.0
+margin_top = 8.0
+margin_right = 308.0
+margin_bottom = 153.0
+rect_min_size = Vector2( 300, 0 )
+
+[node name="Name" type="Label" parent="InviteWrap/InviteView"]
+margin_right = 300.0
+margin_bottom = 43.0
+rect_min_size = Vector2( 300, 0 )
+size_flags_horizontal = 3
+text = "Invited by NO NAME"
+clip_text = true
+
+[node name="HSeparator" type="HSeparator" parent="InviteWrap/InviteView"]
+margin_top = 47.0
+margin_right = 300.0
+margin_bottom = 51.0
+
+[node name="Accept" type="Button" parent="InviteWrap/InviteView"]
+margin_top = 55.0
+margin_right = 300.0
+margin_bottom = 98.0
+text = "Accept"
+
+[node name="Decline" type="Button" parent="InviteWrap/InviteView"]
+margin_top = 102.0
+margin_right = 300.0
+margin_bottom = 145.0
+text = "Decline"

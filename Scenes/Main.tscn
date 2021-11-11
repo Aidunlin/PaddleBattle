@@ -1,0 +1,45 @@
+[gd_scene load_steps=9 format=2]
+
+[ext_resource path="res://Scripts/BallManager.cs" type="Script" id=1]
+[ext_resource path="res://Scripts/PaddleManager.cs" type="Script" id=2]
+[ext_resource path="res://Scripts/MapManager.cs" type="Script" id=3]
+[ext_resource path="res://Scripts/Camera.cs" type="Script" id=4]
+[ext_resource path="res://Scripts/Main.cs" type="Script" id=5]
+[ext_resource path="res://Scripts/HUDManager.cs" type="Script" id=6]
+[ext_resource path="res://Scenes/MenuManager.tscn" type="PackedScene" id=7]
+[ext_resource path="res://Assets/Theme.tres" type="Theme" id=8]
+
+[node name="Main" type="Node"]
+script = ExtResource( 5 )
+
+[node name="Camera" type="Camera2D" parent="."]
+current = true
+smoothing_enabled = true
+editor_draw_screen = false
+script = ExtResource( 4 )
+__meta__ = {
+"_edit_lock_": true
+}
+
+[node name="MapManager" type="Node" parent="."]
+script = ExtResource( 3 )
+
+[node name="PaddleManager" type="Node" parent="."]
+script = ExtResource( 2 )
+
+[node name="BallManager" type="Node" parent="."]
+script = ExtResource( 1 )
+
+[node name="HUDManager" type="Control" parent="."]
+anchor_right = 1.0
+anchor_bottom = 1.0
+theme = ExtResource( 8 )
+script = ExtResource( 6 )
+__meta__ = {
+"_edit_lock_": true,
+"_edit_use_anchors_": false
+}
+
+[node name="CanvasLayer" type="CanvasLayer" parent="."]
+
+[node name="MenuManager" parent="CanvasLayer" instance=ExtResource( 7 )]
