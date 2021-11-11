@@ -3,8 +3,8 @@ using Godot.Collections;
 
 public class InputManager : Node
 {
-    public Game game;
-    public DiscordManager discordManager;
+    private Game _game;
+    private DiscordManager _discordManager;
 
     [Signal] public delegate void CreatePaddleRequested();
     [Signal] public delegate void OptionsRequested();
@@ -14,13 +14,13 @@ public class InputManager : Node
 
     public override void _Ready()
     {
-        game = GetNode<Game>("/root/Game");
-        discordManager = GetNode<DiscordManager>("/root/DiscordManager");
+        _game = GetNode<Game>("/root/Game");
+        _discordManager = GetNode<DiscordManager>("/root/DiscordManager");
     }
 
     public override void _PhysicsProcess(float delta)
     {
-        if (game.IsPlaying)
+        if (_game.IsPlaying)
         {
             if (Input.IsKeyPressed((int)KeyList.Enter) && !InputListHasPad(-1))
             {
@@ -69,17 +69,17 @@ public class InputManager : Node
         return Input.GetJoyAxis(pad, axis);
     }
 
-    public Dictionary GetPaddleInputs(string paddleName)
+    public Dictionary GetPaddleInputs(Paddle paddleNode)
     {
         Dictionary inputs = new Dictionary();
         inputs.Add("Velocity", new Vector2());
         inputs.Add("Rotation", (float)0.0);
         inputs.Add("Dash", false);
-        if (!InputList.ContainsKey(paddleName) || !game.IsPlaying)
+        if (!InputList.ContainsKey(paddleNode.Name) || !_game.IsPlaying)
         {
             return inputs;
         }
-        int pad = InputList[paddleName];
+        int pad = InputList[paddleNode.Name];
         if (pad == -1)
         {
             inputs["Velocity"] = new Vector2(
@@ -108,7 +108,6 @@ public class InputManager : Node
             inputs["Dash"] = Input.IsJoyButtonPressed(pad, (int)JoystickList.L2);
             if (rightStick.Length() > 0.7)
             {
-                Paddle paddleNode = GetNode<Paddle>(paddleName);
                 inputs["Rotation"] = paddleNode.GetAngleTo(paddleNode.Position + rightStick) * 0.1;
             }
         }

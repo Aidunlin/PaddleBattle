@@ -7,7 +7,7 @@ public class Game : Node
     public const int MoveSpeed = 600;
 
     [Export] public bool IsPlaying = false;
-    [Export] public string Map = "BigMap";
+    [Export] public string MapName = "BigMap";
     [Export] public string UserName = "";
     [Export] public long UserId = 0;
 

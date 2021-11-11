@@ -17,6 +17,7 @@ config/use_custom_user_dir=true
 config/custom_user_dir_name="PaddleBattle"
 boot_splash/image="res://Assets/Icon.png"
 boot_splash/fullsize=false
+boot_splash/bg_color=Color( 0.101961, 0.101961, 0.101961, 1 )
 config/icon="res://Assets/Icon.png"
 
 [audio]
@@ -123,4 +124,4 @@ common/physics_fps=120
 
 [rendering]
 
-environment/default_clear_color=Color( 0.1, 0.1, 0.1, 1 )
+environment/default_clear_color=Color( 0.101961, 0.101961, 0.101961, 1 )

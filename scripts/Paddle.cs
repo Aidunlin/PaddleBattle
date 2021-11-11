@@ -3,7 +3,7 @@ using Godot.Collections;
 
 public class Paddle : KinematicBody2D
 {
-    public DiscordManager discordManager;
+    private DiscordManager _discordManager;
 
     [Signal] public delegate void Collided();
     [Signal] public delegate void Damaged();
@@ -28,7 +28,7 @@ public class Paddle : KinematicBody2D
 
     public override void _Ready()
     {
-        discordManager = GetNode<DiscordManager>("/root/DiscordManager");
+        _discordManager = GetNode<DiscordManager>("/root/DiscordManager");
 
         BackNode = GetNode<Area2D>("Back");
         SafeTimer = GetNode<Timer>("SafeTimer");
@@ -44,7 +44,7 @@ public class Paddle : KinematicBody2D
 
     public override void _PhysicsProcess(float delta)
     {
-        if (discordManager.IsLobbyOwner())
+        if (_discordManager.IsLobbyOwner())
         {
             Velocity = Velocity.LinearInterpolate(InputVelocity, (float)0.06);
             Rotation += InputRotation;
@@ -67,7 +67,7 @@ public class Paddle : KinematicBody2D
 
     public void BackCollided(Node body)
     {
-        if (discordManager.IsLobbyOwner() && body.IsInGroup("balls") && !IsSafe)
+        if (_discordManager.IsLobbyOwner() && body.IsInGroup("balls") && !IsSafe)
         {
             EmitSignal("Damaged");
             SafeTimer.Start(2);
@@ -77,7 +77,7 @@ public class Paddle : KinematicBody2D
 
     public void SafeTimeout()
     {
-        if (discordManager.IsLobbyOwner())
+        if (_discordManager.IsLobbyOwner())
         {
             IsSafe = false;
         }
@@ -85,7 +85,7 @@ public class Paddle : KinematicBody2D
 
     public void DashTimeout()
     {
-        if (discordManager.IsLobbyOwner())
+        if (_discordManager.IsLobbyOwner())
         {
             IsDashing = false;
             DashResetTimer.Start((float)0.2);
@@ -94,7 +94,7 @@ public class Paddle : KinematicBody2D
 
     public void DashResetTimeout()
     {
-        if (discordManager.IsLobbyOwner())
+        if (_discordManager.IsLobbyOwner())
         {
             CanDash = true;
         }
@@ -102,7 +102,7 @@ public class Paddle : KinematicBody2D
 
     public void SetInputs(Dictionary inputs)
     {
-        if (discordManager.IsLobbyOwner())
+        if (_discordManager.IsLobbyOwner())
         {
             InputVelocity = (Vector2)inputs["Velocity"];
             InputRotation = (float)inputs["Rotation"];

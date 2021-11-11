@@ -18,11 +18,11 @@ public class DiscordManager : Node
         Reliable,
     }
 
-    public Discord.Discord discord;
-    public ActivityManager activityManager;
-    public LobbyManager lobbyManager;
-    public UserManager userManager;
-    public RelationshipManager relationshipManager;
+    private Discord.Discord _discord;
+    private ActivityManager _activityManager;
+    private LobbyManager _lobbyManager;
+    private UserManager _userManager;
+    private RelationshipManager _relationshipManager;
 
     [Export] public long DiscordId = 862090452361674762;
     [Export] public long LobbyOwnerId = 0;
@@ -33,41 +33,41 @@ public class DiscordManager : Node
     {
         if (IsRunning)
         {
-            discord.RunCallbacks();
-            lobbyManager.FlushNetwork();
+            _discord.RunCallbacks();
+            _lobbyManager.FlushNetwork();
         }
     }
 
     public void Start(string instance)
     {
         System.Environment.SetEnvironmentVariable("DISCORD_INSTANCE_ID", instance);
-        discord = new Discord.Discord(DiscordId, (ulong)CreateFlags.Default);
-        userManager = discord.GetUserManager();
-        activityManager = discord.GetActivityManager();
-        lobbyManager = discord.GetLobbyManager();
-        relationshipManager = discord.GetRelationshipManager();
+        _discord = new Discord.Discord(DiscordId, (ulong)CreateFlags.Default);
+        _userManager = _discord.GetUserManager();
+        _activityManager = _discord.GetActivityManager();
+        _lobbyManager = _discord.GetLobbyManager();
+        _relationshipManager = _discord.GetRelationshipManager();
 
-        discord.SetLogHook(LogLevel.Debug, (level, message) =>
+        _discord.SetLogHook(LogLevel.Debug, (level, message) =>
         {
             GD.Print("Discord: ", level, " - ", message);
         });
 
-        userManager.OnCurrentUserUpdate += () =>
+        _userManager.OnCurrentUserUpdate += () =>
         {
             EmitSignal("UserUpdated");
         };
 
-        activityManager.OnActivityJoin += (secret) =>
+        _activityManager.OnActivityJoin += (secret) =>
         {
             JoinLobby(secret);
         };
 
-        activityManager.OnActivityInvite += (ActivityActionType type, ref User user, ref Activity activity) =>
+        _activityManager.OnActivityInvite += (ActivityActionType type, ref User user, ref Activity activity) =>
         {
             EmitSignal("InviteReceived", user.Id, user.Username);
         };
 
-        lobbyManager.OnNetworkMessage += (lobbyId, userId, channelId, data) =>
+        _lobbyManager.OnNetworkMessage += (lobbyId, userId, channelId, data) =>
         {
             try
             {
@@ -79,10 +79,10 @@ public class DiscordManager : Node
             }
         };
 
-        lobbyManager.OnMemberConnect += (lobbyId, userId) =>
+        _lobbyManager.OnMemberConnect += (lobbyId, userId) =>
         {
             UpdateActivity(true);
-            userManager.GetUser(userId, (Result result, ref User user) =>
+            _userManager.GetUser(userId, (Result result, ref User user) =>
             {
                 if (result == Result.Ok)
                 {
@@ -91,14 +91,14 @@ public class DiscordManager : Node
             });
         };
 
-        lobbyManager.OnMemberDisconnect += (lobbyId, userId) =>
+        _lobbyManager.OnMemberDisconnect += (lobbyId, userId) =>
         {
             if (userId == LobbyOwnerId)
             {
                 LeaveLobby();
             }
             UpdateActivity(true);
-            userManager.GetUser(userId, (Result result, ref User user) =>
+            _userManager.GetUser(userId, (Result result, ref User user) =>
             {
                 if (result == Result.Ok)
                 {
@@ -107,12 +107,12 @@ public class DiscordManager : Node
             });
         };
 
-        relationshipManager.OnRefresh += () =>
+        _relationshipManager.OnRefresh += () =>
         {
             UpdateRelationships();
         };
 
-        relationshipManager.OnRelationshipUpdate += (ref Relationship rel) =>
+        _relationshipManager.OnRelationshipUpdate += (ref Relationship rel) =>
         {
             UpdateRelationships();
         };
@@ -126,7 +126,7 @@ public class DiscordManager : Node
         Activity activity = new Activity();
         if (inLobby)
         {
-            activity.Secrets.Join = lobbyManager.GetLobbyActivitySecret(CurrentLobbyId);
+            activity.Secrets.Join = _lobbyManager.GetLobbyActivitySecret(CurrentLobbyId);
             activity.Party.Id = CurrentLobbyId.ToString();
             activity.State = "Battling it out";
         }
@@ -139,7 +139,7 @@ public class DiscordManager : Node
             activity.Details = "Debugging";
         }
         activity.Assets.LargeImage = "paddlebattle";
-        activityManager.UpdateActivity(activity, (result) =>
+        _activityManager.UpdateActivity(activity, (result) =>
         {
             if (result != Result.Ok)
             {
@@ -150,19 +150,19 @@ public class DiscordManager : Node
 
     public void InitNetworking()
     {
-        lobbyManager.ConnectNetwork(CurrentLobbyId);
-        lobbyManager.OpenNetworkChannel(CurrentLobbyId, (byte)ChannelType.Unreliable, false);
-        lobbyManager.OpenNetworkChannel(CurrentLobbyId, (byte)ChannelType.Reliable, true);
+        _lobbyManager.ConnectNetwork(CurrentLobbyId);
+        _lobbyManager.OpenNetworkChannel(CurrentLobbyId, (byte)ChannelType.Unreliable, false);
+        _lobbyManager.OpenNetworkChannel(CurrentLobbyId, (byte)ChannelType.Reliable, true);
     }
 
     public string GetUserName()
     {
-        return userManager.GetCurrentUser().Username;
+        return _userManager.GetCurrentUser().Username;
     }
 
     public long GetUserId()
     {
-        return userManager.GetCurrentUser().Id;
+        return _userManager.GetCurrentUser().Id;
     }
 
     public long GetLobbyOwnerId()
@@ -173,18 +173,18 @@ public class DiscordManager : Node
         }
         else
         {
-            return lobbyManager.GetLobby(CurrentLobbyId).OwnerId;
+            return _lobbyManager.GetLobby(CurrentLobbyId).OwnerId;
         }
     }
 
     public bool IsLobbyOwner()
     {
-        return GetLobbyOwnerId() == userManager.GetCurrentUser().Id;
+        return GetLobbyOwnerId() == _userManager.GetCurrentUser().Id;
     }
 
     public void Send(long userId, Dictionary data, bool reliable)
     {
-        lobbyManager.SendNetworkMessage(
+        _lobbyManager.SendNetworkMessage(
             CurrentLobbyId,
             userId,
             (byte)(reliable ? ChannelType.Reliable : ChannelType.Unreliable),
@@ -201,7 +201,7 @@ public class DiscordManager : Node
     {
         if (CurrentLobbyId != 0)
         {
-            foreach (User user in lobbyManager.GetMemberUsers(CurrentLobbyId))
+            foreach (User user in _lobbyManager.GetMemberUsers(CurrentLobbyId))
             {
                 Send(user.Id, data, reliable);
             }
@@ -210,8 +210,8 @@ public class DiscordManager : Node
 
     public void CreateLobby()
     {
-        LobbyTransaction txn = lobbyManager.GetLobbyCreateTransaction();
-        lobbyManager.CreateLobby(txn, (Result result, ref Lobby lobby) =>
+        LobbyTransaction txn = _lobbyManager.GetLobbyCreateTransaction();
+        _lobbyManager.CreateLobby(txn, (Result result, ref Lobby lobby) =>
         {
             if (result == Result.Ok)
             {
@@ -231,7 +231,7 @@ public class DiscordManager : Node
     public void JoinLobby(string secret)
     {
         LeaveLobby();
-        lobbyManager.ConnectLobbyWithActivitySecret(secret, (Result result, ref Lobby lobby) =>
+        _lobbyManager.ConnectLobbyWithActivitySecret(secret, (Result result, ref Lobby lobby) =>
         {
             if (result == Result.Ok)
             {
@@ -251,7 +251,7 @@ public class DiscordManager : Node
     {
         if (CurrentLobbyId != 0)
         {
-            lobbyManager.DisconnectLobby(CurrentLobbyId, result =>
+            _lobbyManager.DisconnectLobby(CurrentLobbyId, result =>
             {
                 if (result == Result.Ok)
                 {
@@ -269,7 +269,7 @@ public class DiscordManager : Node
 
     public void UpdateRelationships()
     {
-        relationshipManager.Filter((ref Relationship rel) =>
+        _relationshipManager.Filter((ref Relationship rel) =>
         {
             return rel.Type == RelationshipType.Friend && rel.Presence.Status != Status.Offline;
         });
@@ -278,9 +278,9 @@ public class DiscordManager : Node
     public Array GetFriends()
     {
         Array friends = new Array();
-        for (int i = 0; i < relationshipManager.Count(); i++)
+        for (int i = 0; i < _relationshipManager.Count(); i++)
         {
-            Relationship rel = relationshipManager.GetAt((uint)i);
+            Relationship rel = _relationshipManager.GetAt((uint)i);
             Dictionary friend = new Dictionary();
             friend.Add("UserName", rel.User.Username);
             friend.Add("Id", rel.User.Id.ToString());
@@ -291,7 +291,7 @@ public class DiscordManager : Node
 
     public void SendInvite(long userId)
     {
-        activityManager.SendInvite(userId, ActivityActionType.Join, "", result =>
+        _activityManager.SendInvite(userId, ActivityActionType.Join, "", result =>
         {
             if (result != Result.Ok)
             {
@@ -302,7 +302,7 @@ public class DiscordManager : Node
 
     public void AcceptInvite(long userId)
     {
-        activityManager.AcceptInvite(userId, result =>
+        _activityManager.AcceptInvite(userId, result =>
         {
             if (result != Result.Ok)
             {

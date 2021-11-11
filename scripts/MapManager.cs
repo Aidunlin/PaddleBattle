@@ -3,7 +3,7 @@ using Godot.Collections;
 
 public class MapManager : Node
 {
-    public Game game;
+    private Game _game;
 
     [Export] public Array Maps = new Array();
     [Export] public Node2D Map = null;
@@ -11,7 +11,7 @@ public class MapManager : Node
 
     public override void _Ready()
     {
-        game = GetNode<Game>("/root/Game");
+        _game = GetNode<Game>("/root/Game");
 
         Dictionary bigMapDict = new Dictionary();
         bigMapDict.Add("Name", "BigMap");
@@ -44,7 +44,7 @@ public class MapManager : Node
         int mapIndex = 0;
         for (; mapIndex < Maps.Count; mapIndex++)
         {
-            if ((string)((Dictionary)Maps[mapIndex])["Name"] == game.Map)
+            if ((string)((Dictionary)Maps[mapIndex])["Name"] == _game.MapName)
             {
                 break;
             }
@@ -55,7 +55,7 @@ public class MapManager : Node
             newIndex = mapIndex + 1;
         }
         string newMapName = (string)((Dictionary)Maps[newIndex])["Name"];
-        game.Map = newMapName;
+        _game.MapName = newMapName;
         return newMapName;
     }
 

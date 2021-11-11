@@ -3,8 +3,8 @@ using Godot.Collections;
 
 public class MenuManager : Control
 {
-    public Game game;
-    public DiscordManager discordManager;
+    private Game _game;
+    private DiscordManager _discordManager;
 
     [Signal] public delegate void MapSwitched();
     [Signal] public delegate void EndRequested();
@@ -27,7 +27,7 @@ public class MenuManager : Control
     public Label VersionNode;
 
     public VBoxContainer SettingsMenuNode;
-    public CheckButton VSyncButton;
+    public CheckButton VsyncButton;
     public CheckButton FullscreenButton;
     public Button DoneButton;
 
@@ -46,8 +46,8 @@ public class MenuManager : Control
 
     public override void _Ready()
     {
-        game = GetNode<Game>("/root/Game");
-        discordManager = GetNode<DiscordManager>("/root/DiscordManager");
+        _game = GetNode<Game>("/root/Game");
+        _discordManager = GetNode<DiscordManager>("/root/DiscordManager");
 
         MessageWrap = GetNode<MarginContainer>("MessageWrap");
         MessageView = MessageWrap.GetNode<VBoxContainer>("MessageView");
@@ -66,7 +66,7 @@ public class MenuManager : Control
         VersionNode = MainMenuNode.GetNode<Label>("Version");
 
         SettingsMenuNode = CenterMenuNode.GetNode<VBoxContainer>("Settings");
-        VSyncButton = SettingsMenuNode.GetNode<CheckButton>("VSync");
+        VsyncButton = SettingsMenuNode.GetNode<CheckButton>("Vsync");
         FullscreenButton = SettingsMenuNode.GetNode<CheckButton>("Fullscreen");
         MapButton = SettingsMenuNode.GetNode<Button>("Map");
         DoneButton = SettingsMenuNode.GetNode<Button>("Done");
@@ -82,7 +82,7 @@ public class MenuManager : Control
         AcceptButton = InviteWrap.GetNode<Button>("InviteView/Accept");
         DeclineButton = InviteWrap.GetNode<Button>("InviteView/Decline");
 
-        discordManager.Connect("InviteReceived", this, "ShowInvite");
+        _discordManager.Connect("InviteReceived", this, "ShowInvite");
 
         DiscordMenuNode.Show();
         Discord0Button.Connect("pressed", this, "StartDiscord", new Array() { "0" });
@@ -90,16 +90,16 @@ public class MenuManager : Control
         Discord0Button.GrabFocus();
 
         MainMenuNode.Hide();
-        PlayButton.Connect("pressed", discordManager, "CreateLobby");
+        PlayButton.Connect("pressed", _discordManager, "CreateLobby");
         SettingsButton.Connect("pressed", this, "ToggleSettings");
         QuitButton.Connect("pressed", GetTree(), "quit");
         VersionNode.Text = Game.Version;
 
         SettingsMenuNode.Hide();
-        VSyncButton.Connect("pressed", this, "ToggleVSync");
+        VsyncButton.Connect("pressed", this, "ToggleVsync");
         FullscreenButton.Connect("pressed", this, "ToggleFullscreen");
         MapButton.Connect("pressed", this, "SwitchMap");
-        MapButton.Text = game.Map;
+        MapButton.Text = _game.MapName;
         DoneButton.Connect("pressed", this, "ToggleSettings");
 
         OptionsMenuNode.Hide();
@@ -129,13 +129,13 @@ public class MenuManager : Control
 
     public void StartDiscord(string instance)
     {
-        discordManager.Start(instance);
+        _discordManager.Start(instance);
         DiscordMenuNode.Hide();
     }
 
     public void ShowUserAndMenu()
     {
-        NameLabel.Text = game.UserName;
+        NameLabel.Text = _game.UserName;
         MainMenuNode.Show();
         PlayButton.GrabFocus();
     }
@@ -156,7 +156,7 @@ public class MenuManager : Control
         }
     }
 
-    public void ToggleVSync()
+    public void ToggleVsync()
     {
         OS.VsyncEnabled = !OS.VsyncEnabled;
     }
@@ -180,6 +180,7 @@ public class MenuManager : Control
         messageTimer.OneShot = true;
         messageTimer.Connect("timeout", newMessage, "queue_free");
         messageTimer.Start(5);
+
         if (MessageView.GetChildCount() > 5)
         {
             MessageView.GetChild(MessageView.GetChildCount() - 1).QueueFree();
@@ -208,7 +209,7 @@ public class MenuManager : Control
 
     public void FriendPressed(Control button, string id)
     {
-        discordManager.SendInvite(long.Parse(id));
+        _discordManager.SendInvite(long.Parse(id));
         button.FindNextValidFocus().GrabFocus();
         button.QueueFree();
     }
@@ -219,7 +220,7 @@ public class MenuManager : Control
         {
             friend.QueueFree();
         }
-        Array friends = discordManager.GetFriends();
+        Array friends = _discordManager.GetFriends();
         foreach (Dictionary friend in friends)
         {
             Button friendButton = new Button();
@@ -233,7 +234,7 @@ public class MenuManager : Control
     {
         InvitedBy = long.Parse(userId);
         InviteName.Text = "Invited by " + userName;
-        if (!game.IsPlaying || OptionsMenuNode.Visible)
+        if (!_game.IsPlaying || OptionsMenuNode.Visible)
         {
             InviteWrap.Show();
         }
@@ -242,7 +243,7 @@ public class MenuManager : Control
     public void AcceptInvite()
     {
         InviteWrap.Hide();
-        discordManager.AcceptInvite(InvitedBy);
+        _discordManager.AcceptInvite(InvitedBy);
         InvitedBy = 0;
     }
 

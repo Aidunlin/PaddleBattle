@@ -3,7 +3,7 @@ using Godot.Collections;
 
 public class BallManager : Node
 {
-    public DiscordManager discordManager;
+    private DiscordManager _discordManager;
 
     public PackedScene BallScene = (PackedScene)GD.Load("res://Scenes/Ball.tscn");
 
@@ -11,7 +11,7 @@ public class BallManager : Node
 
     public override void _Ready()
     {
-        discordManager = GetNode<DiscordManager>("/root/DiscordManager");
+        _discordManager = GetNode<DiscordManager>("/root/DiscordManager");
     }
 
     public void CreateBalls()
@@ -42,7 +42,7 @@ public class BallManager : Node
             RigidBody2D ballNode = GetChildOrNull<RigidBody2D>(i);
             if (ballNode != null)
             {
-                if (discordManager.IsLobbyOwner())
+                if (_discordManager.IsLobbyOwner())
                 {
                     ballNode.Mode = RigidBody2D.ModeEnum.Character;
                     if (ballNode.Position.Length() > 4096)

@@ -15,7 +15,6 @@ __meta__ = {
 }
 
 [node name="MessageWrap" type="MarginContainer" parent="."]
-visible = false
 margin_right = 416.0
 margin_bottom = 166.0
 custom_constants/margin_right = 8
@@ -145,11 +144,11 @@ margin_bottom = 43.0
 text = "Settings"
 align = 1
 
-[node name="VSync" type="CheckButton" parent="CenterMenu/Settings"]
+[node name="Vsync" type="CheckButton" parent="CenterMenu/Settings"]
 margin_top = 47.0
 margin_right = 300.0
 margin_bottom = 90.0
-text = "VSync"
+text = "Vsync"
 
 [node name="Fullscreen" type="CheckButton" parent="CenterMenu/Settings"]
 margin_top = 94.0
