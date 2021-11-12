@@ -88,7 +88,7 @@ public class PaddleManager : Node
             }
             else
             {
-                paddleNode.Modulate = Color.FromHsv(GD.Randf(), (float)0.5, 1);
+                paddleNode.Modulate = Color.FromHsv(GD.Randf(), 1, 1);
             }
             paddleNode.Connect("Damaged", this, "DamagePaddle", new Array() { newName });
             if (_game.UserId == long.Parse((string)newPaddle["Id"]) && newPaddle.Contains("Pad"))

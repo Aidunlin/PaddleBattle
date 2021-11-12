@@ -1,4 +1,4 @@
-[gd_scene load_steps=9 format=2]
+[gd_scene load_steps=10 format=2]
 
 [ext_resource path="res://Scripts/BallManager.cs" type="Script" id=1]
 [ext_resource path="res://Scripts/PaddleManager.cs" type="Script" id=2]
@@ -8,6 +8,13 @@
 [ext_resource path="res://Scripts/HUDManager.cs" type="Script" id=6]
 [ext_resource path="res://Scenes/MenuManager.tscn" type="PackedScene" id=7]
 [ext_resource path="res://Assets/Theme.tres" type="Theme" id=8]
+
+[sub_resource type="Environment" id=1]
+background_mode = 4
+glow_enabled = true
+glow_bloom = 1.0
+glow_bicubic_upscale = true
+glow_high_quality = true
 
 [node name="Main" type="Node"]
 script = ExtResource( 5 )
@@ -43,3 +50,6 @@ __meta__ = {
 [node name="CanvasLayer" type="CanvasLayer" parent="."]
 
 [node name="MenuManager" parent="CanvasLayer" instance=ExtResource( 7 )]
+
+[node name="WorldEnvironment" type="WorldEnvironment" parent="."]
+environment = SubResource( 1 )

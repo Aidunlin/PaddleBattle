@@ -141,7 +141,7 @@ public class Main : Node
     public void CreateGame(string mapName = null)
     {
         GD.Randomize();
-        LoadGame(mapName ?? _game.MapName, Color.FromHsv(GD.Randf(), (float)0.5, 1));
+        LoadGame(mapName ?? _game.MapName, Color.FromHsv(GD.Randf(), 1, 1));
     }
 
     public void LoadGame(string mapName, Color mapColor)
