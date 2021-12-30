@@ -46,9 +46,4 @@ public class Camera : Camera2D
         Spawn = newSpawn;
         Position = newSpawn;
     }
-
-    public void ResetNoSpawn()
-    {
-        Position = Spawn;
-    }
 }

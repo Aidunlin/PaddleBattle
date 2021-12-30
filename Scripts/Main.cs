@@ -171,7 +171,7 @@ public class Main : Node
         _game.Reset();
         _discordManager.LeaveLobby();
         _inputManager.Reset();
-        _camera.ResetNoSpawn();
+        _camera.Reset(Vector2.Zero);
         _mapManager.Reset();
         _paddleManager.Reset();
         _ballManager.Reset();
