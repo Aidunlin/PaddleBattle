@@ -27,24 +27,29 @@ public class BallManager : Node
     public Array GetBalls()
     {
         Array balls = new Array();
+
         foreach (RigidBody2D ball in GetChildren())
         {
             balls.Add(ball.Position);
         }
+
         return balls;
     }
 
     public void UpdateBalls(Array newBalls)
     {
         int ballCount = GetChildCount();
+
         for (int i = 0; i < ballCount; i++)
         {
             RigidBody2D ballNode = GetChildOrNull<RigidBody2D>(i);
+
             if (ballNode != null)
             {
                 if (_discordManager.IsLobbyOwner())
                 {
                     ballNode.Mode = RigidBody2D.ModeEnum.Character;
+
                     if (ballNode.Position.Length() > 4096)
                     {
                         ballNode.QueueFree();
@@ -68,6 +73,7 @@ public class BallManager : Node
         {
             ball.QueueFree();
         }
+        
         Spawns.Clear();
     }
 }

@@ -26,6 +26,7 @@ public class InputManager : Node
             {
                 EmitSignal("CreatePaddleRequested", -1);
             }
+
             foreach (int pad in Input.GetConnectedJoypads())
             {
                 if (Input.IsJoyButtonPressed(pad, (int)JoystickList.Button0) && !InputListHasPad(pad))
@@ -33,10 +34,12 @@ public class InputManager : Node
                     EmitSignal("CreatePaddleRequested", pad);
                 }
             }
+
             if (Input.IsKeyPressed((int)KeyList.Escape) && UsedInputs.Contains(-1))
             {
                 EmitSignal("OptionsRequested");
             }
+
             foreach (int pad in UsedInputs)
             {
                 if (Input.IsJoyButtonPressed(pad, (int)JoystickList.Start))
@@ -56,6 +59,7 @@ public class InputManager : Node
                 return true;
             }
         }
+
         return false;
     }
     
@@ -75,11 +79,14 @@ public class InputManager : Node
         inputs.Add("Velocity", new Vector2());
         inputs.Add("Rotation", (float)0.0);
         inputs.Add("Dash", false);
+
         if (!InputList.ContainsKey(paddleNode.Name) || !_game.IsPlaying)
         {
             return inputs;
         }
+
         int pad = InputList[paddleNode.Name];
+
         if (pad == -1)
         {
             inputs["Velocity"] = new Vector2(
@@ -101,16 +108,20 @@ public class InputManager : Node
                 GetAxis(pad, (int)JoystickList.AnalogRx),
                 GetAxis(pad, (int)JoystickList.AnalogRy)
             );
+
             if (leftStick.Length() > 0.2)
             {
                 inputs["Velocity"] = leftStick * Game.MoveSpeed;
             }
+
             inputs["Dash"] = Input.IsJoyButtonPressed(pad, (int)JoystickList.L2);
+
             if (rightStick.Length() > 0.7)
             {
                 inputs["Rotation"] = paddleNode.GetAngleTo(paddleNode.Position + rightStick) * 0.1;
             }
         }
+        
         return inputs;
     }
 

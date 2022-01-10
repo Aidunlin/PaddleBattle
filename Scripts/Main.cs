@@ -62,6 +62,7 @@ public class Main : Node
                 _discordManager.SendAll(updateData, false);
                 UpdateObjects(_paddleManager.GetPaddles(), _ballManager.GetBalls());
             }
+
             _camera.MoveAndZoom(_paddleManager.GetChildren());
         }
     }
@@ -78,6 +79,7 @@ public class Main : Node
             _game.UserId = _discordManager.GetUserId();
             _game.UserName = _discordManager.GetUserName();
         }
+
         _menuManager.ShowUserAndMenu();
     }
 
@@ -89,6 +91,7 @@ public class Main : Node
     public void HandleDiscordMessage(byte[] message)
     {
         Dictionary data = (Dictionary)GD.Bytes2Var(message);
+
         if (data.Contains("Paddles") && data.Contains("Map"))
         {
             JoinGame((Array)data["Paddles"], (string)data["Map"]);
@@ -114,6 +117,7 @@ public class Main : Node
     public void HandleDiscordConnect(long id, string name)
     {
         _menuManager.AddMessage(name + " joined the lobby");
+
         if (_discordManager.IsLobbyOwner())
         {
             Dictionary welcomeData = new Dictionary();
@@ -132,6 +136,7 @@ public class Main : Node
     public void JoinGame(Array paddles, string mapName)
     {
         CreateGame(mapName);
+        
         foreach (var paddle in paddles)
         {
             _paddleManager.CreatePaddle((Dictionary)paddle);

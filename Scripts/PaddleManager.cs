@@ -32,6 +32,7 @@ public class PaddleManager : Node
             newPaddle.Add("Id", _game.UserId.ToString());
             newPaddle.Add("Pad", pad);
             _inputManager.UsedInputs.Add(pad);
+
             if (_discordManager.IsLobbyOwner())
             {
                 CreatePaddle(newPaddle);
@@ -60,10 +61,12 @@ public class PaddleManager : Node
     public void CreatePaddle(Dictionary newPaddle)
     {
         int paddleCount = GetChildCount();
+
         if (paddleCount < Spawns.Count)
         {
             Paddle paddleNode = PaddleScene.Instance<Paddle>();
             int nameCount = 1;
+
             foreach (Paddle paddle in GetChildren())
             {
                 if (paddle.Name.Contains((string)newPaddle["Name"]))
@@ -71,11 +74,14 @@ public class PaddleManager : Node
                     nameCount++;
                 }
             }
+
             string newName = (string)newPaddle["Name"];
+
             if (nameCount > 1)
             {
                 newName += nameCount.ToString();
             }
+
             paddleNode.Name = newName;
             paddleNode.Id = (string)newPaddle["Id"];
             paddleNode.Pad = (int)newPaddle["Pad"];
@@ -84,29 +90,37 @@ public class PaddleManager : Node
             paddleNode.Modulate = DictCoalesce<Color>(newPaddle, "Modulate", Color.FromHsv(GD.Randf(), 1, 1));
             paddleNode.MaxHealth = DictCoalesce<int>(newPaddle, "MaxHealth", Game.MaxHealth);
             paddleNode.Health = DictCoalesce<int>(newPaddle, "Health", paddleNode.MaxHealth);
+
             if (paddleNode.Health < paddleNode.MaxHealth)
             {
                 double crackOpacity = 1.0 - (paddleNode.Health / (double)paddleNode.MaxHealth);
                 crackOpacity *= 0.7;
+
                 if (paddleNode.Health == 1)
                 {
                     crackOpacity = 1;
                 }
+
                 paddleNode.GetNode<Sprite>("Crack").Modulate = new Color(1, 1, 1, (float)crackOpacity);
             }
+
             bool paddleIsLocal = _game.UserId == long.Parse(paddleNode.Id);
+
             if (paddleIsLocal && newPaddle.Contains("Pad"))
             {
                 _inputManager.InputList.Add(paddleNode.Name, paddleNode.Pad);
             }
+
             paddleNode.Connect("Damaged", this, "DamagePaddle", new Array() { paddleNode.Name });
             EmitSignal("PaddleCreated", GetPaddleData(paddleNode));
+
             if (_discordManager.IsLobbyOwner())
             {
                 Dictionary paddleData = new Dictionary();
                 paddleData.Add("PaddleData", GetPaddleData(paddleNode));
                 _discordManager.SendAll(paddleData, true);
             }
+
             AddChild(paddleNode);
         }
     }
@@ -128,22 +142,26 @@ public class PaddleManager : Node
     public Array GetPaddles()
     {
         Array paddles = new Array();
+
         foreach (Paddle paddle in GetChildren())
         {
             paddles.Add(GetPaddleData(paddle));
         }
+
         return paddles;
     }
 
     public void UpdatePaddles(Array newPaddles)
     {
         if (!_game.IsPlaying) return;
+
         for (int i = 0; i < newPaddles.Count; i++)
         {
             Dictionary newPaddle = (Dictionary)newPaddles[i];
             string paddleName = (string)newPaddle["Name"];
             Paddle paddleNode = GetNode<Paddle>(paddleName);
             bool paddleIsLocal = _game.UserId == long.Parse((string)newPaddle["Id"]);
+
             if (_discordManager.IsLobbyOwner())
             {
                 if (paddleIsLocal)
@@ -155,6 +173,7 @@ public class PaddleManager : Node
             {
                 paddleNode.Position = (Vector2)newPaddle["Position"];
                 paddleNode.Rotation = (float)newPaddle["Rotation"];
+
                 if (paddleIsLocal)
                 {
                     Dictionary inputData = new Dictionary();
@@ -189,22 +208,28 @@ public class PaddleManager : Node
         paddleNode.Health -= 1;
         double crackOpacity = 1.0 - (paddleNode.Health / (double)paddleNode.MaxHealth);
         crackOpacity *= 0.7;
+
         if (paddleNode.Health == 1)
         {
             crackOpacity = 1;
         }
+
         paddleNode.GetNode<Sprite>("Crack").Modulate = new Color(1, 1, 1, (float)crackOpacity);
+
         if (paddleNode.Health < 1)
         {
             EmitSignal("PaddleDestroyed", paddleNode.Name + " was destroyed");
+
             if (_discordManager.IsLobbyOwner())
             {
                 paddleNode.Position = ((Node2D)Spawns[paddleNode.GetIndex()]).Position;
                 paddleNode.Rotation = ((Node2D)Spawns[paddleNode.GetIndex()]).Rotation;
             }
+
             paddleNode.GetNode<Sprite>("Crack").Modulate = new Color(1, 1, 1, 0);
             paddleNode.Health = paddleNode.MaxHealth;
         }
+
         if (_discordManager.IsLobbyOwner())
         {
             Dictionary paddleData = new Dictionary();
@@ -219,6 +244,7 @@ public class PaddleManager : Node
         {
             paddle.QueueFree();
         }
+        
         Spawns.Clear();
     }
 }

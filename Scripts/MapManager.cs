@@ -5,7 +5,7 @@ public class MapManager : Node
 {
     private Game _game;
 
-    [Export] public Array Maps = new Array();
+    [Export] public Array<Dictionary> Maps = new Array<Dictionary>();
     [Export] public Node2D Map = null;
     [Export] public Color MapColor = new Color();
 
@@ -27,6 +27,7 @@ public class MapManager : Node
     public void LoadMap(string newMap, Color newColor)
     {
         MapColor = newColor;
+
         foreach (Dictionary map in Maps)
         {
             if (((string)map["Name"]).Equals(newMap))
@@ -42,19 +43,23 @@ public class MapManager : Node
     public string Switch()
     {
         int mapIndex = 0;
+
         for (; mapIndex < Maps.Count; mapIndex++)
         {
-            if ((string)((Dictionary)Maps[mapIndex])["Name"] == _game.MapName)
+            if ((string)(Maps[mapIndex])["Name"] == _game.MapName)
             {
                 break;
             }
         }
+
         int newIndex = 0;
+
         if (mapIndex + 1 < Maps.Count)
         {
             newIndex = mapIndex + 1;
         }
-        string newMapName = (string)((Dictionary)Maps[newIndex])["Name"];
+        
+        string newMapName = (string)(Maps[newIndex])["Name"];
         _game.MapName = newMapName;
         return newMapName;
     }

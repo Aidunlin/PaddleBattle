@@ -82,6 +82,7 @@ public class DiscordManager : Node
         _lobbyManager.OnMemberConnect += (lobbyId, userId) =>
         {
             UpdateActivity(true);
+
             _userManager.GetUser(userId, (Result result, ref User user) =>
             {
                 if (result == Result.Ok)
@@ -97,7 +98,9 @@ public class DiscordManager : Node
             {
                 LeaveLobby();
             }
+
             UpdateActivity(true);
+
             _userManager.GetUser(userId, (Result result, ref User user) =>
             {
                 if (result == Result.Ok)
@@ -124,6 +127,7 @@ public class DiscordManager : Node
     public void UpdateActivity(bool inLobby)
     {
         Activity activity = new Activity();
+
         if (inLobby)
         {
             activity.Secrets.Join = _lobbyManager.GetLobbyActivitySecret(CurrentLobbyId);
@@ -134,11 +138,14 @@ public class DiscordManager : Node
         {
             activity.State = "Thinking about battles";
         }
+
         if (OS.IsDebugBuild())
         {
             activity.Details = "Debugging";
         }
+
         activity.Assets.LargeImage = "paddlebattle";
+
         _activityManager.UpdateActivity(activity, (result) =>
         {
             if (result != Result.Ok)
@@ -211,6 +218,7 @@ public class DiscordManager : Node
     public void CreateLobby()
     {
         LobbyTransaction txn = _lobbyManager.GetLobbyCreateTransaction();
+
         _lobbyManager.CreateLobby(txn, (Result result, ref Lobby lobby) =>
         {
             if (result == Result.Ok)
@@ -231,6 +239,7 @@ public class DiscordManager : Node
     public void JoinLobby(string secret)
     {
         LeaveLobby();
+
         _lobbyManager.ConnectLobbyWithActivitySecret(secret, (Result result, ref Lobby lobby) =>
         {
             if (result == Result.Ok)
@@ -278,6 +287,7 @@ public class DiscordManager : Node
     public Array GetFriends()
     {
         Array friends = new Array();
+
         for (int i = 0; i < _relationshipManager.Count(); i++)
         {
             Relationship rel = _relationshipManager.GetAt((uint)i);
@@ -286,6 +296,7 @@ public class DiscordManager : Node
             friend.Add("Id", rel.User.Id.ToString());
             friends.Add(friend);
         }
+        
         return friends;
     }
 

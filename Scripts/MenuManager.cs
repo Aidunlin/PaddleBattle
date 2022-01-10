@@ -95,11 +95,17 @@ public class MenuManager : Control
         QuitButton.Connect("pressed", GetTree(), "quit");
         VersionNode.Text = Game.Version;
 
+        Dictionary<string, object> options = _game.LoadOptionsFromFile();
+        OS.VsyncEnabled = (bool)options["Vsync"];
+        VsyncButton.Pressed = OS.VsyncEnabled;
+        OS.WindowFullscreen = (bool)options["Fullscreen"];
+        FullscreenButton.Pressed = OS.WindowFullscreen;
+        MapButton.Text = (string)options["Map"];
+        
         SettingsMenuNode.Hide();
         VsyncButton.Connect("pressed", this, "ToggleVsync");
         FullscreenButton.Connect("pressed", this, "ToggleFullscreen");
         MapButton.Connect("pressed", this, "SwitchMap");
-        MapButton.Text = _game.MapName;
         DoneButton.Connect("pressed", this, "ToggleSettings");
 
         OptionsMenuNode.Hide();
@@ -147,6 +153,12 @@ public class MenuManager : Control
             SettingsMenuNode.Visible = false;
             MainMenuNode.Visible = true;
             SettingsButton.GrabFocus();
+
+            Dictionary<string, object> options = new Dictionary<string, object>();
+            options.Add("Vsync", OS.VsyncEnabled);
+            options.Add("Fullscreen", OS.WindowFullscreen);
+            options.Add("Map", _game.MapName);
+            _game.SaveOptionsToFile(options);
         }
         else
         {
@@ -192,10 +204,12 @@ public class MenuManager : Control
         if (!OptionsMenuNode.Visible)
         {
             OptionsMenuNode.Show();
+
             if (InvitedBy != 0)
             {
                 InviteWrap.Show();
             }
+
             BackButton.GrabFocus();
             UpdateFriends();
         }
@@ -220,7 +234,9 @@ public class MenuManager : Control
         {
             friend.QueueFree();
         }
+
         Array friends = _discordManager.GetFriends();
+
         foreach (Dictionary friend in friends)
         {
             Button friendButton = new Button();
@@ -234,6 +250,7 @@ public class MenuManager : Control
     {
         InvitedBy = long.Parse(userId);
         InviteName.Text = "Invited by " + userName;
+        
         if (!_game.IsPlaying || OptionsMenuNode.Visible)
         {
             InviteWrap.Show();

@@ -8,6 +8,7 @@ public class Camera : Camera2D
     public void MoveAndZoom(Array paddles)
     {
         Vector2 newZoom = Vector2.One;
+
         if (paddles.Count > 0)
         {
             Vector2 average = new Vector2();
@@ -15,6 +16,7 @@ public class Camera : Camera2D
             float MinX = float.MaxValue;
             float maxY = float.MinValue;
             float MinY = float.MaxValue;
+
             foreach (Node2D paddle in paddles)
             {
                 average += paddle.Position;
@@ -23,6 +25,7 @@ public class Camera : Camera2D
                 maxY = System.Math.Max(paddle.Position.y, maxY);
                 MinY = System.Math.Min(paddle.Position.y, MinY);
             }
+
             average /= paddles.Count;
             float largestX = 2 * System.Math.Max(maxX - average.x, average.x - MinX);
             float largestY = 2 * System.Math.Max(maxY - average.y, average.y - MinY);
@@ -32,12 +35,15 @@ public class Camera : Camera2D
             newZoom.y = (largestY + marginY) / OS.WindowSize.y;
             float largestZoom = System.Math.Max(newZoom.x, newZoom.y);
             newZoom = new Vector2(largestZoom, largestZoom);
+
             if (newZoom < Vector2.One)
             {
                 newZoom = Vector2.One;
             }
+
             Position = average;
         }
+        
         Zoom = Zoom.LinearInterpolate(newZoom, (float)0.05);
     }
 

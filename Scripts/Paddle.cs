@@ -49,6 +49,7 @@ public class Paddle : KinematicBody2D
             Velocity = Velocity.LinearInterpolate(InputVelocity, (float)0.06);
             Rotation += InputRotation;
             KinematicCollision2D collision = MoveAndCollide(Velocity * delta, false);
+
             if (collision != null)
             {
                 if (((Node2D)collision.Collider).IsInGroup("balls"))
@@ -60,6 +61,7 @@ public class Paddle : KinematicBody2D
                 {
                     Velocity = Velocity.Bounce(collision.Normal);
                 }
+
                 EmitSignal("Collided");
             }
         }
@@ -106,16 +108,19 @@ public class Paddle : KinematicBody2D
         {
             InputVelocity = (Vector2)inputs["Velocity"];
             InputRotation = (float)inputs["Rotation"];
+
             if (!(bool)inputs["Dash"])
             {
                 WasDashing = false;
             }
+
             if ((bool)inputs["Dash"] && CanDash && !WasDashing)
             {
                 CanDash = false;
                 IsDashing = true;
                 DashTimer.Start((float)0.1);
             }
+            
             if (IsDashing)
             {
                 WasDashing = true;
