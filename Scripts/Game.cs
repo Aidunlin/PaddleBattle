@@ -9,7 +9,7 @@ public class Game : Node
 
     [Export] public bool IsPlaying = false;
     [Export] public string MapName = "BigMap";
-    [Export] public string UserName = "";
+    [Export] public string Username = "";
     [Export] public long UserId = 0;
 
     public Dictionary<string, object> LoadOptionsFromFile() {

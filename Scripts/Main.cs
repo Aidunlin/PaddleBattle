@@ -27,7 +27,6 @@ public class Main : Node
         _hudManager = GetNode<HUDManager>("HUDManager");
         _menuManager = GetNode<MenuManager>("CanvasLayer/MenuManager");
 
-        _discordManager.Connect("Error", this, "HandleDiscordError");
         _discordManager.Connect("UserUpdated", this, "GetUser");
         _discordManager.Connect("LobbyCreated", this, "CreateGame", new Array() { null });
         _discordManager.Connect("MemberConnected", this, "HandleDiscordConnect");
@@ -77,15 +76,10 @@ public class Main : Node
         if (!_game.IsPlaying && !_menuManager.MainMenuNode.Visible)
         {
             _game.UserId = _discordManager.GetUserId();
-            _game.UserName = _discordManager.GetUserName();
+            _game.Username = _discordManager.GetUsername();
         }
 
         _menuManager.ShowUserAndMenu();
-    }
-
-    public void HandleDiscordError(string message)
-    {
-        GD.PrintErr(message);
     }
 
     public void HandleDiscordMessage(byte[] message)
@@ -137,9 +131,9 @@ public class Main : Node
     {
         CreateGame(mapName);
         
-        foreach (var paddle in paddles)
+        foreach (Dictionary paddle in paddles)
         {
-            _paddleManager.CreatePaddle((Dictionary)paddle);
+            _paddleManager.CreatePaddle(paddle);
         }
     }
 

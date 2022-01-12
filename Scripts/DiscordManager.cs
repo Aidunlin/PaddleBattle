@@ -4,7 +4,6 @@ using Godot.Collections;
 
 public class DiscordManager : Node
 {
-    [Signal] public delegate void Error();
     [Signal] public delegate void UserUpdated();
     [Signal] public delegate void LobbyCreated();
     [Signal] public delegate void MemberConnected();
@@ -49,21 +48,34 @@ public class DiscordManager : Node
 
         _discord.SetLogHook(LogLevel.Debug, (level, message) =>
         {
-            GD.Print("Discord: ", level, " - ", message);
+            if (level < LogLevel.Info) {
+                GD.PrintErr("Discord: ", level, " - ", message);
+            }
+            else
+            {
+                GD.Print("Discord: ", level, " - ", message);
+            }
         });
 
         _userManager.OnCurrentUserUpdate += () =>
         {
+            GD.Print("Discord: User updated");
             EmitSignal("UserUpdated");
         };
 
         _activityManager.OnActivityJoin += (secret) =>
         {
+            GD.Print("Discord: User joined activity");
             JoinLobby(secret);
+        };
+
+        _activityManager.OnActivityJoinRequest += (ref User user) => {
+            GD.Print("Discord: ", user.Username, " requested to join");
         };
 
         _activityManager.OnActivityInvite += (ActivityActionType type, ref User user, ref Activity activity) =>
         {
+            GD.Print("Discord: Invite received");
             EmitSignal("InviteReceived", user.Id, user.Username);
         };
 
@@ -81,13 +93,17 @@ public class DiscordManager : Node
 
         _lobbyManager.OnMemberConnect += (lobbyId, userId) =>
         {
-            UpdateActivity(true);
-
             _userManager.GetUser(userId, (Result result, ref User user) =>
             {
                 if (result == Result.Ok)
                 {
+                    GD.Print("Discord: ", user.Username, " connected");
                     EmitSignal("MemberConnected", userId, user.Username);
+                    UpdateActivity(true);
+                }
+                else
+                {
+                    GD.PrintErr("Discord: Failed to get user details");
                 }
             });
         };
@@ -99,29 +115,32 @@ public class DiscordManager : Node
                 LeaveLobby();
             }
 
-            UpdateActivity(true);
-
             _userManager.GetUser(userId, (Result result, ref User user) =>
             {
                 if (result == Result.Ok)
                 {
+                    GD.Print("Discord: ", user.Username, " disconnected");
                     EmitSignal("MemberDisconnected", userId, user.Username);
+                    UpdateActivity(true);
                 }
             });
         };
 
         _relationshipManager.OnRefresh += () =>
         {
+            GD.Print("Discord: Relationships refreshed");
             UpdateRelationships();
         };
 
         _relationshipManager.OnRelationshipUpdate += (ref Relationship rel) =>
         {
+            GD.Print("Discord: Relationships updated");
             UpdateRelationships();
         };
 
         UpdateActivity(false);
         IsRunning = true;
+        GD.Print("Discord: Instance connected");
     }
 
     public void UpdateActivity(bool inLobby)
@@ -148,9 +167,13 @@ public class DiscordManager : Node
 
         _activityManager.UpdateActivity(activity, (result) =>
         {
+            if (result == Result.Ok)
+            {
+                GD.Print("Discord: Activity updated");
+            }
             if (result != Result.Ok)
             {
-                EmitSignal("Error", "Failed to update activity: " + result);
+                GD.PrintErr("Discord: Failed to update activity: ", result);
             }
         });
     }
@@ -162,7 +185,7 @@ public class DiscordManager : Node
         _lobbyManager.OpenNetworkChannel(CurrentLobbyId, (byte)ChannelType.Reliable, true);
     }
 
-    public string GetUserName()
+    public string GetUsername()
     {
         return _userManager.GetCurrentUser().Username;
     }
@@ -218,6 +241,7 @@ public class DiscordManager : Node
     public void CreateLobby()
     {
         LobbyTransaction txn = _lobbyManager.GetLobbyCreateTransaction();
+        txn.SetType(LobbyType.Public);
 
         _lobbyManager.CreateLobby(txn, (Result result, ref Lobby lobby) =>
         {
@@ -228,10 +252,11 @@ public class DiscordManager : Node
                 InitNetworking();
                 UpdateActivity(true);
                 EmitSignal("LobbyCreated");
+                GD.Print("Discord: Lobby created");
             }
             else
             {
-                EmitSignal("Error", "Failed to create lobby: " + result);
+                GD.PrintErr("Discord: Failed to create lobby: ", result);
             }
         });
     }
@@ -248,10 +273,11 @@ public class DiscordManager : Node
                 LobbyOwnerId = GetLobbyOwnerId();
                 InitNetworking();
                 UpdateActivity(true);
+                GD.Print("Discord: Lobby joined");
             }
             else
             {
-                EmitSignal("Error", "Failed to join lobby: " + result);
+                GD.PrintErr("Discord: Failed to join lobby: ", result);
             }
         });
     }
@@ -267,10 +293,11 @@ public class DiscordManager : Node
                     CurrentLobbyId = 0;
                     LobbyOwnerId = 0;
                     UpdateActivity(false);
+                    GD.Print("Discord: Lobby left");
                 }
                 else
                 {
-                    EmitSignal("Error", "Failed to leave lobby: " + result);
+                    GD.PrintErr("Discord: Failed to leave lobby: ", result);
                 }
             });
         }
@@ -292,7 +319,7 @@ public class DiscordManager : Node
         {
             Relationship rel = _relationshipManager.GetAt((uint)i);
             Dictionary friend = new Dictionary();
-            friend.Add("UserName", rel.User.Username);
+            friend.Add("Username", rel.User.Username);
             friend.Add("Id", rel.User.Id.ToString());
             friends.Add(friend);
         }
@@ -304,9 +331,13 @@ public class DiscordManager : Node
     {
         _activityManager.SendInvite(userId, ActivityActionType.Join, "", result =>
         {
-            if (result != Result.Ok)
+            if (result == Result.Ok)
             {
-                EmitSignal("Error", "Failed to send invite");
+                GD.Print("Discord: Invite sent");
+            }
+            else
+            {
+                GD.PrintErr("Discord: Failed to send invite: ", result);
             }
         });
     }
@@ -315,9 +346,13 @@ public class DiscordManager : Node
     {
         _activityManager.AcceptInvite(userId, result =>
         {
-            if (result != Result.Ok)
+            if (result == Result.Ok)
             {
-                EmitSignal("Error", "Failed to accept invite");
+                GD.Print("Discord: Invite accepted");
+            }
+            else
+            {
+                GD.PrintErr("Discord: Failed to accept invite: ", result);
             }
         });
     }

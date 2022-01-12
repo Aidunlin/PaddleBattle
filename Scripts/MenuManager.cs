@@ -141,7 +141,7 @@ public class MenuManager : Control
 
     public void ShowUserAndMenu()
     {
-        NameLabel.Text = _game.UserName;
+        NameLabel.Text = _game.Username;
         MainMenuNode.Show();
         PlayButton.GrabFocus();
     }
@@ -180,7 +180,7 @@ public class MenuManager : Control
 
     public void AddMessage(string msg = "")
     {
-        GD.Print(msg);
+        // GD.Print(msg);
 
         Label newMessage = new Label();
         newMessage.Text = msg;
@@ -235,21 +235,19 @@ public class MenuManager : Control
             friend.QueueFree();
         }
 
-        Array friends = _discordManager.GetFriends();
-
-        foreach (Dictionary friend in friends)
+        foreach (Dictionary friend in _discordManager.GetFriends())
         {
             Button friendButton = new Button();
-            friendButton.Text = (string)friend["UserName"];
+            friendButton.Text = (string)friend["Username"];
             friendButton.Connect("pressed", this, "FriendPressed", new Array() { friendButton, friend["Id"] });
             FriendsList.AddChild(friendButton);
         }
     }
 
-    public void ShowInvite(string userId, string userName)
+    public void ShowInvite(string userId, string username)
     {
         InvitedBy = long.Parse(userId);
-        InviteName.Text = "Invited by " + userName;
+        InviteName.Text = "Invited by " + username;
         
         if (!_game.IsPlaying || OptionsMenuNode.Visible)
         {

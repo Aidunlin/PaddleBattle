@@ -28,7 +28,7 @@ public class PaddleManager : Node
         if (!_inputManager.UsedInputs.Contains(pad))
         {
             Dictionary newPaddle = new Dictionary();
-            newPaddle.Add("Name", _game.UserName);
+            newPaddle.Add("Name", _game.Username);
             newPaddle.Add("Id", _game.UserId.ToString());
             newPaddle.Add("Pad", pad);
             _inputManager.UsedInputs.Add(pad);
