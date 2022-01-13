@@ -12,17 +12,18 @@ public class Game : Node
     [Export] public string Username = "";
     [Export] public long UserId = 0;
 
-    public Dictionary<string, object> LoadOptionsFromFile() {
+    public Dictionary<string, object> LoadOptionsFromFile()
+    {
         Dictionary<string, object> options = new Dictionary<string, object>();
         options.Add("Vsync", OS.VsyncEnabled);
         options.Add("Fullscreen", OS.WindowFullscreen);
         options.Add("Map", MapName);
-        var optionsFile = new File();
+        File optionsFile = new File();
 
         if (optionsFile.FileExists("user://options.txt"))
         {
             optionsFile.Open("user://options.txt", File.ModeFlags.Read);
-            var fileOptions = (Dictionary)JSON.Parse(optionsFile.GetLine()).Result;
+            Dictionary fileOptions = (Dictionary)JSON.Parse(optionsFile.GetLine()).Result;
 
             foreach (var item in options)
             {
@@ -31,7 +32,7 @@ public class Game : Node
                     options[item.Key] = fileOptions[item.Key];
                 }
             }
-            
+
             optionsFile.Close();
         }
 
@@ -39,8 +40,9 @@ public class Game : Node
         return options;
     }
 
-    public void SaveOptionsToFile(Dictionary<string, object> options) {
-        var optionsFile = new File();
+    public void SaveOptionsToFile(Dictionary<string, object> options)
+    {
+        File optionsFile = new File();
         optionsFile.Open("user://options.txt", File.ModeFlags.Write);
         optionsFile.StoreLine(JSON.Print(options));
         optionsFile.Close();

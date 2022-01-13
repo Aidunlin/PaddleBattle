@@ -58,7 +58,7 @@ public class MapManager : Node
         {
             newIndex = mapIndex + 1;
         }
-        
+
         string newMapName = (string)(Maps[newIndex])["Name"];
         _game.MapName = newMapName;
         return newMapName;

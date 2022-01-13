@@ -244,7 +244,7 @@ public class PaddleManager : Node
         {
             paddle.QueueFree();
         }
-        
+
         Spawns.Clear();
     }
 }

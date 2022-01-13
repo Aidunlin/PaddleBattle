@@ -62,15 +62,15 @@ public class InputManager : Node
 
         return false;
     }
-    
-    public int GetKey(int key)
+
+    public int GetKey(KeyList key)
     {
-        return Input.IsKeyPressed(key) ? 1 : 0;
+        return Input.IsKeyPressed((int)key) ? 1 : 0;
     }
 
-    public float GetAxis(int pad, int axis)
+    public float GetAxis(int pad, JoystickList axis)
     {
-        return Input.GetJoyAxis(pad, axis);
+        return Input.GetJoyAxis(pad, (int)axis);
     }
 
     public Dictionary GetPaddleInputs(Paddle paddleNode)
@@ -90,23 +90,26 @@ public class InputManager : Node
         if (pad == -1)
         {
             inputs["Velocity"] = new Vector2(
-                GetKey((int)KeyList.D) - GetKey((int)KeyList.A),
-                GetKey((int)KeyList.S) - GetKey((int)KeyList.W)
+                GetKey(KeyList.D) - GetKey(KeyList.A),
+                GetKey(KeyList.S) - GetKey(KeyList.W)
             ).Normalized() * Game.MoveSpeed;
+
             inputs["Dash"] = Input.IsKeyPressed((int)KeyList.Shift);
+
             inputs["Rotation"] = Mathf.Deg2Rad(
-                (GetKey((int)KeyList.Period) - GetKey((int)KeyList.Comma)) * 4
+                (GetKey(KeyList.Period) - GetKey(KeyList.Comma)) * 4
             );
         }
         else
         {
             Vector2 leftStick = new Vector2(
-                GetAxis(pad, (int)JoystickList.AnalogLx),
-                GetAxis(pad, (int)JoystickList.AnalogLy)
+                GetAxis(pad, JoystickList.AnalogLx),
+                GetAxis(pad, JoystickList.AnalogLy)
             );
+
             Vector2 rightStick = new Vector2(
-                GetAxis(pad, (int)JoystickList.AnalogRx),
-                GetAxis(pad, (int)JoystickList.AnalogRy)
+                GetAxis(pad, JoystickList.AnalogRx),
+                GetAxis(pad, JoystickList.AnalogRy)
             );
 
             if (leftStick.Length() > 0.2)
@@ -121,7 +124,7 @@ public class InputManager : Node
                 inputs["Rotation"] = paddleNode.GetAngleTo(paddleNode.Position + rightStick) * 0.1;
             }
         }
-        
+
         return inputs;
     }
 

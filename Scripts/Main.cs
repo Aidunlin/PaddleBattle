@@ -27,20 +27,22 @@ public class Main : Node
         _hudManager = GetNode<HUDManager>("HUDManager");
         _menuManager = GetNode<MenuManager>("CanvasLayer/MenuManager");
 
-        _discordManager.Connect("UserUpdated", this, "GetUser");
-        _discordManager.Connect("LobbyCreated", this, "CreateGame", new Array() { null });
+        _discordManager.Connect("UserUpdated", this, "HandleDiscordUserUpdate");
+        // _discordManager.Connect("LobbyCreated", this, "CreateGame", new Array() { null });
+        _discordManager.Connect("LobbyUpdated", _menuManager, "UpdateMembers");
         _discordManager.Connect("MemberConnected", this, "HandleDiscordConnect");
         _discordManager.Connect("MemberDisconnected", this, "HandleDiscordDisconnect");
         _discordManager.Connect("MessageReceived", this, "HandleDiscordMessage");
 
         _inputManager.Connect("CreatePaddleRequested", _paddleManager, "CreatePaddleFromInput");
         _inputManager.Connect("OptionsRequested", _menuManager, "ShowOptions");
-        
+
         _paddleManager.Connect("PaddleDestroyed", _menuManager, "AddMessage");
         _paddleManager.Connect("PaddleCreated", _hudManager, "CreateHUD");
         _paddleManager.Connect("PaddleRemoved", _hudManager, "RemoveHUD");
 
         _menuManager.Connect("MapSwitched", this, "SwitchMap");
+        _menuManager.Connect("PlayRequested", this, "CreateGame", new Array() { null });
         _menuManager.Connect("EndRequested", this, "UnloadGame", new Array() { "You left the lobby" });
 
         if (!OS.IsDebugBuild())
@@ -71,7 +73,7 @@ public class Main : Node
         _menuManager.MapButton.Text = _mapManager.Switch();
     }
 
-    public void GetUser()
+    public void HandleDiscordUserUpdate()
     {
         if (!_game.IsPlaying && !_menuManager.MainMenuNode.Visible)
         {
@@ -119,18 +121,21 @@ public class Main : Node
             welcomeData.Add("Map", _game.MapName);
             _discordManager.Send(id, welcomeData, true);
         }
+
+        _menuManager.UpdateMembers();
     }
 
     public void HandleDiscordDisconnect(long id, string name)
     {
         _paddleManager.RemovePaddles(id);
         _menuManager.AddMessage(name + " left the lobby");
+        _menuManager.UpdateMembers();
     }
 
     public void JoinGame(Array paddles, string mapName)
     {
         CreateGame(mapName);
-        
+
         foreach (Dictionary paddle in paddles)
         {
             _paddleManager.CreatePaddle(paddle);
@@ -152,6 +157,7 @@ public class Main : Node
         _ballManager.CreateBalls();
         _menuManager.AddMessage("Press A/Enter to join");
         _menuManager.MainMenuNode.Hide();
+        _menuManager.SidebarMargin.Hide();
         _game.IsPlaying = true;
     }
 
@@ -168,7 +174,7 @@ public class Main : Node
     public void UnloadGame(string msg)
     {
         _game.Reset();
-        _discordManager.LeaveLobby();
+        // _discordManager.LeaveLobby();
         _inputManager.Reset();
         _camera.Reset(Vector2.Zero);
         _mapManager.Reset();

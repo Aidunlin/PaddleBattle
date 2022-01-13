@@ -73,7 +73,7 @@ public class BallManager : Node
         {
             ball.QueueFree();
         }
-        
+
         Spawns.Clear();
     }
 }

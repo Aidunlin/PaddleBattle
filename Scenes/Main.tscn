@@ -12,7 +12,7 @@
 [sub_resource type="Environment" id=1]
 background_mode = 4
 glow_enabled = true
-glow_bloom = 1.0
+glow_strength = 1.18
 glow_bicubic_upscale = true
 glow_high_quality = true
 

@@ -33,10 +33,14 @@ margin_right = 408.0
 margin_bottom = 158.0
 rect_min_size = Vector2( 400, 150 )
 custom_constants/separation = -8
+__meta__ = {
+"_edit_use_anchors_": false
+}
 
 [node name="CenterMenu" type="CenterContainer" parent="."]
 anchor_right = 1.0
 anchor_bottom = 1.0
+mouse_filter = 1
 __meta__ = {
 "_edit_lock_": true,
 "_edit_use_anchors_": false
@@ -185,49 +189,25 @@ rect_min_size = Vector2( 300, 0 )
 [node name="Label" type="Label" parent="CenterMenu/Options"]
 margin_right = 300.0
 margin_bottom = 43.0
-text = "Invite"
+text = "Options"
 align = 1
 
-[node name="FriendsWrap" type="ScrollContainer" parent="CenterMenu/Options"]
-margin_top = 55.0
-margin_right = 300.0
-margin_bottom = 355.0
-rect_min_size = Vector2( 0, 300 )
-follow_focus = true
-scroll_horizontal_enabled = false
-
-[node name="Friends" type="VBoxContainer" parent="CenterMenu/Options/FriendsWrap"]
-margin_right = 300.0
-size_flags_horizontal = 3
-
-[node name="HSeparator" type="HSeparator" parent="CenterMenu/Options"]
-margin_top = 47.0
-margin_right = 300.0
-margin_bottom = 51.0
-
-[node name="Refresh" type="Button" parent="CenterMenu/Options"]
-margin_top = 367.0
-margin_right = 300.0
-margin_bottom = 410.0
-text = "Refresh"
-
 [node name="Back" type="Button" parent="CenterMenu/Options"]
-margin_top = 414.0
+margin_top = 406.0
 margin_right = 300.0
-margin_bottom = 457.0
+margin_bottom = 449.0
 text = "Back"
 
 [node name="Leave" type="Button" parent="CenterMenu/Options"]
-margin_top = 461.0
+margin_top = 453.0
 margin_right = 300.0
-margin_bottom = 504.0
+margin_bottom = 496.0
 text = "Leave"
 
 [node name="InviteWrap" type="MarginContainer" parent="."]
-visible = false
 anchor_top = 1.0
 anchor_bottom = 1.0
-margin_top = -161.0
+margin_top = -153.0
 margin_right = 316.0
 custom_constants/margin_right = 8
 custom_constants/margin_top = 8
@@ -242,7 +222,7 @@ __meta__ = {
 margin_left = 8.0
 margin_top = 8.0
 margin_right = 308.0
-margin_bottom = 153.0
+margin_bottom = 145.0
 rect_min_size = Vector2( 300, 0 )
 
 [node name="Name" type="Label" parent="InviteWrap/InviteView"]
@@ -253,19 +233,98 @@ size_flags_horizontal = 3
 text = "Invited by NO NAME"
 clip_text = true
 
-[node name="HSeparator" type="HSeparator" parent="InviteWrap/InviteView"]
+[node name="Accept" type="Button" parent="InviteWrap/InviteView"]
+margin_top = 47.0
+margin_right = 300.0
+margin_bottom = 90.0
+text = "Accept"
+
+[node name="Decline" type="Button" parent="InviteWrap/InviteView"]
+margin_top = 94.0
+margin_right = 300.0
+margin_bottom = 137.0
+text = "Decline"
+
+[node name="SidebarMargin" type="MarginContainer" parent="."]
+anchor_left = 1.0
+anchor_right = 1.0
+anchor_bottom = 1.0
+margin_left = -316.0
+custom_constants/margin_right = 8
+custom_constants/margin_top = 8
+custom_constants/margin_left = 8
+custom_constants/margin_bottom = 8
+__meta__ = {
+"_edit_lock_": true,
+"_edit_use_anchors_": false
+}
+
+[node name="Sidebar" type="VBoxContainer" parent="SidebarMargin"]
+margin_left = 8.0
+margin_top = 8.0
+margin_right = 308.0
+margin_bottom = 712.0
+size_flags_horizontal = 3
+size_flags_vertical = 3
+
+[node name="Label" type="Label" parent="SidebarMargin/Sidebar"]
+margin_right = 300.0
+margin_bottom = 43.0
+text = "Lobby Members"
+align = 1
+
+[node name="HSeparator" type="HSeparator" parent="SidebarMargin/Sidebar"]
 margin_top = 47.0
 margin_right = 300.0
 margin_bottom = 51.0
 
-[node name="Accept" type="Button" parent="InviteWrap/InviteView"]
+[node name="MembersScroll" type="ScrollContainer" parent="SidebarMargin/Sidebar"]
 margin_top = 55.0
 margin_right = 300.0
-margin_bottom = 98.0
-text = "Accept"
+margin_bottom = 322.0
+rect_min_size = Vector2( 300, 0 )
+size_flags_vertical = 3
+follow_focus = true
 
-[node name="Decline" type="Button" parent="InviteWrap/InviteView"]
-margin_top = 102.0
+[node name="Members" type="VBoxContainer" parent="SidebarMargin/Sidebar/MembersScroll"]
 margin_right = 300.0
-margin_bottom = 145.0
-text = "Decline"
+margin_bottom = 267.0
+size_flags_horizontal = 3
+size_flags_vertical = 3
+
+[node name="HSeparator2" type="HSeparator" parent="SidebarMargin/Sidebar"]
+margin_top = 326.0
+margin_right = 300.0
+margin_bottom = 330.0
+
+[node name="Label2" type="Label" parent="SidebarMargin/Sidebar"]
+margin_top = 334.0
+margin_right = 300.0
+margin_bottom = 377.0
+text = "Invite Friends"
+align = 1
+
+[node name="Refresh" type="Button" parent="SidebarMargin/Sidebar"]
+margin_top = 381.0
+margin_right = 300.0
+margin_bottom = 424.0
+text = "Refresh"
+
+[node name="HSeparator3" type="HSeparator" parent="SidebarMargin/Sidebar"]
+margin_top = 428.0
+margin_right = 300.0
+margin_bottom = 432.0
+
+[node name="FriendsScroll" type="ScrollContainer" parent="SidebarMargin/Sidebar"]
+margin_top = 436.0
+margin_right = 300.0
+margin_bottom = 704.0
+rect_min_size = Vector2( 300, 0 )
+size_flags_vertical = 3
+follow_focus = true
+
+[node name="Friends" type="VBoxContainer" parent="SidebarMargin/Sidebar/FriendsScroll"]
+margin_right = 300.0
+margin_bottom = 268.0
+size_flags_horizontal = 3
+size_flags_vertical = 3

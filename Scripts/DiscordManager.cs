@@ -6,6 +6,7 @@ public class DiscordManager : Node
 {
     [Signal] public delegate void UserUpdated();
     [Signal] public delegate void LobbyCreated();
+    [Signal] public delegate void LobbyUpdated();
     [Signal] public delegate void MemberConnected();
     [Signal] public delegate void MemberDisconnected();
     [Signal] public delegate void MessageReceived();
@@ -48,7 +49,8 @@ public class DiscordManager : Node
 
         _discord.SetLogHook(LogLevel.Debug, (level, message) =>
         {
-            if (level < LogLevel.Info) {
+            if (level < LogLevel.Info)
+            {
                 GD.PrintErr("Discord: ", level, " - ", message);
             }
             else
@@ -66,10 +68,11 @@ public class DiscordManager : Node
         _activityManager.OnActivityJoin += (secret) =>
         {
             GD.Print("Discord: User joined activity");
-            JoinLobby(secret);
+            LeaveLobby(secret);
         };
 
-        _activityManager.OnActivityJoinRequest += (ref User user) => {
+        _activityManager.OnActivityJoinRequest += (ref User user) =>
+        {
             GD.Print("Discord: ", user.Username, " requested to join");
         };
 
@@ -99,7 +102,8 @@ public class DiscordManager : Node
                 {
                     GD.Print("Discord: ", user.Username, " connected");
                     EmitSignal("MemberConnected", userId, user.Username);
-                    UpdateActivity(true);
+                    EmitSignal("LobbyUpdated");
+                    UpdateActivity();
                 }
                 else
                 {
@@ -121,7 +125,8 @@ public class DiscordManager : Node
                 {
                     GD.Print("Discord: ", user.Username, " disconnected");
                     EmitSignal("MemberDisconnected", userId, user.Username);
-                    UpdateActivity(true);
+                    EmitSignal("LobbyUpdated");
+                    UpdateActivity();
                 }
             });
         };
@@ -138,25 +143,18 @@ public class DiscordManager : Node
             UpdateRelationships();
         };
 
-        UpdateActivity(false);
+        // UpdateActivity(false);
         IsRunning = true;
         GD.Print("Discord: Instance connected");
+
+        CreateLobby();
     }
 
-    public void UpdateActivity(bool inLobby)
+    public void UpdateActivity()
     {
         Activity activity = new Activity();
-
-        if (inLobby)
-        {
-            activity.Secrets.Join = _lobbyManager.GetLobbyActivitySecret(CurrentLobbyId);
-            activity.Party.Id = CurrentLobbyId.ToString();
-            activity.State = "Battling it out";
-        }
-        else
-        {
-            activity.State = "Thinking about battles";
-        }
+        activity.Secrets.Join = _lobbyManager.GetLobbyActivitySecret(CurrentLobbyId);
+        activity.Party.Id = CurrentLobbyId.ToString();
 
         if (OS.IsDebugBuild())
         {
@@ -250,8 +248,9 @@ public class DiscordManager : Node
                 CurrentLobbyId = lobby.Id;
                 LobbyOwnerId = lobby.OwnerId;
                 InitNetworking();
-                UpdateActivity(true);
+                UpdateActivity();
                 EmitSignal("LobbyCreated");
+                EmitSignal("LobbyUpdated");
                 GD.Print("Discord: Lobby created");
             }
             else
@@ -263,8 +262,6 @@ public class DiscordManager : Node
 
     public void JoinLobby(string secret)
     {
-        LeaveLobby();
-
         _lobbyManager.ConnectLobbyWithActivitySecret(secret, (Result result, ref Lobby lobby) =>
         {
             if (result == Result.Ok)
@@ -272,7 +269,8 @@ public class DiscordManager : Node
                 CurrentLobbyId = lobby.Id;
                 LobbyOwnerId = GetLobbyOwnerId();
                 InitNetworking();
-                UpdateActivity(true);
+                UpdateActivity();
+                EmitSignal("LobbyUpdated");
                 GD.Print("Discord: Lobby joined");
             }
             else
@@ -282,7 +280,7 @@ public class DiscordManager : Node
         });
     }
 
-    public void LeaveLobby()
+    public void LeaveLobby(string leaveToJoinSecret = null)
     {
         if (CurrentLobbyId != 0)
         {
@@ -292,8 +290,17 @@ public class DiscordManager : Node
                 {
                     CurrentLobbyId = 0;
                     LobbyOwnerId = 0;
-                    UpdateActivity(false);
+                    UpdateActivity();
                     GD.Print("Discord: Lobby left");
+
+                    if (leaveToJoinSecret == null)
+                    {
+                        CreateLobby();
+                    }
+                    else
+                    {
+                        JoinLobby(leaveToJoinSecret);
+                    }
                 }
                 else
                 {
@@ -313,6 +320,8 @@ public class DiscordManager : Node
 
     public Array GetFriends()
     {
+        UpdateRelationships();
+
         Array friends = new Array();
 
         for (int i = 0; i < _relationshipManager.Count(); i++)
@@ -323,8 +332,26 @@ public class DiscordManager : Node
             friend.Add("Id", rel.User.Id.ToString());
             friends.Add(friend);
         }
-        
+
         return friends;
+    }
+
+    public Array GetMembers()
+    {
+        Array members = new Array();
+
+        if (CurrentLobbyId != 0)
+        {
+            foreach (User user in _lobbyManager.GetMemberUsers(CurrentLobbyId))
+            {
+                Dictionary member = new Dictionary();
+                member.Add("Username", user.Username);
+                member.Add("Id", user.Id.ToString());
+                members.Add(member);
+            }
+        }
+
+        return members;
     }
 
     public void SendInvite(long userId)

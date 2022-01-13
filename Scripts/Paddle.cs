@@ -120,7 +120,7 @@ public class Paddle : KinematicBody2D
                 IsDashing = true;
                 DashTimer.Start((float)0.1);
             }
-            
+
             if (IsDashing)
             {
                 WasDashing = true;

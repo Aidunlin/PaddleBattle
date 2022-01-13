@@ -7,6 +7,7 @@ public class MenuManager : Control
     private DiscordManager _discordManager;
 
     [Signal] public delegate void MapSwitched();
+    [Signal] public delegate void PlayRequested();
     [Signal] public delegate void EndRequested();
 
     public MarginContainer MessageWrap;
@@ -32,8 +33,6 @@ public class MenuManager : Control
     public Button DoneButton;
 
     public VBoxContainer OptionsMenuNode;
-    public VBoxContainer FriendsList;
-    public Button RefreshButton;
     public Button BackButton;
     public Button LeaveButton;
 
@@ -41,6 +40,11 @@ public class MenuManager : Control
     public Label InviteName;
     public Button AcceptButton;
     public Button DeclineButton;
+
+    public MarginContainer SidebarMargin;
+    public VBoxContainer MembersList;
+    public VBoxContainer FriendsList;
+    public Button RefreshButton;
 
     [Export] public long InvitedBy = 0;
 
@@ -72,8 +76,6 @@ public class MenuManager : Control
         DoneButton = SettingsMenuNode.GetNode<Button>("Done");
 
         OptionsMenuNode = CenterMenuNode.GetNode<VBoxContainer>("Options");
-        FriendsList = OptionsMenuNode.GetNode<VBoxContainer>("FriendsWrap/Friends");
-        RefreshButton = OptionsMenuNode.GetNode<Button>("Refresh");
         BackButton = OptionsMenuNode.GetNode<Button>("Back");
         LeaveButton = OptionsMenuNode.GetNode<Button>("Leave");
 
@@ -81,6 +83,11 @@ public class MenuManager : Control
         InviteName = InviteWrap.GetNode<Label>("InviteView/Name");
         AcceptButton = InviteWrap.GetNode<Button>("InviteView/Accept");
         DeclineButton = InviteWrap.GetNode<Button>("InviteView/Decline");
+
+        SidebarMargin = GetNode<MarginContainer>("SidebarMargin");
+        MembersList = SidebarMargin.GetNode<VBoxContainer>("Sidebar/MembersScroll/Members");
+        FriendsList = SidebarMargin.GetNode<VBoxContainer>("Sidebar/FriendsScroll/Friends");
+        RefreshButton = SidebarMargin.GetNode<Button>("Sidebar/Refresh");
 
         _discordManager.Connect("InviteReceived", this, "ShowInvite");
 
@@ -90,18 +97,11 @@ public class MenuManager : Control
         Discord0Button.GrabFocus();
 
         MainMenuNode.Hide();
-        PlayButton.Connect("pressed", _discordManager, "CreateLobby");
+        PlayButton.Connect("pressed", this, "RequestPlay");
         SettingsButton.Connect("pressed", this, "ToggleSettings");
         QuitButton.Connect("pressed", GetTree(), "quit");
         VersionNode.Text = Game.Version;
 
-        Dictionary<string, object> options = _game.LoadOptionsFromFile();
-        OS.VsyncEnabled = (bool)options["Vsync"];
-        VsyncButton.Pressed = OS.VsyncEnabled;
-        OS.WindowFullscreen = (bool)options["Fullscreen"];
-        FullscreenButton.Pressed = OS.WindowFullscreen;
-        MapButton.Text = (string)options["Map"];
-        
         SettingsMenuNode.Hide();
         VsyncButton.Connect("pressed", this, "ToggleVsync");
         FullscreenButton.Connect("pressed", this, "ToggleFullscreen");
@@ -109,23 +109,32 @@ public class MenuManager : Control
         DoneButton.Connect("pressed", this, "ToggleSettings");
 
         OptionsMenuNode.Hide();
-        RefreshButton.Connect("pressed", this, "UpdateFriends");
-        RefreshButton.FocusNeighbourBottom = BackButton.GetPath();
         BackButton.Connect("pressed", this, "HideOptions");
-        BackButton.FocusNeighbourTop = RefreshButton.GetPath();
-        BackButton.FocusNeighbourBottom = LeaveButton.GetPath();
         LeaveButton.Connect("pressed", this, "RequestEnd");
-        LeaveButton.FocusNeighbourTop = BackButton.GetPath();
-        LeaveButton.FocusNeighbourBottom = LeaveButton.GetPath();
 
         InviteWrap.Hide();
         AcceptButton.Connect("pressed", this, "AcceptInvite");
         DeclineButton.Connect("pressed", this, "DeclineInvite");
+
+        SidebarMargin.Hide();
+        RefreshButton.Connect("pressed", this, "UpdateFriends");
+
+        Dictionary<string, object> options = _game.LoadOptionsFromFile();
+        OS.VsyncEnabled = (bool)options["Vsync"];
+        VsyncButton.Pressed = OS.VsyncEnabled;
+        OS.WindowFullscreen = (bool)options["Fullscreen"];
+        FullscreenButton.Pressed = OS.WindowFullscreen;
+        MapButton.Text = (string)options["Map"];
     }
-    
+
     public void SwitchMap()
     {
         EmitSignal("MapSwitched");
+    }
+
+    public void RequestPlay()
+    {
+        EmitSignal("PlayRequested");
     }
 
     public void RequestEnd()
@@ -144,6 +153,8 @@ public class MenuManager : Control
         NameLabel.Text = _game.Username;
         MainMenuNode.Show();
         PlayButton.GrabFocus();
+        SidebarMargin.Show();
+        UpdateFriends();
     }
 
     public void ToggleSettings()
@@ -204,6 +215,7 @@ public class MenuManager : Control
         if (!OptionsMenuNode.Visible)
         {
             OptionsMenuNode.Show();
+            SidebarMargin.Show();
 
             if (InvitedBy != 0)
             {
@@ -212,12 +224,14 @@ public class MenuManager : Control
 
             BackButton.GrabFocus();
             UpdateFriends();
+            UpdateMembers();
         }
     }
 
     public void HideOptions()
     {
         OptionsMenuNode.Hide();
+        SidebarMargin.Hide();
         InviteWrap.Hide();
     }
 
@@ -244,11 +258,32 @@ public class MenuManager : Control
         }
     }
 
+    public void UpdateMembers()
+    {
+        foreach (Node member in MembersList.GetChildren())
+        {
+            member.QueueFree();
+        }
+
+        foreach (Dictionary member in _discordManager.GetMembers())
+        {
+            Label memberLabel = new Label();
+            memberLabel.Text = (string)member["Username"];
+
+            if (_game.UserId.ToString() == (string)member["Id"])
+            {
+                memberLabel.Text += " (you)";
+            }
+
+            MembersList.AddChild(memberLabel);
+        }
+    }
+
     public void ShowInvite(string userId, string username)
     {
         InvitedBy = long.Parse(userId);
         InviteName.Text = "Invited by " + username;
-        
+
         if (!_game.IsPlaying || OptionsMenuNode.Visible)
         {
             InviteWrap.Show();
@@ -272,6 +307,7 @@ public class MenuManager : Control
     {
         MainMenuNode.Show();
         OptionsMenuNode.Hide();
+        SidebarMargin.Show();
         PlayButton.GrabFocus();
         AddMessage(msg);
     }

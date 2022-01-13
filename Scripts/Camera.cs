@@ -43,7 +43,7 @@ public class Camera : Camera2D
 
             Position = average;
         }
-        
+
         Zoom = Zoom.LinearInterpolate(newZoom, (float)0.05);
     }
 
