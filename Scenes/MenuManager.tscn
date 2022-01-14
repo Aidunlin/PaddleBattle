@@ -4,53 +4,78 @@
 [ext_resource path="res://Assets/Theme.tres" type="Theme" id=2]
 [ext_resource path="res://Assets/Icon.png" type="Texture" id=4]
 
-[node name="MenuManager" type="Control"]
+[node name="MenuManager" type="HBoxContainer"]
 anchor_right = 1.0
 anchor_bottom = 1.0
 theme = ExtResource( 2 )
 script = ExtResource( 1 )
 __meta__ = {
-"_edit_lock_": true,
-"_edit_use_anchors_": false
+"_edit_lock_": true
 }
 
-[node name="MessageWrap" type="MarginContainer" parent="."]
-margin_right = 416.0
-margin_bottom = 166.0
+[node name="LeftSideMargin" type="MarginContainer" parent="."]
+margin_right = 316.0
+margin_bottom = 720.0
+rect_min_size = Vector2( 316, 0 )
 custom_constants/margin_right = 8
 custom_constants/margin_top = 8
 custom_constants/margin_left = 8
 custom_constants/margin_bottom = 8
 __meta__ = {
-"_edit_lock_": true,
 "_edit_use_anchors_": false
 }
 
-[node name="MessageView" type="VBoxContainer" parent="MessageWrap"]
+[node name="LeftSide" type="VBoxContainer" parent="LeftSideMargin"]
 margin_left = 8.0
 margin_top = 8.0
-margin_right = 408.0
-margin_bottom = 158.0
-rect_min_size = Vector2( 400, 150 )
-custom_constants/separation = -8
-__meta__ = {
-"_edit_use_anchors_": false
-}
+margin_right = 308.0
+margin_bottom = 712.0
+
+[node name="MessagesScroll" type="ScrollContainer" parent="LeftSideMargin/LeftSide"]
+margin_right = 300.0
+margin_bottom = 563.0
+size_flags_vertical = 3
+
+[node name="Messages" type="VBoxContainer" parent="LeftSideMargin/LeftSide/MessagesScroll"]
+margin_right = 300.0
+size_flags_horizontal = 3
+
+[node name="Invite" type="VBoxContainer" parent="LeftSideMargin/LeftSide"]
+margin_top = 567.0
+margin_right = 300.0
+margin_bottom = 704.0
+
+[node name="Name" type="Label" parent="LeftSideMargin/LeftSide/Invite"]
+margin_right = 300.0
+margin_bottom = 43.0
+rect_min_size = Vector2( 300, 0 )
+size_flags_horizontal = 3
+text = "Invited by NO NAME"
+clip_text = true
+
+[node name="Accept" type="Button" parent="LeftSideMargin/LeftSide/Invite"]
+margin_top = 47.0
+margin_right = 300.0
+margin_bottom = 90.0
+text = "Accept"
+
+[node name="Decline" type="Button" parent="LeftSideMargin/LeftSide/Invite"]
+margin_top = 94.0
+margin_right = 300.0
+margin_bottom = 137.0
+text = "Decline"
 
 [node name="CenterMenu" type="CenterContainer" parent="."]
-anchor_right = 1.0
-anchor_bottom = 1.0
-mouse_filter = 1
-__meta__ = {
-"_edit_lock_": true,
-"_edit_use_anchors_": false
-}
+margin_left = 320.0
+margin_right = 960.0
+margin_bottom = 720.0
+size_flags_horizontal = 3
 
 [node name="Discord" type="VBoxContainer" parent="CenterMenu"]
 visible = false
-margin_left = 490.0
+margin_left = 170.0
 margin_top = 315.0
-margin_right = 790.0
+margin_right = 470.0
 margin_bottom = 405.0
 rect_min_size = Vector2( 300, 0 )
 
@@ -68,21 +93,21 @@ size_flags_horizontal = 3
 text = "Discord 1"
 
 [node name="Main" type="VBoxContainer" parent="CenterMenu"]
-margin_left = 490.0
+margin_left = 170.0
 margin_top = 221.0
-margin_right = 790.0
+margin_right = 470.0
 margin_bottom = 499.0
 rect_min_size = Vector2( 300, 0 )
 __meta__ = {
 "_edit_use_anchors_": false
 }
 
-[node name="TitleWrap" type="HBoxContainer" parent="CenterMenu/Main"]
+[node name="Title" type="HBoxContainer" parent="CenterMenu/Main"]
 margin_right = 300.0
 margin_bottom = 43.0
 alignment = 1
 
-[node name="Logo" type="TextureRect" parent="CenterMenu/Main/TitleWrap"]
+[node name="TextureRect" type="TextureRect" parent="CenterMenu/Main/Title"]
 margin_left = 50.0
 margin_right = 93.0
 margin_bottom = 43.0
@@ -91,7 +116,7 @@ texture = ExtResource( 4 )
 expand = true
 stretch_mode = 5
 
-[node name="Title" type="Label" parent="CenterMenu/Main/TitleWrap"]
+[node name="Label" type="Label" parent="CenterMenu/Main/Title"]
 margin_left = 97.0
 margin_right = 249.0
 margin_bottom = 43.0
@@ -136,10 +161,10 @@ align = 1
 
 [node name="Settings" type="VBoxContainer" parent="CenterMenu"]
 visible = false
-margin_left = 490.0
-margin_top = 240.0
-margin_right = 790.0
-margin_bottom = 479.0
+margin_left = 170.0
+margin_top = 244.0
+margin_right = 470.0
+margin_bottom = 475.0
 rect_min_size = Vector2( 300, 0 )
 
 [node name="Label" type="Label" parent="CenterMenu/Settings"]
@@ -167,23 +192,18 @@ margin_bottom = 184.0
 size_flags_horizontal = 3
 text = "BigMap"
 
-[node name="HSeparator" type="HSeparator" parent="CenterMenu/Settings"]
+[node name="Done" type="Button" parent="CenterMenu/Settings"]
 margin_top = 188.0
 margin_right = 300.0
-margin_bottom = 192.0
-
-[node name="Done" type="Button" parent="CenterMenu/Settings"]
-margin_top = 196.0
-margin_right = 300.0
-margin_bottom = 239.0
+margin_bottom = 231.0
 text = "Done"
 
 [node name="Options" type="VBoxContainer" parent="CenterMenu"]
 visible = false
-margin_left = 490.0
-margin_top = 112.0
-margin_right = 790.0
-margin_bottom = 608.0
+margin_left = 170.0
+margin_top = 291.0
+margin_right = 470.0
+margin_bottom = 428.0
 rect_min_size = Vector2( 300, 0 )
 
 [node name="Label" type="Label" parent="CenterMenu/Options"]
@@ -204,62 +224,20 @@ margin_right = 300.0
 margin_bottom = 496.0
 text = "Leave"
 
-[node name="InviteWrap" type="MarginContainer" parent="."]
-anchor_top = 1.0
-anchor_bottom = 1.0
-margin_top = -153.0
-margin_right = 316.0
+[node name="RightSideMargin" type="MarginContainer" parent="."]
+margin_left = 964.0
+margin_right = 1280.0
+margin_bottom = 720.0
+rect_min_size = Vector2( 316, 0 )
 custom_constants/margin_right = 8
 custom_constants/margin_top = 8
 custom_constants/margin_left = 8
 custom_constants/margin_bottom = 8
 __meta__ = {
-"_edit_lock_": true,
 "_edit_use_anchors_": false
 }
 
-[node name="InviteView" type="VBoxContainer" parent="InviteWrap"]
-margin_left = 8.0
-margin_top = 8.0
-margin_right = 308.0
-margin_bottom = 145.0
-rect_min_size = Vector2( 300, 0 )
-
-[node name="Name" type="Label" parent="InviteWrap/InviteView"]
-margin_right = 300.0
-margin_bottom = 43.0
-rect_min_size = Vector2( 300, 0 )
-size_flags_horizontal = 3
-text = "Invited by NO NAME"
-clip_text = true
-
-[node name="Accept" type="Button" parent="InviteWrap/InviteView"]
-margin_top = 47.0
-margin_right = 300.0
-margin_bottom = 90.0
-text = "Accept"
-
-[node name="Decline" type="Button" parent="InviteWrap/InviteView"]
-margin_top = 94.0
-margin_right = 300.0
-margin_bottom = 137.0
-text = "Decline"
-
-[node name="SidebarMargin" type="MarginContainer" parent="."]
-anchor_left = 1.0
-anchor_right = 1.0
-anchor_bottom = 1.0
-margin_left = -316.0
-custom_constants/margin_right = 8
-custom_constants/margin_top = 8
-custom_constants/margin_left = 8
-custom_constants/margin_bottom = 8
-__meta__ = {
-"_edit_lock_": true,
-"_edit_use_anchors_": false
-}
-
-[node name="Sidebar" type="VBoxContainer" parent="SidebarMargin"]
+[node name="RightSide" type="VBoxContainer" parent="RightSideMargin"]
 margin_left = 8.0
 margin_top = 8.0
 margin_right = 308.0
@@ -267,64 +245,47 @@ margin_bottom = 712.0
 size_flags_horizontal = 3
 size_flags_vertical = 3
 
-[node name="Label" type="Label" parent="SidebarMargin/Sidebar"]
+[node name="Label" type="Label" parent="RightSideMargin/RightSide"]
 margin_right = 300.0
 margin_bottom = 43.0
 text = "Lobby Members"
 align = 1
 
-[node name="HSeparator" type="HSeparator" parent="SidebarMargin/Sidebar"]
+[node name="MembersScroll" type="ScrollContainer" parent="RightSideMargin/RightSide"]
 margin_top = 47.0
 margin_right = 300.0
-margin_bottom = 51.0
-
-[node name="MembersScroll" type="ScrollContainer" parent="SidebarMargin/Sidebar"]
-margin_top = 55.0
-margin_right = 300.0
-margin_bottom = 322.0
-rect_min_size = Vector2( 300, 0 )
+margin_bottom = 326.0
 size_flags_vertical = 3
 follow_focus = true
 
-[node name="Members" type="VBoxContainer" parent="SidebarMargin/Sidebar/MembersScroll"]
+[node name="Members" type="VBoxContainer" parent="RightSideMargin/RightSide/MembersScroll"]
 margin_right = 300.0
-margin_bottom = 267.0
+margin_bottom = 279.0
 size_flags_horizontal = 3
 size_flags_vertical = 3
 
-[node name="HSeparator2" type="HSeparator" parent="SidebarMargin/Sidebar"]
-margin_top = 326.0
+[node name="Label2" type="Label" parent="RightSideMargin/RightSide"]
+margin_top = 330.0
 margin_right = 300.0
-margin_bottom = 330.0
-
-[node name="Label2" type="Label" parent="SidebarMargin/Sidebar"]
-margin_top = 334.0
-margin_right = 300.0
-margin_bottom = 377.0
+margin_bottom = 373.0
 text = "Invite Friends"
 align = 1
 
-[node name="Refresh" type="Button" parent="SidebarMargin/Sidebar"]
-margin_top = 381.0
+[node name="Refresh" type="Button" parent="RightSideMargin/RightSide"]
+margin_top = 377.0
 margin_right = 300.0
-margin_bottom = 424.0
+margin_bottom = 420.0
 text = "Refresh"
 
-[node name="HSeparator3" type="HSeparator" parent="SidebarMargin/Sidebar"]
-margin_top = 428.0
-margin_right = 300.0
-margin_bottom = 432.0
-
-[node name="FriendsScroll" type="ScrollContainer" parent="SidebarMargin/Sidebar"]
-margin_top = 436.0
+[node name="FriendsScroll" type="ScrollContainer" parent="RightSideMargin/RightSide"]
+margin_top = 424.0
 margin_right = 300.0
 margin_bottom = 704.0
-rect_min_size = Vector2( 300, 0 )
 size_flags_vertical = 3
 follow_focus = true
 
-[node name="Friends" type="VBoxContainer" parent="SidebarMargin/Sidebar/FriendsScroll"]
+[node name="Friends" type="VBoxContainer" parent="RightSideMargin/RightSide/FriendsScroll"]
 margin_right = 300.0
-margin_bottom = 268.0
+margin_bottom = 280.0
 size_flags_horizontal = 3
 size_flags_vertical = 3

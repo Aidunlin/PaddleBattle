@@ -70,12 +70,12 @@ public class Main : Node
 
     public void SwitchMap()
     {
-        _menuManager.MapButton.Text = _mapManager.Switch();
+        _menuManager.SettingsMapButton.Text = _mapManager.Switch();
     }
 
     public void HandleDiscordUserUpdate()
     {
-        if (!_game.IsPlaying && !_menuManager.MainMenuNode.Visible)
+        if (!_game.IsPlaying && !_menuManager.MainMenu.Visible)
         {
             _game.UserId = _discordManager.GetUserId();
             _game.Username = _discordManager.GetUsername();
@@ -156,8 +156,8 @@ public class Main : Node
         _ballManager.Spawns = _mapManager.GetBallSpawns();
         _ballManager.CreateBalls();
         _menuManager.AddMessage("Press A/Enter to join");
-        _menuManager.MainMenuNode.Hide();
-        _menuManager.SidebarMargin.Hide();
+        _menuManager.MainMenu.Hide();
+        _menuManager.RightSideMenu.Hide();
         _game.IsPlaying = true;
     }
 
