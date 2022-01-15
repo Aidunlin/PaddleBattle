@@ -28,11 +28,11 @@ public class Main : Node
         _menuManager = GetNode<MenuManager>("CanvasLayer/MenuManager");
 
         _discordManager.Connect("UserUpdated", this, "HandleDiscordUserUpdate");
-        // _discordManager.Connect("LobbyCreated", this, "CreateGame", new Array() { null });
-        _discordManager.Connect("LobbyUpdated", _menuManager, "UpdateMembers");
+        _discordManager.Connect("LobbyUpdated", this, "HandleDiscordLobbyUpdate");
         _discordManager.Connect("MemberConnected", this, "HandleDiscordConnect");
         _discordManager.Connect("MemberDisconnected", this, "HandleDiscordDisconnect");
         _discordManager.Connect("MessageReceived", this, "HandleDiscordMessage");
+        _discordManager.Connect("InviteReceived", _menuManager, "ShowInvite");
 
         _inputManager.Connect("CreatePaddleRequested", _paddleManager, "CreatePaddleFromInput");
         _inputManager.Connect("OptionsRequested", _menuManager, "ShowOptions");
@@ -43,7 +43,8 @@ public class Main : Node
 
         _menuManager.Connect("MapSwitched", this, "SwitchMap");
         _menuManager.Connect("PlayRequested", this, "CreateGame", new Array() { null });
-        _menuManager.Connect("EndRequested", this, "UnloadGame", new Array() { "You left the lobby" });
+        _menuManager.Connect("EndRequested", this, "EndGame");
+        _menuManager.Connect("LeaveRequested", this, "LeaveGame");
 
         if (!OS.IsDebugBuild())
         {
@@ -68,11 +69,6 @@ public class Main : Node
         }
     }
 
-    public void SwitchMap()
-    {
-        _menuManager.SettingsMapButton.Text = _mapManager.Switch();
-    }
-
     public void HandleDiscordUserUpdate()
     {
         if (!_game.IsPlaying && !_menuManager.MainMenu.Visible)
@@ -82,6 +78,33 @@ public class Main : Node
         }
 
         _menuManager.ShowUserAndMenu();
+    }
+
+    public void HandleDiscordLobbyUpdate()
+    {
+        _menuManager.UpdateMembers();
+        _menuManager.UpdateGameButtons();
+    }
+
+    public void HandleDiscordConnect(long id, string name)
+    {
+        HandleDiscordLobbyUpdate();
+        _menuManager.AddMessage(name + " connected");
+
+        if (_discordManager.IsLobbyOwner() && _game.IsPlaying)
+        {
+            Dictionary playData = new Dictionary();
+            playData.Add("Paddles", _paddleManager.GetPaddles());
+            playData.Add("Map", _game.MapName);
+            _discordManager.Send(id, playData, true);
+        }
+    }
+
+    public void HandleDiscordDisconnect(long id, string name)
+    {
+        HandleDiscordLobbyUpdate();
+        _paddleManager.RemovePaddles(id);
+        _menuManager.AddMessage(name + " disconnected");
     }
 
     public void HandleDiscordMessage(byte[] message)
@@ -108,44 +131,15 @@ public class Main : Node
         {
             _paddleManager.DamagePaddle((string)data["Paddle"]);
         }
-    }
-
-    public void HandleDiscordConnect(long id, string name)
-    {
-        _menuManager.AddMessage(name + " joined the lobby");
-
-        if (_discordManager.IsLobbyOwner())
+        else if (data.Contains("GameEnded"))
         {
-            Dictionary welcomeData = new Dictionary();
-            welcomeData.Add("Paddles", _paddleManager.GetPaddles());
-            welcomeData.Add("Map", _game.MapName);
-            _discordManager.Send(id, welcomeData, true);
-        }
-
-        _menuManager.UpdateMembers();
-    }
-
-    public void HandleDiscordDisconnect(long id, string name)
-    {
-        _paddleManager.RemovePaddles(id);
-        _menuManager.AddMessage(name + " left the lobby");
-        _menuManager.UpdateMembers();
-    }
-
-    public void JoinGame(Array paddles, string mapName)
-    {
-        CreateGame(mapName);
-
-        foreach (Dictionary paddle in paddles)
-        {
-            _paddleManager.CreatePaddle(paddle);
+            UnloadGame("The game ended");
         }
     }
 
-    public void CreateGame(string mapName = null)
+    public void SwitchMap()
     {
-        GD.Randomize();
-        LoadGame(mapName ?? _game.MapName, Color.FromHsv(GD.Randf(), 1, 1));
+        _menuManager.SettingsMapButton.Text = _mapManager.Switch();
     }
 
     public void LoadGame(string mapName, Color mapColor)
@@ -161,6 +155,30 @@ public class Main : Node
         _game.IsPlaying = true;
     }
 
+    public void CreateGame(string mapName)
+    {
+        GD.Randomize();
+        LoadGame(mapName ?? _game.MapName, Color.FromHsv(GD.Randf(), 1, 1));
+
+        if (_discordManager.IsLobbyOwner())
+        {
+            Dictionary playData = new Dictionary();
+            playData.Add("Paddles", _paddleManager.GetPaddles());
+            playData.Add("Map", _game.MapName);
+            _discordManager.SendAll(playData, true);
+        }
+    }
+
+    public void JoinGame(Array paddles, string mapName)
+    {
+        CreateGame(mapName);
+
+        foreach (Dictionary paddle in paddles)
+        {
+            _paddleManager.CreatePaddle(paddle);
+        }
+    }
+
     public void UpdateObjects(Array paddles, Array balls)
     {
         if (_game.IsPlaying)
@@ -171,10 +189,26 @@ public class Main : Node
         }
     }
 
+    public void EndGame()
+    {
+        if (_discordManager.IsLobbyOwner())
+        {
+            UnloadGame("You ended the game");
+            Dictionary endData = new Dictionary();
+            endData.Add("GameEnded", true);
+            _discordManager.SendAll(endData, true);
+        }
+    }
+
+    public void LeaveGame()
+    {
+        _discordManager.CreateLobby();
+        UnloadGame("You left the lobby");
+    }
+
     public void UnloadGame(string msg)
     {
         _game.Reset();
-        // _discordManager.LeaveLobby();
         _inputManager.Reset();
         _camera.Reset(Vector2.Zero);
         _mapManager.Reset();

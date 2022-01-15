@@ -9,6 +9,7 @@ public class MenuManager : Control
     [Signal] public delegate void MapSwitched();
     [Signal] public delegate void PlayRequested();
     [Signal] public delegate void EndRequested();
+    [Signal] public delegate void LeaveRequested();
 
     public VBoxContainer MessagesList;
     public VBoxContainer InviteMenu;
@@ -23,8 +24,6 @@ public class MenuManager : Control
     public Button Discord1Button;
 
     public VBoxContainer MainMenu;
-    public Label MainNameLabel;
-    public Button SettingsMapButton;
     public Button MainPlayButton;
     public Button MainSettingsButton;
     public Button MainQuitButton;
@@ -33,10 +32,12 @@ public class MenuManager : Control
     public VBoxContainer SettingsMenu;
     public CheckButton SettingsVsyncButton;
     public CheckButton SettingsFullscreenButton;
+    public Button SettingsMapButton;
     public Button SettingsDoneButton;
 
     public VBoxContainer OptionsMenu;
-    public Button OptionsBackButton;
+    public Button OptionsEndButton;
+    public Button OptionsCloseButton;
     public Button OptionsLeaveButton;
 
     public VBoxContainer RightSideMenu;
@@ -64,7 +65,6 @@ public class MenuManager : Control
         Discord1Button = DiscordMenu.GetNode<Button>("Discord1");
 
         MainMenu = CenterMenu.GetNode<VBoxContainer>("Main");
-        MainNameLabel = MainMenu.GetNode<Label>("Name");
         MainPlayButton = MainMenu.GetNode<Button>("Play");
         MainSettingsButton = MainMenu.GetNode<Button>("Settings");
         MainQuitButton = MainMenu.GetNode<Button>("Quit");
@@ -77,15 +77,14 @@ public class MenuManager : Control
         SettingsDoneButton = SettingsMenu.GetNode<Button>("Done");
 
         OptionsMenu = CenterMenu.GetNode<VBoxContainer>("Options");
-        OptionsBackButton = OptionsMenu.GetNode<Button>("Back");
+        OptionsEndButton = OptionsMenu.GetNode<Button>("End");
+        OptionsCloseButton = OptionsMenu.GetNode<Button>("Close");
         OptionsLeaveButton = OptionsMenu.GetNode<Button>("Leave");
 
         RightSideMenu = GetNode<VBoxContainer>("RightSideMargin/RightSide");
         MembersList = RightSideMenu.GetNode<VBoxContainer>("MembersScroll/Members");
         FriendsList = RightSideMenu.GetNode<VBoxContainer>("FriendsScroll/Friends");
         FriendsRefreshButton = RightSideMenu.GetNode<Button>("Refresh");
-
-        _discordManager.Connect("InviteReceived", this, "ShowInvite");
 
         InviteMenu.Hide();
         InviteAcceptButton.Connect("pressed", this, "AcceptInvite");
@@ -109,8 +108,9 @@ public class MenuManager : Control
         SettingsDoneButton.Connect("pressed", this, "ToggleSettings");
 
         OptionsMenu.Hide();
-        OptionsBackButton.Connect("pressed", this, "HideOptions");
-        OptionsLeaveButton.Connect("pressed", this, "RequestEnd");
+        OptionsEndButton.Connect("pressed", this, "RequestEnd");
+        OptionsCloseButton.Connect("pressed", this, "HideOptions");
+        OptionsLeaveButton.Connect("pressed", this, "RequestLeave");
 
         RightSideMenu.Hide();
         FriendsRefreshButton.Connect("pressed", this, "UpdateFriends");
@@ -138,6 +138,27 @@ public class MenuManager : Control
         EmitSignal("EndRequested");
     }
 
+    public void RequestLeave()
+    {
+        EmitSignal("LeaveRequested");
+    }
+
+    public void UpdateGameButtons()
+    {
+        if (_discordManager.IsLobbyOwner())
+        {
+            MainPlayButton.Show();
+            OptionsEndButton.Show();
+            OptionsLeaveButton.Hide();
+        }
+        else
+        {
+            MainPlayButton.Hide();
+            OptionsEndButton.Hide();
+            OptionsLeaveButton.Show();
+        }
+    }
+
     public void StartDiscord(string instance)
     {
         _discordManager.Start(instance);
@@ -146,7 +167,6 @@ public class MenuManager : Control
 
     public void ShowUserAndMenu()
     {
-        MainNameLabel.Text = _game.Username;
         MainMenu.Show();
         MainPlayButton.GrabFocus();
         RightSideMenu.Show();
@@ -211,7 +231,7 @@ public class MenuManager : Control
                 InviteMenu.Show();
             }
 
-            OptionsBackButton.GrabFocus();
+            OptionsCloseButton.GrabFocus();
             UpdateFriends();
             UpdateMembers();
         }
@@ -239,10 +259,18 @@ public class MenuManager : Control
 
         foreach (Dictionary friend in _discordManager.GetFriends())
         {
-            Button friendButton = new Button();
-            friendButton.Text = (string)friend["Username"];
-            friendButton.Connect("pressed", this, "FriendPressed", new Array() { friendButton, friend["Id"] });
-            FriendsList.AddChild(friendButton);
+            HBoxContainer hBox = new HBoxContainer();
+            FriendsList.AddChild(hBox);
+
+            Label usernameLabel = new Label();
+            usernameLabel.Text = (string)friend["Username"];
+            usernameLabel.SizeFlagsHorizontal = (int)SizeFlags.ExpandFill;
+            hBox.AddChild(usernameLabel);
+
+            Button inviteButton = new Button();
+            inviteButton.Text = "Invite";
+            inviteButton.Connect("pressed", this, "FriendPressed", new Array() { inviteButton, friend["Id"] });
+            hBox.AddChild(inviteButton);
         }
     }
 
@@ -255,7 +283,6 @@ public class MenuManager : Control
 
         Label youLabel = new Label();
         youLabel.Text = _game.Username + " (you)";
-        youLabel.Align = Label.AlignEnum.Center;
         MembersList.AddChild(youLabel);
 
         foreach (Dictionary member in _discordManager.GetMembers())
@@ -267,7 +294,6 @@ public class MenuManager : Control
             
             Label memberLabel = new Label();
             memberLabel.Text = (string)member["Username"];
-            memberLabel.Align = Label.AlignEnum.Center;
             MembersList.AddChild(memberLabel);
         }
     }

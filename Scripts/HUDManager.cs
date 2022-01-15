@@ -24,10 +24,13 @@ public class HUDManager : Control
         foreach (Dictionary paddle in paddles)
         {
             string paddleName = (string)paddle["Name"];
-            VBoxContainer hud = GetNode<VBoxContainer>(paddleName);
-            Vector2 paddlePos = (Vector2)paddle["Position"];
-            Vector2 offset = new Vector2(hud.RectSize.x / 2, 90);
-            hud.RectPosition = paddlePos - offset;
+            VBoxContainer hud = GetNodeOrNull<VBoxContainer>(paddleName);
+            if (hud != null)
+            {
+                Vector2 paddlePos = (Vector2)paddle["Position"];
+                Vector2 offset = new Vector2(hud.RectSize.x / 2, 90);
+                hud.RectPosition = paddlePos - offset;
+            }
         }
     }
 

@@ -5,7 +5,6 @@ using Godot.Collections;
 public class DiscordManager : Node
 {
     [Signal] public delegate void UserUpdated();
-    [Signal] public delegate void LobbyCreated();
     [Signal] public delegate void LobbyUpdated();
     [Signal] public delegate void MemberConnected();
     [Signal] public delegate void MemberDisconnected();
@@ -25,7 +24,6 @@ public class DiscordManager : Node
     private RelationshipManager _relationshipManager;
 
     [Export] public long DiscordId = 862090452361674762;
-    [Export] public long LobbyOwnerId = 0;
     [Export] public long CurrentLobbyId = 0;
     [Export] public bool IsRunning = false;
 
@@ -68,12 +66,7 @@ public class DiscordManager : Node
         _activityManager.OnActivityJoin += (secret) =>
         {
             GD.Print("Discord: User joined activity");
-            LeaveLobby(secret);
-        };
-
-        _activityManager.OnActivityJoinRequest += (ref User user) =>
-        {
-            GD.Print("Discord: ", user.Username, " requested to join");
+            JoinLobby(secret);
         };
 
         _activityManager.OnActivityInvite += (ActivityActionType type, ref User user, ref Activity activity) =>
@@ -102,7 +95,6 @@ public class DiscordManager : Node
                 {
                     GD.Print("Discord: ", user.Username, " connected");
                     EmitSignal("MemberConnected", userId, user.Username);
-                    EmitSignal("LobbyUpdated");
                     UpdateActivity();
                 }
                 else
@@ -114,18 +106,12 @@ public class DiscordManager : Node
 
         _lobbyManager.OnMemberDisconnect += (lobbyId, userId) =>
         {
-            if (userId == LobbyOwnerId)
-            {
-                LeaveLobby();
-            }
-
             _userManager.GetUser(userId, (Result result, ref User user) =>
             {
                 if (result == Result.Ok)
                 {
                     GD.Print("Discord: ", user.Username, " disconnected");
                     EmitSignal("MemberDisconnected", userId, user.Username);
-                    EmitSignal("LobbyUpdated");
                     UpdateActivity();
                 }
             });
@@ -143,18 +129,20 @@ public class DiscordManager : Node
             UpdateRelationships();
         };
 
-        // UpdateActivity(false);
         IsRunning = true;
         GD.Print("Discord: Instance connected");
-
         CreateLobby();
     }
 
     public void UpdateActivity()
     {
         Activity activity = new Activity();
-        activity.Secrets.Join = _lobbyManager.GetLobbyActivitySecret(CurrentLobbyId);
-        activity.Party.Id = CurrentLobbyId.ToString();
+
+        if (CurrentLobbyId != 0)
+        {
+            activity.Secrets.Join = _lobbyManager.GetLobbyActivitySecret(CurrentLobbyId);
+            activity.Party.Id = CurrentLobbyId.ToString();
+        }
 
         if (OS.IsDebugBuild())
         {
@@ -207,7 +195,7 @@ public class DiscordManager : Node
 
     public bool IsLobbyOwner()
     {
-        return GetLobbyOwnerId() == _userManager.GetCurrentUser().Id;
+        return GetLobbyOwnerId() == GetUserId();
     }
 
     public void Send(long userId, Dictionary data, bool reliable)
@@ -222,7 +210,10 @@ public class DiscordManager : Node
 
     public void SendOwner(Dictionary data, bool reliable)
     {
-        Send(GetLobbyOwnerId(), data, reliable);
+        if (!IsLobbyOwner())
+        {
+            Send(GetLobbyOwnerId(), data, reliable);
+        }
     }
 
     public void SendAll(Dictionary data, bool reliable)
@@ -239,17 +230,14 @@ public class DiscordManager : Node
     public void CreateLobby()
     {
         LobbyTransaction txn = _lobbyManager.GetLobbyCreateTransaction();
-        txn.SetType(LobbyType.Public);
 
         _lobbyManager.CreateLobby(txn, (Result result, ref Lobby lobby) =>
         {
             if (result == Result.Ok)
             {
                 CurrentLobbyId = lobby.Id;
-                LobbyOwnerId = lobby.OwnerId;
                 InitNetworking();
                 UpdateActivity();
-                EmitSignal("LobbyCreated");
                 EmitSignal("LobbyUpdated");
                 GD.Print("Discord: Lobby created");
             }
@@ -267,7 +255,6 @@ public class DiscordManager : Node
             if (result == Result.Ok)
             {
                 CurrentLobbyId = lobby.Id;
-                LobbyOwnerId = GetLobbyOwnerId();
                 InitNetworking();
                 UpdateActivity();
                 EmitSignal("LobbyUpdated");
@@ -278,36 +265,6 @@ public class DiscordManager : Node
                 GD.PrintErr("Discord: Failed to join lobby: ", result);
             }
         });
-    }
-
-    public void LeaveLobby(string leaveToJoinSecret = null)
-    {
-        if (CurrentLobbyId != 0)
-        {
-            _lobbyManager.DisconnectLobby(CurrentLobbyId, result =>
-            {
-                if (result == Result.Ok)
-                {
-                    CurrentLobbyId = 0;
-                    LobbyOwnerId = 0;
-                    UpdateActivity();
-                    GD.Print("Discord: Lobby left");
-
-                    if (leaveToJoinSecret == null)
-                    {
-                        CreateLobby();
-                    }
-                    else
-                    {
-                        JoinLobby(leaveToJoinSecret);
-                    }
-                }
-                else
-                {
-                    GD.PrintErr("Discord: Failed to leave lobby: ", result);
-                }
-            });
-        }
     }
 
     public void UpdateRelationships()
@@ -324,12 +281,12 @@ public class DiscordManager : Node
 
         Array friends = new Array();
 
-        for (int i = 0; i < _relationshipManager.Count(); i++)
+        for (uint i = 0; i < _relationshipManager.Count(); i++)
         {
-            Relationship rel = _relationshipManager.GetAt((uint)i);
+            User user = _relationshipManager.GetAt(i).User;
             Dictionary friend = new Dictionary();
-            friend.Add("Username", rel.User.Username);
-            friend.Add("Id", rel.User.Id.ToString());
+            friend.Add("Username", user.Username);
+            friend.Add("Id", user.Id.ToString());
             friends.Add(friend);
         }
 

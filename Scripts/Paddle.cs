@@ -5,7 +5,6 @@ public class Paddle : KinematicBody2D
 {
     private DiscordManager _discordManager;
 
-    [Signal] public delegate void Collided();
     [Signal] public delegate void Damaged();
 
     [Export] public bool IsSafe = true;
@@ -61,8 +60,6 @@ public class Paddle : KinematicBody2D
                 {
                     Velocity = Velocity.Bounce(collision.Normal);
                 }
-
-                EmitSignal("Collided");
             }
         }
     }

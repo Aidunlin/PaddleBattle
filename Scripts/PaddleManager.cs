@@ -155,31 +155,34 @@ public class PaddleManager : Node
     {
         if (!_game.IsPlaying) return;
 
-        for (int i = 0; i < newPaddles.Count; i++)
+        foreach (Dictionary paddle in newPaddles)
         {
-            Dictionary newPaddle = (Dictionary)newPaddles[i];
-            string paddleName = (string)newPaddle["Name"];
-            Paddle paddleNode = GetNode<Paddle>(paddleName);
-            bool paddleIsLocal = _game.UserId == long.Parse((string)newPaddle["Id"]);
-
-            if (_discordManager.IsLobbyOwner())
+            string paddleName = (string)paddle["Name"];
+            Paddle paddleNode = GetNodeOrNull<Paddle>(paddleName);
+            
+            if (paddleNode != null)
             {
-                if (paddleIsLocal)
+                bool paddleIsLocal = _game.UserId == long.Parse((string)paddle["Id"]);
+
+                if (_discordManager.IsLobbyOwner())
                 {
-                    SetPaddleInputs(paddleName, _inputManager.GetPaddleInputs(paddleNode));
+                    if (paddleIsLocal)
+                    {
+                        SetPaddleInputs(paddleName, _inputManager.GetPaddleInputs(paddleNode));
+                    }
                 }
-            }
-            else
-            {
-                paddleNode.Position = (Vector2)newPaddle["Position"];
-                paddleNode.Rotation = (float)newPaddle["Rotation"];
-
-                if (paddleIsLocal)
+                else
                 {
-                    Dictionary inputData = new Dictionary();
-                    inputData.Add("Paddle", paddleName);
-                    inputData.Add("Inputs", _inputManager.GetPaddleInputs(paddleNode));
-                    _discordManager.SendOwner(inputData, false);
+                    paddleNode.Position = (Vector2)paddle["Position"];
+                    paddleNode.Rotation = (float)paddle["Rotation"];
+
+                    if (paddleIsLocal)
+                    {
+                        Dictionary inputData = new Dictionary();
+                        inputData.Add("Paddle", paddleName);
+                        inputData.Add("Inputs", _inputManager.GetPaddleInputs(paddleNode));
+                        _discordManager.SendOwner(inputData, false);
+                    }
                 }
             }
         }
