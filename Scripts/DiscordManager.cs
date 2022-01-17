@@ -10,6 +10,7 @@ public class DiscordManager : Node
     [Signal] public delegate void MemberDisconnected();
     [Signal] public delegate void MessageReceived();
     [Signal] public delegate void InviteReceived();
+    [Signal] public delegate void RelationshipsRefreshed();
 
     public enum ChannelType
     {
@@ -66,7 +67,7 @@ public class DiscordManager : Node
         _activityManager.OnActivityJoin += (secret) =>
         {
             GD.Print("Discord: User joined activity");
-            JoinLobby(secret);
+            LeaveLobby(secret);
         };
 
         _activityManager.OnActivityInvite += (ActivityActionType type, ref User user, ref Activity activity) =>
@@ -119,14 +120,15 @@ public class DiscordManager : Node
 
         _relationshipManager.OnRefresh += () =>
         {
-            GD.Print("Discord: Relationships refreshed");
             UpdateRelationships();
+            GD.Print("Discord: Relationships refreshed");
+            EmitSignal("RelationshipsRefreshed");
         };
 
         _relationshipManager.OnRelationshipUpdate += (ref Relationship rel) =>
         {
-            GD.Print("Discord: Relationships updated");
             UpdateRelationships();
+            GD.Print("Discord: Relationships refreshed");
         };
 
         IsRunning = true;
@@ -267,6 +269,32 @@ public class DiscordManager : Node
         });
     }
 
+    public void LeaveLobby(string secretToJoin = null)
+    {
+        _lobbyManager.DisconnectLobby(CurrentLobbyId, result =>
+        {
+            if (result == Result.Ok)
+            {
+                CurrentLobbyId = 0;
+                UpdateActivity();
+                GD.Print("Discord: Lobby left");
+
+                if (secretToJoin == null)
+                {
+                    CreateLobby();
+                }
+                else
+                {
+                    JoinLobby(secretToJoin);
+                }
+            }
+            else
+            {
+                GD.PrintErr("Discord: Failed to leave lobby: ", result);
+            }
+        });
+    }
+
     public void UpdateRelationships()
     {
         _relationshipManager.Filter((ref Relationship rel) =>
@@ -277,8 +305,6 @@ public class DiscordManager : Node
 
     public Array GetFriends()
     {
-        UpdateRelationships();
-
         Array friends = new Array();
 
         for (uint i = 0; i < _relationshipManager.Count(); i++)

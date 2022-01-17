@@ -12,10 +12,6 @@ public class MenuManager : Control
     [Signal] public delegate void LeaveRequested();
 
     public VBoxContainer MessagesList;
-    public VBoxContainer InviteMenu;
-    public Label InviteNameLabel;
-    public Button InviteAcceptButton;
-    public Button InviteDeclineButton;
 
     public CenterContainer CenterMenu;
 
@@ -41,11 +37,11 @@ public class MenuManager : Control
     public Button OptionsLeaveButton;
 
     public VBoxContainer RightSideMenu;
+    public Label MembersLabel;
     public VBoxContainer MembersList;
+    public Label FriendsLabel;
     public VBoxContainer FriendsList;
     public Button FriendsRefreshButton;
-
-    [Export] public long InvitedBy = 0;
 
     public override void _Ready()
     {
@@ -53,10 +49,6 @@ public class MenuManager : Control
         _discordManager = GetNode<DiscordManager>("/root/DiscordManager");
 
         MessagesList = GetNode<VBoxContainer>("LeftSideMargin/LeftSide/MessagesScroll/Messages");
-        InviteMenu = GetNode<VBoxContainer>("LeftSideMargin/LeftSide/Invite");
-        InviteNameLabel = InviteMenu.GetNode<Label>("Name");
-        InviteAcceptButton = InviteMenu.GetNode<Button>("Accept");
-        InviteDeclineButton = InviteMenu.GetNode<Button>("Decline");
 
         CenterMenu = GetNode<CenterContainer>("CenterMenu");
 
@@ -82,13 +74,11 @@ public class MenuManager : Control
         OptionsLeaveButton = OptionsMenu.GetNode<Button>("Leave");
 
         RightSideMenu = GetNode<VBoxContainer>("RightSideMargin/RightSide");
+        MembersLabel = RightSideMenu.GetNode<Label>("MembersLabel");
         MembersList = RightSideMenu.GetNode<VBoxContainer>("MembersScroll/Members");
+        FriendsLabel = RightSideMenu.GetNode<Label>("FriendsLabel");
         FriendsList = RightSideMenu.GetNode<VBoxContainer>("FriendsScroll/Friends");
         FriendsRefreshButton = RightSideMenu.GetNode<Button>("Refresh");
-
-        InviteMenu.Hide();
-        InviteAcceptButton.Connect("pressed", this, "AcceptInvite");
-        InviteDeclineButton.Connect("pressed", this, "DeclineInvite");
 
         DiscordMenu.Show();
         Discord0Button.Connect("pressed", this, "StartDiscord", new Array() { "0" });
@@ -207,33 +197,52 @@ public class MenuManager : Control
 
     public void AddMessage(string msg = "")
     {
-        Label newMessage = new Label();
-        newMessage.Text = msg;
-        MessagesList.AddChild(newMessage);
-        MessagesList.MoveChild(newMessage, 0);
+        Label messageLabel = new Label();
+        messageLabel.Text = msg;
+        messageLabel.Autowrap = true;
+        MessagesList.AddChild(messageLabel);
+        MessagesList.MoveChild(messageLabel, 0);
 
         Timer messageTimer = new Timer();
-        newMessage.AddChild(messageTimer);
+        messageLabel.AddChild(messageTimer);
         messageTimer.OneShot = true;
-        messageTimer.Connect("timeout", newMessage, "queue_free");
+        messageTimer.Connect("timeout", messageLabel, "queue_free");
         messageTimer.Start(5);
+    }
+
+    public void AddInvite(string userId, string username)
+    {
+        HBoxContainer hBox = new HBoxContainer();
+        MessagesList.AddChild(hBox);
+        MessagesList.MoveChild(hBox, 0);
+        
+        Label messageLabel = new Label();
+        messageLabel.Text = "Invited by " + username;
+        messageLabel.Autowrap = true;
+        messageLabel.SizeFlagsHorizontal = (int)SizeFlags.ExpandFill;
+        hBox.AddChild(messageLabel);
+
+        Button acceptButton = new Button();
+        acceptButton.Text = "Accept";
+        acceptButton.Connect("pressed", this, "AcceptInvite", new Array { acceptButton, userId });
+        hBox.AddChild(acceptButton);
+
+        Timer messageTimer = new Timer();
+        hBox.AddChild(messageTimer);
+        messageTimer.OneShot = true;
+        messageTimer.Connect("timeout", hBox, "queue_free");
+        messageTimer.Start(10);
     }
 
     public void ShowOptions()
     {
         if (!OptionsMenu.Visible)
         {
-            OptionsMenu.Show();
-            RightSideMenu.Show();
-
-            if (InvitedBy != 0)
-            {
-                InviteMenu.Show();
-            }
-
-            OptionsCloseButton.GrabFocus();
             UpdateFriends();
             UpdateMembers();
+            OptionsMenu.Show();
+            RightSideMenu.Show();
+            OptionsCloseButton.GrabFocus();
         }
     }
 
@@ -241,23 +250,20 @@ public class MenuManager : Control
     {
         OptionsMenu.Hide();
         RightSideMenu.Hide();
-        InviteMenu.Hide();
-    }
-
-    public void FriendPressed(Button button, string id)
-    {
-        button.Disabled = true;
-        _discordManager.SendInvite(long.Parse(id));
     }
 
     public void UpdateFriends()
     {
-        foreach (Node friend in FriendsList.GetChildren())
+        foreach (Control friend in FriendsList.GetChildren())
         {
             friend.QueueFree();
         }
 
-        foreach (Dictionary friend in _discordManager.GetFriends())
+        Array friends = _discordManager.GetFriends();
+        int count = friends.Count;
+        FriendsLabel.Text = "Friends (" + count + " online)";
+
+        foreach (Dictionary friend in friends)
         {
             HBoxContainer hBox = new HBoxContainer();
             FriendsList.AddChild(hBox);
@@ -269,7 +275,7 @@ public class MenuManager : Control
 
             Button inviteButton = new Button();
             inviteButton.Text = "Invite";
-            inviteButton.Connect("pressed", this, "FriendPressed", new Array() { inviteButton, friend["Id"] });
+            inviteButton.Connect("pressed", this, "SendInvite", new Array() { inviteButton, friend["Id"] });
             hBox.AddChild(inviteButton);
         }
     }
@@ -285,7 +291,11 @@ public class MenuManager : Control
         youLabel.Text = _game.Username + " (you)";
         MembersList.AddChild(youLabel);
 
-        foreach (Dictionary member in _discordManager.GetMembers())
+        Array members = _discordManager.GetMembers();
+        int count = members.Count - 1;
+        MembersLabel.Text = "Lobby (" + count + " others)";
+
+        foreach (Dictionary member in members)
         {
             if (_game.UserId.ToString() == (string)member["Id"])
             {
@@ -298,28 +308,16 @@ public class MenuManager : Control
         }
     }
 
-    public void ShowInvite(string userId, string username)
+    public void SendInvite(Button button, string id)
     {
-        InvitedBy = long.Parse(userId);
-        InviteNameLabel.Text = "Invited by " + username;
-
-        if (!_game.IsPlaying || OptionsMenu.Visible)
-        {
-            InviteMenu.Show();
-        }
+        button.Disabled = true;
+        _discordManager.SendInvite(long.Parse(id));
     }
 
-    public void AcceptInvite()
+    public void AcceptInvite(Button button, string id)
     {
-        InviteMenu.Hide();
-        _discordManager.AcceptInvite(InvitedBy);
-        InvitedBy = 0;
-    }
-
-    public void DeclineInvite()
-    {
-        InviteMenu.Hide();
-        InvitedBy = 0;
+        button.Disabled = true;
+        _discordManager.AcceptInvite(long.Parse(id));
     }
 
     public void Reset(string msg)

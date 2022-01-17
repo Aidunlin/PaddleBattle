@@ -27,21 +27,18 @@ public class InputManager : Node
                 EmitSignal("CreatePaddleRequested", -1);
             }
 
+            if (Input.IsKeyPressed((int)KeyList.Escape))
+            {
+                EmitSignal("OptionsRequested");
+            }
+
             foreach (int pad in Input.GetConnectedJoypads())
             {
                 if (Input.IsJoyButtonPressed(pad, (int)JoystickList.Button0) && !InputListHasPad(pad))
                 {
                     EmitSignal("CreatePaddleRequested", pad);
                 }
-            }
 
-            if (Input.IsKeyPressed((int)KeyList.Escape) && UsedInputs.Contains(-1))
-            {
-                EmitSignal("OptionsRequested");
-            }
-
-            foreach (int pad in UsedInputs)
-            {
                 if (Input.IsJoyButtonPressed(pad, (int)JoystickList.Start))
                 {
                     EmitSignal("OptionsRequested");

@@ -14,9 +14,10 @@ __meta__ = {
 }
 
 [node name="LeftSideMargin" type="MarginContainer" parent="."]
-margin_right = 316.0
+margin_right = 416.0
 margin_bottom = 720.0
-rect_min_size = Vector2( 316, 0 )
+rect_min_size = Vector2( 416, 0 )
+size_flags_horizontal = 2
 custom_constants/margin_right = 8
 custom_constants/margin_top = 8
 custom_constants/margin_left = 8
@@ -28,60 +29,29 @@ __meta__ = {
 [node name="LeftSide" type="VBoxContainer" parent="LeftSideMargin"]
 margin_left = 8.0
 margin_top = 8.0
-margin_right = 308.0
+margin_right = 408.0
 margin_bottom = 712.0
 
 [node name="MessagesScroll" type="ScrollContainer" parent="LeftSideMargin/LeftSide"]
-margin_right = 300.0
-margin_bottom = 555.0
+margin_right = 400.0
+margin_bottom = 704.0
 size_flags_vertical = 3
 
 [node name="Messages" type="VBoxContainer" parent="LeftSideMargin/LeftSide/MessagesScroll"]
-margin_right = 300.0
+margin_right = 400.0
 size_flags_horizontal = 3
 custom_constants/separation = 0
 
-[node name="Invite" type="VBoxContainer" parent="LeftSideMargin/LeftSide"]
-margin_top = 559.0
-margin_right = 300.0
-margin_bottom = 704.0
-
-[node name="Name" type="Label" parent="LeftSideMargin/LeftSide/Invite"]
-margin_right = 300.0
-margin_bottom = 43.0
-rect_min_size = Vector2( 300, 0 )
-size_flags_horizontal = 3
-text = "Invited by NO NAME"
-clip_text = true
-
-[node name="HSeparator" type="HSeparator" parent="LeftSideMargin/LeftSide/Invite"]
-margin_top = 47.0
-margin_right = 300.0
-margin_bottom = 51.0
-
-[node name="Accept" type="Button" parent="LeftSideMargin/LeftSide/Invite"]
-margin_top = 55.0
-margin_right = 300.0
-margin_bottom = 98.0
-text = "Accept"
-
-[node name="Decline" type="Button" parent="LeftSideMargin/LeftSide/Invite"]
-margin_top = 102.0
-margin_right = 300.0
-margin_bottom = 145.0
-text = "Decline"
-
 [node name="CenterMenu" type="CenterContainer" parent="."]
-margin_left = 320.0
-margin_right = 960.0
+margin_left = 490.0
+margin_right = 790.0
 margin_bottom = 720.0
-size_flags_horizontal = 3
+size_flags_horizontal = 6
 
 [node name="Discord" type="VBoxContainer" parent="CenterMenu"]
 visible = false
-margin_left = 170.0
 margin_top = 315.0
-margin_right = 470.0
+margin_right = 300.0
 margin_bottom = 405.0
 rect_min_size = Vector2( 300, 0 )
 
@@ -99,9 +69,8 @@ size_flags_horizontal = 3
 text = "Discord 1"
 
 [node name="Main" type="VBoxContainer" parent="CenterMenu"]
-margin_left = 170.0
 margin_top = 240.0
-margin_right = 470.0
+margin_right = 300.0
 margin_bottom = 479.0
 rect_min_size = Vector2( 300, 0 )
 __meta__ = {
@@ -163,10 +132,9 @@ align = 1
 
 [node name="Settings" type="VBoxContainer" parent="CenterMenu"]
 visible = false
-margin_left = 170.0
-margin_top = 236.0
-margin_right = 470.0
-margin_bottom = 483.0
+margin_top = 240.0
+margin_right = 300.0
+margin_bottom = 479.0
 rect_min_size = Vector2( 300, 0 )
 
 [node name="Label" type="Label" parent="CenterMenu/Settings"]
@@ -208,10 +176,9 @@ text = "Done"
 
 [node name="Options" type="VBoxContainer" parent="CenterMenu"]
 visible = false
-margin_left = 170.0
-margin_top = 260.0
-margin_right = 470.0
-margin_bottom = 460.0
+margin_top = 264.0
+margin_right = 300.0
+margin_bottom = 456.0
 rect_min_size = Vector2( 300, 0 )
 
 [node name="Label" type="Label" parent="CenterMenu/Options"]
@@ -249,6 +216,7 @@ margin_left = 964.0
 margin_right = 1280.0
 margin_bottom = 720.0
 rect_min_size = Vector2( 316, 0 )
+size_flags_horizontal = 10
 custom_constants/margin_right = 8
 custom_constants/margin_top = 8
 custom_constants/margin_left = 8
@@ -265,7 +233,7 @@ margin_bottom = 712.0
 size_flags_horizontal = 3
 size_flags_vertical = 3
 
-[node name="Label" type="Label" parent="RightSideMargin/RightSide"]
+[node name="MembersLabel" type="Label" parent="RightSideMargin/RightSide"]
 margin_right = 300.0
 margin_bottom = 43.0
 text = "Lobby"
@@ -292,7 +260,7 @@ margin_bottom = 271.0
 size_flags_horizontal = 3
 size_flags_vertical = 3
 
-[node name="Label2" type="Label" parent="RightSideMargin/RightSide"]
+[node name="FriendsLabel" type="Label" parent="RightSideMargin/RightSide"]
 margin_top = 330.0
 margin_right = 300.0
 margin_bottom = 373.0

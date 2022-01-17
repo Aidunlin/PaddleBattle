@@ -32,7 +32,8 @@ public class Main : Node
         _discordManager.Connect("MemberConnected", this, "HandleDiscordConnect");
         _discordManager.Connect("MemberDisconnected", this, "HandleDiscordDisconnect");
         _discordManager.Connect("MessageReceived", this, "HandleDiscordMessage");
-        _discordManager.Connect("InviteReceived", _menuManager, "ShowInvite");
+        _discordManager.Connect("InviteReceived", _menuManager, "AddInvite");
+        _discordManager.Connect("RelationshipsRefreshed", _menuManager, "UpdateFriends");
 
         _inputManager.Connect("CreatePaddleRequested", _paddleManager, "CreatePaddleFromInput");
         _inputManager.Connect("OptionsRequested", _menuManager, "ShowOptions");
@@ -151,6 +152,7 @@ public class Main : Node
         _ballManager.CreateBalls();
         _menuManager.AddMessage("Press A/Enter to join");
         _menuManager.MainMenu.Hide();
+        _menuManager.SettingsMenu.Hide();
         _menuManager.RightSideMenu.Hide();
         _game.IsPlaying = true;
     }
@@ -202,7 +204,7 @@ public class Main : Node
 
     public void LeaveGame()
     {
-        _discordManager.CreateLobby();
+        _discordManager.LeaveLobby();
         UnloadGame("You left the lobby");
     }
 
