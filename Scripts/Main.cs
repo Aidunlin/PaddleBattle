@@ -140,7 +140,7 @@ public class Main : Node
 
     public void SwitchMap()
     {
-        _menuManager.SettingsMapButton.Text = _mapManager.Switch();
+        _menuManager.MatchMapButton.Text = _mapManager.Switch();
     }
 
     public void LoadGame(string mapName, Color mapColor)
@@ -152,7 +152,9 @@ public class Main : Node
         _ballManager.CreateBalls();
         _menuManager.AddMessage("Press A/Enter to join");
         _menuManager.MainMenu.Hide();
+        _menuManager.MatchMenu.Hide();
         _menuManager.SettingsMenu.Hide();
+        _menuManager.OptionsMenu.Hide();
         _menuManager.RightSideMenu.Hide();
         _game.IsPlaying = true;
     }

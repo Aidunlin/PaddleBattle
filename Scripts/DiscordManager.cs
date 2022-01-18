@@ -303,9 +303,14 @@ public class DiscordManager : Node
         });
     }
 
-    public Array GetFriends()
+    public int GetLobbySize()
     {
-        Array friends = new Array();
+        return (int)_lobbyManager.GetLobby(CurrentLobbyId).Capacity;
+    }
+
+    public Array<Dictionary> GetFriends()
+    {
+        Array<Dictionary> friends = new Array<Dictionary>();
 
         for (uint i = 0; i < _relationshipManager.Count(); i++)
         {
@@ -319,9 +324,9 @@ public class DiscordManager : Node
         return friends;
     }
 
-    public Array GetMembers()
+    public Array<Dictionary> GetMembers()
     {
-        Array members = new Array();
+        Array<Dictionary> members = new Array<Dictionary>();
 
         if (CurrentLobbyId != 0)
         {

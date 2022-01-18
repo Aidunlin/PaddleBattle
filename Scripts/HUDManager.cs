@@ -5,18 +5,11 @@ public class HUDManager : Control
 {
     public void CreateHUD(Dictionary data)
     {
-        VBoxContainer hud = new VBoxContainer();
-        hud.Name = (string)data["Name"];
-        hud.SizeFlagsHorizontal = (int)VBoxContainer.SizeFlags.ExpandFill;
-        hud.Modulate = (Color)data["Modulate"];
-        hud.Alignment = BoxContainer.AlignMode.Center;
-        hud.Set("custom_constants/separation", -8);
-        AddChild(hud);
-
         Label label = new Label();
+        label.Name = (string)data["Name"];
         label.Text = (string)data["Name"];
-        label.Align = Label.AlignEnum.Center;
-        hud.AddChild(label);
+        label.Modulate = (Color)data["Modulate"];
+        AddChild(label);
     }
 
     public void MoveHUDs(Array paddles)
@@ -24,26 +17,26 @@ public class HUDManager : Control
         foreach (Dictionary paddle in paddles)
         {
             string paddleName = (string)paddle["Name"];
-            VBoxContainer hud = GetNodeOrNull<VBoxContainer>(paddleName);
-            if (hud != null)
+            Label label = GetNodeOrNull<Label>(paddleName);
+            if (label != null)
             {
                 Vector2 paddlePos = (Vector2)paddle["Position"];
-                Vector2 offset = new Vector2(hud.RectSize.x / 2, 90);
-                hud.RectPosition = paddlePos - offset;
+                Vector2 offset = new Vector2(label.RectSize.x / 2, 90);
+                label.RectPosition = paddlePos - offset;
             }
         }
     }
 
-    public void RemoveHUD(string paddle)
+    public void RemoveHUD(string paddleName)
     {
-        GetNode(paddle).QueueFree();
+        GetNodeOrNull(paddleName)?.QueueFree();
     }
 
     public void Reset()
     {
-        foreach (VBoxContainer hud in GetChildren())
+        foreach (Label label in GetChildren())
         {
-            hud.QueueFree();
+            label.QueueFree();
         }
     }
 }

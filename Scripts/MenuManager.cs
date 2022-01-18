@@ -25,10 +25,14 @@ public class MenuManager : Control
     public Button MainQuitButton;
     public Label MainVersionLabel;
 
+    public VBoxContainer MatchMenu;
+    public Button MatchStartButton;
+    public Button MatchMapButton;
+    public Button MatchBackButton;
+
     public VBoxContainer SettingsMenu;
     public CheckButton SettingsVsyncButton;
     public CheckButton SettingsFullscreenButton;
-    public Button SettingsMapButton;
     public Button SettingsDoneButton;
 
     public VBoxContainer OptionsMenu;
@@ -62,10 +66,14 @@ public class MenuManager : Control
         MainQuitButton = MainMenu.GetNode<Button>("Quit");
         MainVersionLabel = MainMenu.GetNode<Label>("Version");
 
+        MatchMenu = CenterMenu.GetNode<VBoxContainer>("Match");
+        MatchStartButton = MatchMenu.GetNode<Button>("Start");
+        MatchMapButton = MatchMenu.GetNode<Button>("Map");
+        MatchBackButton = MatchMenu.GetNode<Button>("Back");
+
         SettingsMenu = CenterMenu.GetNode<VBoxContainer>("Settings");
         SettingsVsyncButton = SettingsMenu.GetNode<CheckButton>("Vsync");
         SettingsFullscreenButton = SettingsMenu.GetNode<CheckButton>("Fullscreen");
-        SettingsMapButton = SettingsMenu.GetNode<Button>("Map");
         SettingsDoneButton = SettingsMenu.GetNode<Button>("Done");
 
         OptionsMenu = CenterMenu.GetNode<VBoxContainer>("Options");
@@ -86,15 +94,19 @@ public class MenuManager : Control
         Discord0Button.GrabFocus();
 
         MainMenu.Hide();
-        MainPlayButton.Connect("pressed", this, "RequestPlay");
+        MainPlayButton.Connect("pressed", this, "ToggleMatchSettings");
         MainSettingsButton.Connect("pressed", this, "ToggleSettings");
         MainQuitButton.Connect("pressed", GetTree(), "quit");
         MainVersionLabel.Text = Game.Version;
 
+        MatchMenu.Hide();
+        MatchStartButton.Connect("pressed", this, "RequestPlay");
+        MatchMapButton.Connect("pressed", this, "SwitchMap");
+        MatchBackButton.Connect("pressed", this, "ToggleMatchSettings");
+
         SettingsMenu.Hide();
         SettingsVsyncButton.Connect("pressed", this, "ToggleVsync");
         SettingsFullscreenButton.Connect("pressed", this, "ToggleFullscreen");
-        SettingsMapButton.Connect("pressed", this, "SwitchMap");
         SettingsDoneButton.Connect("pressed", this, "ToggleSettings");
 
         OptionsMenu.Hide();
@@ -110,7 +122,7 @@ public class MenuManager : Control
         SettingsVsyncButton.Pressed = OS.VsyncEnabled;
         OS.WindowFullscreen = (bool)options["Fullscreen"];
         SettingsFullscreenButton.Pressed = OS.WindowFullscreen;
-        SettingsMapButton.Text = (string)options["Map"];
+        MatchMapButton.Text = (string)options["Map"];
     }
 
     public void SwitchMap()
@@ -163,6 +175,22 @@ public class MenuManager : Control
         AddMessage("Welcome!");
     }
 
+    public void ToggleMatchSettings()
+    {
+        if (MatchMenu.Visible)
+        {
+            MatchMenu.Visible = false;
+            MainMenu.Visible = true;
+            MainPlayButton.GrabFocus();
+        }
+        else
+        {
+            MatchMenu.Visible = true;
+            MainMenu.Visible = false;
+            MatchBackButton.GrabFocus();
+        }
+    }
+
     public void ToggleSettings()
     {
         if (SettingsMenu.Visible)
@@ -174,7 +202,6 @@ public class MenuManager : Control
             Dictionary<string, object> options = new Dictionary<string, object>();
             options.Add("Vsync", OS.VsyncEnabled);
             options.Add("Fullscreen", OS.WindowFullscreen);
-            options.Add("Map", _game.MapName);
             _game.SaveOptionsToFile(options);
         }
         else
@@ -259,9 +286,8 @@ public class MenuManager : Control
             friend.QueueFree();
         }
 
-        Array friends = _discordManager.GetFriends();
-        int count = friends.Count;
-        FriendsLabel.Text = "Friends (" + count + " online)";
+        Array<Dictionary> friends = _discordManager.GetFriends();
+        FriendsLabel.Text = "Friends (" + friends.Count + " online)";
 
         foreach (Dictionary friend in friends)
         {
@@ -287,24 +313,24 @@ public class MenuManager : Control
             member.QueueFree();
         }
 
-        Label youLabel = new Label();
-        youLabel.Text = _game.Username + " (you)";
-        MembersList.AddChild(youLabel);
-
-        Array members = _discordManager.GetMembers();
-        int count = members.Count - 1;
-        MembersLabel.Text = "Lobby (" + count + " others)";
+        Array<Dictionary> members = _discordManager.GetMembers();
+        MembersLabel.Text = "Lobby (" + members.Count + "/" + _discordManager.GetLobbySize() + ")";
 
         foreach (Dictionary member in members)
         {
-            if (_game.UserId.ToString() == (string)member["Id"])
-            {
-                continue;
-            }
-            
             Label memberLabel = new Label();
             memberLabel.Text = (string)member["Username"];
             MembersList.AddChild(memberLabel);
+
+            if ((string)member["Id"] == _game.UserId.ToString())
+            {
+                memberLabel.Text += " (you)";
+            }
+
+            if ((string)member["Id"] == _discordManager.GetLobbyOwnerId().ToString())
+            {
+                memberLabel.Text = "* " + memberLabel.Text;
+            }
         }
     }
 

@@ -130,11 +130,54 @@ margin_bottom = 239.0
 text = "NO VERSION"
 align = 1
 
+[node name="Match" type="VBoxContainer" parent="CenterMenu"]
+visible = false
+margin_top = 260.0
+margin_right = 300.0
+margin_bottom = 460.0
+rect_min_size = Vector2( 300, 0 )
+
+[node name="Label" type="Label" parent="CenterMenu/Match"]
+margin_right = 300.0
+margin_bottom = 43.0
+text = "Match"
+align = 1
+
+[node name="HSeparator" type="HSeparator" parent="CenterMenu/Match"]
+margin_top = 47.0
+margin_right = 300.0
+margin_bottom = 51.0
+
+[node name="Map" type="Button" parent="CenterMenu/Match"]
+margin_top = 55.0
+margin_right = 300.0
+margin_bottom = 98.0
+size_flags_horizontal = 3
+text = "BigMap"
+
+[node name="HSeparator2" type="HSeparator" parent="CenterMenu/Match"]
+margin_top = 102.0
+margin_right = 300.0
+margin_bottom = 106.0
+
+[node name="Start" type="Button" parent="CenterMenu/Match"]
+margin_top = 110.0
+margin_right = 300.0
+margin_bottom = 153.0
+text = "Start"
+
+[node name="Back" type="Button" parent="CenterMenu/Match"]
+margin_top = 157.0
+margin_right = 300.0
+margin_bottom = 200.0
+focus_neighbour_bottom = NodePath(".")
+text = "Back"
+
 [node name="Settings" type="VBoxContainer" parent="CenterMenu"]
 visible = false
-margin_top = 240.0
+margin_top = 260.0
 margin_right = 300.0
-margin_bottom = 479.0
+margin_bottom = 460.0
 rect_min_size = Vector2( 300, 0 )
 
 [node name="Label" type="Label" parent="CenterMenu/Settings"]
@@ -144,41 +187,39 @@ text = "Settings"
 align = 1
 
 [node name="HSeparator" type="HSeparator" parent="CenterMenu/Settings"]
-margin_top = 161.0
-margin_right = 300.0
-margin_bottom = 165.0
-
-[node name="Vsync" type="CheckButton" parent="CenterMenu/Settings"]
 margin_top = 47.0
 margin_right = 300.0
-margin_bottom = 90.0
+margin_bottom = 51.0
+
+[node name="Vsync" type="CheckButton" parent="CenterMenu/Settings"]
+margin_top = 55.0
+margin_right = 300.0
+margin_bottom = 98.0
 text = "Vsync"
 
 [node name="Fullscreen" type="CheckButton" parent="CenterMenu/Settings"]
-margin_top = 94.0
+margin_top = 102.0
 margin_right = 300.0
-margin_bottom = 137.0
+margin_bottom = 145.0
 text = "Fullscreen"
 
-[node name="Map" type="Button" parent="CenterMenu/Settings"]
-margin_top = 141.0
+[node name="HSeparator2" type="HSeparator" parent="CenterMenu/Settings"]
+margin_top = 149.0
 margin_right = 300.0
-margin_bottom = 184.0
-size_flags_horizontal = 3
-text = "BigMap"
+margin_bottom = 153.0
 
 [node name="Done" type="Button" parent="CenterMenu/Settings"]
-margin_top = 188.0
+margin_top = 157.0
 margin_right = 300.0
-margin_bottom = 231.0
+margin_bottom = 200.0
 focus_neighbour_bottom = NodePath(".")
 text = "Done"
 
 [node name="Options" type="VBoxContainer" parent="CenterMenu"]
 visible = false
-margin_top = 264.0
+margin_top = 260.0
 margin_right = 300.0
-margin_bottom = 456.0
+margin_bottom = 460.0
 rect_min_size = Vector2( 300, 0 )
 
 [node name="Label" type="Label" parent="CenterMenu/Options"]
@@ -196,19 +237,24 @@ margin_bottom = 145.0
 margin_top = 47.0
 margin_right = 300.0
 margin_bottom = 90.0
-text = "End"
+text = "End Game"
 
 [node name="Leave" type="Button" parent="CenterMenu/Options"]
 margin_top = 94.0
 margin_right = 300.0
 margin_bottom = 137.0
-focus_neighbour_bottom = NodePath(".")
-text = "Leave"
+text = "Leave Lobby"
+
+[node name="HSeparator2" type="HSeparator" parent="CenterMenu/Options"]
+margin_top = 137.0
+margin_right = 300.0
+margin_bottom = 141.0
 
 [node name="Close" type="Button" parent="CenterMenu/Options"]
 margin_top = 149.0
 margin_right = 300.0
 margin_bottom = 192.0
+focus_neighbour_bottom = NodePath(".")
 text = "Close"
 
 [node name="RightSideMargin" type="MarginContainer" parent="."]
