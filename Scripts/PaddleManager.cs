@@ -28,8 +28,8 @@ public class PaddleManager : Node
         if (!_inputManager.UsedInputs.Contains(pad))
         {
             Dictionary newPaddle = new Dictionary();
-            newPaddle.Add("Name", _game.Username);
-            newPaddle.Add("Id", _game.UserId.ToString());
+            newPaddle.Add("Name", _discordManager.GetUsername());
+            newPaddle.Add("Id", _discordManager.GetUserId().ToString());
             newPaddle.Add("Pad", pad);
             _inputManager.UsedInputs.Add(pad);
 
@@ -56,6 +56,18 @@ public class PaddleManager : Node
         {
             return defaultValue;
         }
+    }
+
+    public Color CalculateCrackOpacity(int paddleHealth, int maxHealth)
+    {
+        double crackOpacity = 1;
+        
+        if (paddleHealth != 1)
+        {
+            crackOpacity = (1.0 - (paddleHealth / (double)maxHealth)) * 0.7;
+        }
+
+        return new Color(1, 1, 1, (float)crackOpacity);
     }
 
     public void CreatePaddle(Dictionary newPaddle)
@@ -93,20 +105,10 @@ public class PaddleManager : Node
 
             if (paddleNode.Health < paddleNode.MaxHealth)
             {
-                double crackOpacity = 1.0 - (paddleNode.Health / (double)paddleNode.MaxHealth);
-                crackOpacity *= 0.7;
-
-                if (paddleNode.Health == 1)
-                {
-                    crackOpacity = 1;
-                }
-
-                paddleNode.GetNode<Sprite>("Crack").Modulate = new Color(1, 1, 1, (float)crackOpacity);
+                paddleNode.GetNode<Sprite>("Crack").Modulate = CalculateCrackOpacity(paddleNode.Health, paddleNode.MaxHealth);
             }
 
-            bool paddleIsLocal = _game.UserId == long.Parse(paddleNode.Id);
-
-            if (paddleIsLocal && newPaddle.Contains("Pad"))
+            if (_discordManager.GetUserId() == long.Parse(paddleNode.Id) && newPaddle.Contains("Pad"))
             {
                 _inputManager.InputList.Add(paddleNode.Name, paddleNode.Pad);
             }
@@ -162,7 +164,7 @@ public class PaddleManager : Node
             
             if (paddleNode != null)
             {
-                bool paddleIsLocal = _game.UserId == long.Parse((string)paddle["Id"]);
+                bool paddleIsLocal = _discordManager.GetUserId() == long.Parse((string)paddle["Id"]);
 
                 if (_discordManager.IsLobbyOwner())
                 {
@@ -209,15 +211,6 @@ public class PaddleManager : Node
     {
         Paddle paddleNode = GetNode<Paddle>(paddleName);
         paddleNode.Health -= 1;
-        double crackOpacity = 1.0 - (paddleNode.Health / (double)paddleNode.MaxHealth);
-        crackOpacity *= 0.7;
-
-        if (paddleNode.Health == 1)
-        {
-            crackOpacity = 1;
-        }
-
-        paddleNode.GetNode<Sprite>("Crack").Modulate = new Color(1, 1, 1, (float)crackOpacity);
 
         if (paddleNode.Health < 1)
         {
@@ -229,9 +222,10 @@ public class PaddleManager : Node
                 paddleNode.Rotation = ((Node2D)Spawns[paddleNode.GetIndex()]).Rotation;
             }
 
-            paddleNode.GetNode<Sprite>("Crack").Modulate = new Color(1, 1, 1, 0);
             paddleNode.Health = paddleNode.MaxHealth;
         }
+
+        paddleNode.GetNode<Sprite>("Crack").Modulate = CalculateCrackOpacity(paddleNode.Health, paddleNode.MaxHealth);
 
         if (_discordManager.IsLobbyOwner())
         {

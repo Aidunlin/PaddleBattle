@@ -8,16 +8,13 @@ public class Game : Node
     public const int MoveSpeed = 600;
 
     [Export] public bool IsPlaying = false;
-    [Export] public string MapName = "BigMap";
-    [Export] public string Username = "";
-    [Export] public long UserId = 0;
 
-    public Dictionary<string, object> LoadOptionsFromFile()
+    public Dictionary<string, object> LoadOptionsFromFile(string mapName)
     {
         Dictionary<string, object> options = new Dictionary<string, object>();
         options.Add("Vsync", OS.VsyncEnabled);
         options.Add("Fullscreen", OS.WindowFullscreen);
-        options.Add("Map", MapName);
+        options.Add("Map", mapName);
         File optionsFile = new File();
 
         if (optionsFile.FileExists("user://options.txt"))
@@ -36,7 +33,6 @@ public class Game : Node
             optionsFile.Close();
         }
 
-        MapName = (string)options["Map"];
         return options;
     }
 

@@ -12,12 +12,6 @@ public class DiscordManager : Node
     [Signal] public delegate void InviteReceived();
     [Signal] public delegate void RelationshipsRefreshed();
 
-    public enum ChannelType
-    {
-        Unreliable,
-        Reliable,
-    }
-
     private Discord.Discord _discord;
     private ActivityManager _activityManager;
     private LobbyManager _lobbyManager;
@@ -169,8 +163,8 @@ public class DiscordManager : Node
     public void InitNetworking()
     {
         _lobbyManager.ConnectNetwork(CurrentLobbyId);
-        _lobbyManager.OpenNetworkChannel(CurrentLobbyId, (byte)ChannelType.Unreliable, false);
-        _lobbyManager.OpenNetworkChannel(CurrentLobbyId, (byte)ChannelType.Reliable, true);
+        _lobbyManager.OpenNetworkChannel(CurrentLobbyId, 0, false);
+        _lobbyManager.OpenNetworkChannel(CurrentLobbyId, 1, true);
     }
 
     public string GetUsername()
@@ -200,31 +194,26 @@ public class DiscordManager : Node
         return GetLobbyOwnerId() == GetUserId();
     }
 
-    public void Send(long userId, Dictionary data, bool reliable)
+    public void Send(long userId, Dictionary data, bool isReliable)
     {
-        _lobbyManager.SendNetworkMessage(
-            CurrentLobbyId,
-            userId,
-            (byte)(reliable ? ChannelType.Reliable : ChannelType.Unreliable),
-            GD.Var2Bytes(data)
-        );
+        _lobbyManager.SendNetworkMessage(CurrentLobbyId, userId, (byte)(isReliable ? 1 : 0), GD.Var2Bytes(data));
     }
 
-    public void SendOwner(Dictionary data, bool reliable)
+    public void SendOwner(Dictionary data, bool isReliable)
     {
         if (!IsLobbyOwner())
         {
-            Send(GetLobbyOwnerId(), data, reliable);
+            Send(GetLobbyOwnerId(), data, isReliable);
         }
     }
 
-    public void SendAll(Dictionary data, bool reliable)
+    public void SendAll(Dictionary data, bool isReliable)
     {
         if (CurrentLobbyId != 0)
         {
             foreach (User user in _lobbyManager.GetMemberUsers(CurrentLobbyId))
             {
-                Send(user.Id, data, reliable);
+                Send(user.Id, data, isReliable);
             }
         }
     }

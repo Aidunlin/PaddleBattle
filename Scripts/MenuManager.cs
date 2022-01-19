@@ -117,7 +117,7 @@ public class MenuManager : Control
         RightSideMenu.Hide();
         FriendsRefreshButton.Connect("pressed", this, "UpdateFriends");
 
-        Dictionary<string, object> options = _game.LoadOptionsFromFile();
+        Dictionary<string, object> options = _game.LoadOptionsFromFile(MatchMapButton.Text);
         OS.VsyncEnabled = (bool)options["Vsync"];
         SettingsVsyncButton.Pressed = OS.VsyncEnabled;
         OS.WindowFullscreen = (bool)options["Fullscreen"];
@@ -222,7 +222,7 @@ public class MenuManager : Control
         OS.WindowFullscreen = !OS.WindowFullscreen;
     }
 
-    public void AddMessage(string msg = "")
+    public void AddMessage(string msg)
     {
         Label messageLabel = new Label();
         messageLabel.Text = msg;
@@ -322,7 +322,7 @@ public class MenuManager : Control
             memberLabel.Text = (string)member["Username"];
             MembersList.AddChild(memberLabel);
 
-            if ((string)member["Id"] == _game.UserId.ToString())
+            if ((string)member["Id"] == _discordManager.GetUserId().ToString())
             {
                 memberLabel.Text += " (you)";
             }

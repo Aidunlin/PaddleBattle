@@ -8,20 +8,40 @@ public class MapManager : Node
     [Export] public Array<Dictionary> Maps = new Array<Dictionary>();
     [Export] public Node2D Map = null;
     [Export] public Color MapColor = new Color();
+    [Export] public string MapName = "NO MAP";
 
     public override void _Ready()
     {
         _game = GetNode<Game>("/root/Game");
+        
+        GetMapsFromFile();
+    }
 
-        Dictionary bigMapDict = new Dictionary();
-        bigMapDict.Add("Name", "BigMap");
-        bigMapDict.Add("Scene", (PackedScene)GD.Load("res://Maps/BigMap.tscn"));
-        Maps.Add(bigMapDict);
+    public void GetMapsFromFile()
+    {
+        Directory directory = new Directory();
 
-        Dictionary smallMapDict = new Dictionary();
-        smallMapDict.Add("Name", "SmallMap");
-        smallMapDict.Add("Scene", (PackedScene)GD.Load("res://Maps/SmallMap.tscn"));
-        Maps.Add(smallMapDict);
+        if (directory.Open("res://Maps") == Error.Ok)
+        {
+            directory.ListDirBegin();
+            string fileName = directory.GetNext();
+
+            while (fileName != "")
+            {
+                if (!directory.CurrentIsDir() && fileName.EndsWith(".tscn"))
+                {
+                    string mapName = fileName.ReplaceN(".tscn", "");
+                    Dictionary map = new Dictionary();
+                    map.Add("Name", mapName);
+                    map.Add("Scene", GD.Load<PackedScene>("res://Maps/" + fileName));
+                    Maps.Add(map);
+                }
+
+                fileName = directory.GetNext();
+            }
+            
+            MapName = (string)Maps[0]["Name"];
+        }
     }
 
     public void LoadMap(string newMap, Color newColor)
@@ -46,7 +66,7 @@ public class MapManager : Node
 
         for (; mapIndex < Maps.Count; mapIndex++)
         {
-            if ((string)(Maps[mapIndex])["Name"] == _game.MapName)
+            if ((string)(Maps[mapIndex])["Name"] == MapName)
             {
                 break;
             }
@@ -60,7 +80,7 @@ public class MapManager : Node
         }
 
         string newMapName = (string)(Maps[newIndex])["Name"];
-        _game.MapName = newMapName;
+        MapName = newMapName;
         return newMapName;
     }
 

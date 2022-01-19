@@ -27,7 +27,7 @@ public class Main : Node
         _hudManager = GetNode<HUDManager>("HUDManager");
         _menuManager = GetNode<MenuManager>("CanvasLayer/MenuManager");
 
-        _discordManager.Connect("UserUpdated", this, "HandleDiscordUserUpdate");
+        _discordManager.Connect("UserUpdated", _menuManager, "ShowUserAndMenu");
         _discordManager.Connect("LobbyUpdated", this, "HandleDiscordLobbyUpdate");
         _discordManager.Connect("MemberConnected", this, "HandleDiscordConnect");
         _discordManager.Connect("MemberDisconnected", this, "HandleDiscordDisconnect");
@@ -70,17 +70,6 @@ public class Main : Node
         }
     }
 
-    public void HandleDiscordUserUpdate()
-    {
-        if (!_game.IsPlaying && !_menuManager.MainMenu.Visible)
-        {
-            _game.UserId = _discordManager.GetUserId();
-            _game.Username = _discordManager.GetUsername();
-        }
-
-        _menuManager.ShowUserAndMenu();
-    }
-
     public void HandleDiscordLobbyUpdate()
     {
         _menuManager.UpdateMembers();
@@ -96,7 +85,7 @@ public class Main : Node
         {
             Dictionary playData = new Dictionary();
             playData.Add("Paddles", _paddleManager.GetPaddles());
-            playData.Add("Map", _game.MapName);
+            playData.Add("Map", _mapManager.MapName);
             _discordManager.Send(id, playData, true);
         }
     }
@@ -162,13 +151,13 @@ public class Main : Node
     public void CreateGame(string mapName)
     {
         GD.Randomize();
-        LoadGame(mapName ?? _game.MapName, Color.FromHsv(GD.Randf(), 1, 1));
+        LoadGame(mapName ?? _mapManager.MapName, Color.FromHsv(GD.Randf(), 1, 1));
 
         if (_discordManager.IsLobbyOwner())
         {
             Dictionary playData = new Dictionary();
             playData.Add("Paddles", _paddleManager.GetPaddles());
-            playData.Add("Map", _game.MapName);
+            playData.Add("Map", _mapManager.MapName);
             _discordManager.SendAll(playData, true);
         }
     }
