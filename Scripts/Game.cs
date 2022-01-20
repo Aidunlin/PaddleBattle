@@ -9,39 +9,45 @@ public class Game : Node
 
     [Export] public bool IsPlaying = false;
 
-    public Dictionary<string, object> LoadOptionsFromFile(string mapName)
+    public Dictionary<string, object> LoadSettingsFromFile()
     {
-        Dictionary<string, object> options = new Dictionary<string, object>();
-        options.Add("Vsync", OS.VsyncEnabled);
-        options.Add("Fullscreen", OS.WindowFullscreen);
-        options.Add("Map", mapName);
-        File optionsFile = new File();
+        Dictionary<string, object> settings = new Dictionary<string, object>();
+        settings.Add("Vsync", OS.VsyncEnabled);
+        settings.Add("Fullscreen", OS.WindowFullscreen);
+        File settingsFile = new File();
 
-        if (optionsFile.FileExists("user://options.txt"))
+        if (settingsFile.Open("user://settings.txt", File.ModeFlags.Read) == Error.Ok)
         {
-            optionsFile.Open("user://options.txt", File.ModeFlags.Read);
-            Dictionary fileOptions = (Dictionary)JSON.Parse(optionsFile.GetLine()).Result;
-
-            foreach (var item in options)
+            JSONParseResult result = JSON.Parse(settingsFile.GetLine());
+            
+            if (result.Error == Error.Ok && result.Result.GetType() == typeof(Dictionary))
             {
-                if (fileOptions.Contains(item.Key))
+                Dictionary fileSettings = (Dictionary)result.Result;
+
+                foreach (var item in settings)
                 {
-                    options[item.Key] = fileOptions[item.Key];
+                    if (fileSettings.Contains(item.Key))
+                    {
+                        settings[item.Key] = fileSettings[item.Key];
+                    }
                 }
             }
 
-            optionsFile.Close();
+            settingsFile.Close();
         }
 
-        return options;
+        return settings;
     }
 
-    public void SaveOptionsToFile(Dictionary<string, object> options)
+    public void SaveSettingsToFile(Dictionary<string, object> settings)
     {
-        File optionsFile = new File();
-        optionsFile.Open("user://options.txt", File.ModeFlags.Write);
-        optionsFile.StoreLine(JSON.Print(options));
-        optionsFile.Close();
+        File settingsFile = new File();
+
+        if (settingsFile.Open("user://settings.txt", File.ModeFlags.Write) == Error.Ok)
+        {
+            settingsFile.StoreLine(JSON.Print(settings));
+            settingsFile.Close();
+        }
     }
 
     public void Reset()

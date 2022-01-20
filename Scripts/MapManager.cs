@@ -14,10 +14,10 @@ public class MapManager : Node
     {
         _game = GetNode<Game>("/root/Game");
         
-        GetMapsFromFile();
+        GetMapsFromFolder();
     }
 
-    public void GetMapsFromFile()
+    public void GetMapsFromFolder()
     {
         Directory directory = new Directory();
 

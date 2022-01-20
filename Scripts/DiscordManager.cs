@@ -52,6 +52,8 @@ public class DiscordManager : Node
             }
         });
 
+        _activityManager.RegisterCommand(OS.GetExecutablePath());
+
         _userManager.OnCurrentUserUpdate += () =>
         {
             GD.Print("Discord: User updated");
@@ -94,7 +96,7 @@ public class DiscordManager : Node
                 }
                 else
                 {
-                    GD.PrintErr("Discord: Failed to get user details");
+                    GD.PrintErr("Discord: Failed to get details of connected user");
                 }
             });
         };
@@ -108,6 +110,10 @@ public class DiscordManager : Node
                     GD.Print("Discord: ", user.Username, " disconnected");
                     EmitSignal("MemberDisconnected", userId, user.Username);
                     UpdateActivity();
+                }
+                else
+                {
+                    GD.PrintErr("Discord: Failed to get details of disconnected user");
                 }
             });
         };
@@ -196,7 +202,10 @@ public class DiscordManager : Node
 
     public void Send(long userId, Dictionary data, bool isReliable)
     {
-        _lobbyManager.SendNetworkMessage(CurrentLobbyId, userId, (byte)(isReliable ? 1 : 0), GD.Var2Bytes(data));
+        if (CurrentLobbyId != 0)
+        {
+            _lobbyManager.SendNetworkMessage(CurrentLobbyId, userId, (byte)(isReliable ? 1 : 0), GD.Var2Bytes(data));
+        }
     }
 
     public void SendOwner(Dictionary data, bool isReliable)
@@ -209,12 +218,9 @@ public class DiscordManager : Node
 
     public void SendAll(Dictionary data, bool isReliable)
     {
-        if (CurrentLobbyId != 0)
+        foreach (User user in _lobbyManager.GetMemberUsers(CurrentLobbyId))
         {
-            foreach (User user in _lobbyManager.GetMemberUsers(CurrentLobbyId))
-            {
-                Send(user.Id, data, isReliable);
-            }
+            Send(user.Id, data, isReliable);
         }
     }
 
@@ -265,7 +271,6 @@ public class DiscordManager : Node
             if (result == Result.Ok)
             {
                 CurrentLobbyId = 0;
-                UpdateActivity();
                 GD.Print("Discord: Lobby left");
 
                 if (secretToJoin == null)
@@ -292,7 +297,7 @@ public class DiscordManager : Node
         });
     }
 
-    public int GetLobbySize()
+    public int GetLobbyCapacity()
     {
         return (int)_lobbyManager.GetLobby(CurrentLobbyId).Capacity;
     }

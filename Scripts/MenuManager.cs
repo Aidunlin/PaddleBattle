@@ -38,12 +38,11 @@ public class MenuManager : Control
     public VBoxContainer OptionsMenu;
     public Button OptionsEndButton;
     public Button OptionsCloseButton;
-    public Button OptionsLeaveButton;
 
     public VBoxContainer RightSideMenu;
     public Label MembersLabel;
+    public Button MembersLeaveButton;
     public VBoxContainer MembersList;
-    public Label FriendsLabel;
     public VBoxContainer FriendsList;
     public Button FriendsRefreshButton;
 
@@ -79,14 +78,13 @@ public class MenuManager : Control
         OptionsMenu = CenterMenu.GetNode<VBoxContainer>("Options");
         OptionsEndButton = OptionsMenu.GetNode<Button>("End");
         OptionsCloseButton = OptionsMenu.GetNode<Button>("Close");
-        OptionsLeaveButton = OptionsMenu.GetNode<Button>("Leave");
 
         RightSideMenu = GetNode<VBoxContainer>("RightSideMargin/RightSide");
-        MembersLabel = RightSideMenu.GetNode<Label>("MembersLabel");
+        MembersLabel = RightSideMenu.GetNode<Label>("MembersTitleBar/MembersLabel");
+        MembersLeaveButton = RightSideMenu.GetNode<Button>("MembersTitleBar/Leave");
         MembersList = RightSideMenu.GetNode<VBoxContainer>("MembersScroll/Members");
-        FriendsLabel = RightSideMenu.GetNode<Label>("FriendsLabel");
+        FriendsRefreshButton = RightSideMenu.GetNode<Button>("FriendsTitleBar/Refresh");
         FriendsList = RightSideMenu.GetNode<VBoxContainer>("FriendsScroll/Friends");
-        FriendsRefreshButton = RightSideMenu.GetNode<Button>("Refresh");
 
         DiscordMenu.Show();
         Discord0Button.Connect("pressed", this, "StartDiscord", new Array() { "0" });
@@ -112,17 +110,16 @@ public class MenuManager : Control
         OptionsMenu.Hide();
         OptionsEndButton.Connect("pressed", this, "RequestEnd");
         OptionsCloseButton.Connect("pressed", this, "HideOptions");
-        OptionsLeaveButton.Connect("pressed", this, "RequestLeave");
 
         RightSideMenu.Hide();
+        MembersLeaveButton.Connect("pressed", this, "RequestLeave");
         FriendsRefreshButton.Connect("pressed", this, "UpdateFriends");
 
-        Dictionary<string, object> options = _game.LoadOptionsFromFile(MatchMapButton.Text);
-        OS.VsyncEnabled = (bool)options["Vsync"];
+        Dictionary<string, object> settings = _game.LoadSettingsFromFile();
+        OS.VsyncEnabled = (bool)settings["Vsync"];
         SettingsVsyncButton.Pressed = OS.VsyncEnabled;
-        OS.WindowFullscreen = (bool)options["Fullscreen"];
+        OS.WindowFullscreen = (bool)settings["Fullscreen"];
         SettingsFullscreenButton.Pressed = OS.WindowFullscreen;
-        MatchMapButton.Text = (string)options["Map"];
     }
 
     public void SwitchMap()
@@ -151,13 +148,11 @@ public class MenuManager : Control
         {
             MainPlayButton.Show();
             OptionsEndButton.Show();
-            OptionsLeaveButton.Hide();
         }
         else
         {
             MainPlayButton.Hide();
             OptionsEndButton.Hide();
-            OptionsLeaveButton.Show();
         }
     }
 
@@ -179,14 +174,14 @@ public class MenuManager : Control
     {
         if (MatchMenu.Visible)
         {
-            MatchMenu.Visible = false;
-            MainMenu.Visible = true;
+            MatchMenu.Hide();
+            MainMenu.Show();
             MainPlayButton.GrabFocus();
         }
         else
         {
-            MatchMenu.Visible = true;
-            MainMenu.Visible = false;
+            MatchMenu.Show();
+            MainMenu.Hide();
             MatchBackButton.GrabFocus();
         }
     }
@@ -195,19 +190,19 @@ public class MenuManager : Control
     {
         if (SettingsMenu.Visible)
         {
-            SettingsMenu.Visible = false;
-            MainMenu.Visible = true;
+            SettingsMenu.Hide();
+            MainMenu.Show();
             MainSettingsButton.GrabFocus();
 
-            Dictionary<string, object> options = new Dictionary<string, object>();
-            options.Add("Vsync", OS.VsyncEnabled);
-            options.Add("Fullscreen", OS.WindowFullscreen);
-            _game.SaveOptionsToFile(options);
+            Dictionary<string, object> settings = new Dictionary<string, object>();
+            settings.Add("Vsync", OS.VsyncEnabled);
+            settings.Add("Fullscreen", OS.WindowFullscreen);
+            _game.SaveSettingsToFile(settings);
         }
         else
         {
-            SettingsMenu.Visible = true;
-            MainMenu.Visible = false;
+            SettingsMenu.Show();
+            MainMenu.Hide();
             SettingsDoneButton.GrabFocus();
         }
     }
@@ -287,7 +282,6 @@ public class MenuManager : Control
         }
 
         Array<Dictionary> friends = _discordManager.GetFriends();
-        FriendsLabel.Text = "Friends (" + friends.Count + " online)";
 
         foreach (Dictionary friend in friends)
         {
@@ -314,7 +308,7 @@ public class MenuManager : Control
         }
 
         Array<Dictionary> members = _discordManager.GetMembers();
-        MembersLabel.Text = "Lobby (" + members.Count + "/" + _discordManager.GetLobbySize() + ")";
+        MembersLabel.Text = "Lobby (" + members.Count + "/" + _discordManager.GetLobbyCapacity() + ")";
 
         foreach (Dictionary member in members)
         {
