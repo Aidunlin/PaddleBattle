@@ -3,10 +3,10 @@ using Godot.Collections;
 
 public class MenuMain : VBoxContainer
 {
-    public Button PlayButton;
-    public Button SettingsButton;
-    public Button QuitButton;
-    public Label VersionLabel;
+    public Button PlayButton { get; set; }
+    public Button SettingsButton { get; set; }
+    public Button QuitButton { get; set; }
+    public Label VersionLabel { get; set; }
 
     public override void _Ready()
     {

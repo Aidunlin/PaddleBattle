@@ -7,7 +7,7 @@ public class Game : Node
     public const int MaxHealth = 3;
     public const int MoveSpeed = 600;
 
-    [Export] public bool IsPlaying = false;
+    [Export] public bool IsPlaying { get; set; } = false;
 
     public Dictionary<string, object> LoadSettingsFromFile()
     {

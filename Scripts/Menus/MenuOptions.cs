@@ -3,8 +3,8 @@ using Godot.Collections;
 
 public class MenuOptions : VBoxContainer
 {
-    public Button EndButton;
-    public Button CloseButton;
+    public Button EndButton { get; set; }
+    public Button CloseButton { get; set; }
 
     public override void _Ready()
     {

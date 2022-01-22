@@ -51,7 +51,6 @@ public class Main : Node
         {
             _menuManager.DiscordMenu.StartDiscord("0");
         }
-
     }
 
     public override void _PhysicsProcess(float delta)

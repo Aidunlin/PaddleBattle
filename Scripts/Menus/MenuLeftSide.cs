@@ -5,7 +5,7 @@ public class MenuLeftSide : VBoxContainer
 {
     private DiscordManager _discordManager;
 
-    public VBoxContainer MessagesList;
+    public VBoxContainer MessagesList { get; set; }
 
     public override void _Ready()
     {

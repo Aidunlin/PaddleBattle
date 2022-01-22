@@ -9,8 +9,8 @@ public class InputManager : Node
     [Signal] public delegate void CreatePaddleRequested();
     [Signal] public delegate void OptionsRequested();
 
-    [Export] public Dictionary<string, int> InputList = new Dictionary<string, int>();
-    [Export] public Array UsedInputs = new Array();
+    [Export] public Dictionary<string, int> InputList { get; set; } = new Dictionary<string, int>();
+    [Export] public Array UsedInputs { get; set; } = new Array();
 
     public override void _Ready()
     {

@@ -5,10 +5,22 @@ public class MapManager : Node
 {
     private Game _game;
 
-    [Export] public Array<Dictionary> Maps = new Array<Dictionary>();
-    [Export] public Node2D Map = null;
-    [Export] public Color MapColor = new Color();
-    [Export] public string MapName = "NO MAP";
+    [Export] public Array<Dictionary> Maps { get; set; } = new Array<Dictionary>();
+    [Export] public int SelectedMapIndex { get; set; } = 0;
+    [Export] public Node2D MapNode { get; set; } = null;
+
+    public string MapName {
+        get {
+            if (Maps.Count > SelectedMapIndex)
+            {
+                return (string)Maps[SelectedMapIndex]["Name"];
+            }
+            else
+            {
+                return "NO MAP";
+            }   
+        }
+    }
 
     public override void _Ready()
     {
@@ -39,22 +51,18 @@ public class MapManager : Node
 
                 fileName = directory.GetNext();
             }
-            
-            MapName = (string)Maps[0]["Name"];
         }
     }
 
     public void LoadMap(string newMap, Color newColor)
     {
-        MapColor = newColor;
-
         foreach (Dictionary map in Maps)
         {
             if (((string)map["Name"]).Equals(newMap))
             {
-                Map = ((PackedScene)map["Scene"]).Instance<Node2D>();
-                Map.Modulate = newColor;
-                AddChild(Map);
+                MapNode = ((PackedScene)map["Scene"]).Instance<Node2D>();
+                MapNode.Modulate = newColor;
+                AddChild(MapNode);
                 return;
             }
         }
@@ -62,49 +70,36 @@ public class MapManager : Node
 
     public string Switch()
     {
-        int mapIndex = 0;
-
-        for (; mapIndex < Maps.Count; mapIndex++)
+        if (SelectedMapIndex + 1 < Maps.Count)
         {
-            if ((string)(Maps[mapIndex])["Name"] == MapName)
-            {
-                break;
-            }
+            SelectedMapIndex++;
+        }
+        else
+        {
+            SelectedMapIndex = 0;
         }
 
-        int newIndex = 0;
-
-        if (mapIndex + 1 < Maps.Count)
-        {
-            newIndex = mapIndex + 1;
-        }
-
-        string newMapName = (string)(Maps[newIndex])["Name"];
-        MapName = newMapName;
-        return newMapName;
+        return MapName;
     }
 
     public Vector2 GetCameraSpawn()
     {
-        return Map.GetNode<Node2D>("CameraSpawn").Position;
+        return MapNode?.GetNode<Node2D>("CameraSpawn")?.Position ?? Vector2.Zero;
     }
 
     public Array GetPaddleSpawns()
     {
-        return Map.GetNode("PaddleSpawns").GetChildren();
+        return MapNode?.GetNode("PaddleSpawns")?.GetChildren();
     }
 
     public Array GetBallSpawns()
     {
-        return Map.GetNode("BallSpawns").GetChildren();
+        return MapNode?.GetNode("BallSpawns")?.GetChildren();
     }
 
     public void Reset()
     {
-        if (Map != null)
-        {
-            Map.QueueFree();
-            Map = null;
-        }
+        MapNode?.QueueFree();
+        MapNode = null;
     }
 }

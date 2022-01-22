@@ -5,9 +5,9 @@ public class BallManager : Node
 {
     private DiscordManager _discordManager;
 
-    public PackedScene BallScene = (PackedScene)GD.Load("res://Scenes/Ball.tscn");
+    public readonly PackedScene BallScene = (PackedScene)GD.Load("res://Scenes/Ball.tscn");
 
-    [Export] public Array Spawns = new Array();
+    [Export] public Array Spawns { get; set; } = new Array();
 
     public override void _Ready()
     {

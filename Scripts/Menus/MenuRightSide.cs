@@ -5,11 +5,11 @@ public class MenuRightSide : VBoxContainer
 {
     private DiscordManager _discordManager;
 
-    public Label MembersLabel;
-    public Button MembersLeaveButton;
-    public VBoxContainer MembersList;
-    public VBoxContainer FriendsList;
-    public Button FriendsRefreshButton;
+    public Label MembersLabel { get; set; }
+    public Button MembersLeaveButton { get; set; }
+    public VBoxContainer MembersList { get; set; }
+    public VBoxContainer FriendsList { get; set; }
+    public Button FriendsRefreshButton { get; set; }
 
     public override void _Ready()
     {

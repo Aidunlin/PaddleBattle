@@ -11,14 +11,14 @@ public class MenuManager : HBoxContainer
     [Signal] public delegate void EndRequested();
     [Signal] public delegate void LeaveRequested();
 
-    public MenuDiscord DiscordMenu;
-    public MenuMain MainMenu;
-    public MenuMatch MatchMenu;
-    public MenuSettings SettingsMenu;
-    public MenuOptions OptionsMenu;
+    public MenuDiscord DiscordMenu { get; set; }
+    public MenuMain MainMenu { get; set; }
+    public MenuMatch MatchMenu { get; set; }
+    public MenuSettings SettingsMenu { get; set; }
+    public MenuOptions OptionsMenu { get; set; }
 
-    public MenuLeftSide LeftSideMenu;
-    public MenuRightSide RightSideMenu;
+    public MenuLeftSide LeftSideMenu { get; set; }
+    public MenuRightSide RightSideMenu { get; set; }
 
     public override void _Ready()
     {

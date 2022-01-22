@@ -12,9 +12,9 @@ public class PaddleManager : Node
     [Signal] public delegate void PaddleDestroyed();
     [Signal] public delegate void PaddleRemoved();
 
-    public PackedScene PaddleScene = (PackedScene)GD.Load("res://Scenes/Paddle.tscn");
+    public readonly PackedScene PaddleScene = (PackedScene)GD.Load("res://Scenes/Paddle.tscn");
 
-    [Export] public Array Spawns = new Array();
+    [Export] public Array Spawns { get; set; } = new Array();
 
     public override void _Ready()
     {
@@ -61,7 +61,7 @@ public class PaddleManager : Node
     public Color CalculateCrackOpacity(int paddleHealth, int maxHealth)
     {
         double crackOpacity = 1;
-        
+
         if (paddleHealth != 1)
         {
             crackOpacity = (1.0 - (paddleHealth / (double)maxHealth)) * 0.7;
@@ -161,7 +161,7 @@ public class PaddleManager : Node
         {
             string paddleName = (string)paddle["Name"];
             Paddle paddleNode = GetNodeOrNull<Paddle>(paddleName);
-            
+
             if (paddleNode != null)
             {
                 bool paddleIsLocal = _discordManager.GetUserId() == long.Parse((string)paddle["Id"]);

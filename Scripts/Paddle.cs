@@ -7,23 +7,24 @@ public class Paddle : KinematicBody2D
 
     [Signal] public delegate void Damaged();
 
-    [Export] public bool IsSafe = true;
-    [Export] public bool IsDashing = false;
-    [Export] public bool WasDashing = false;
-    [Export] public bool CanDash = true;
-    [Export] public Vector2 Velocity = new Vector2();
-    [Export] public Vector2 InputVelocity = new Vector2();
-    [Export] public float InputRotation = 0;
+    [Export] public string Id { get; set; }
+    [Export] public int Pad { get; set; }
+    [Export] public int MaxHealth { get; set; }
+    [Export] public int Health { get; set; }
 
-    [Export] public string Id;
-    [Export] public int Pad;
-    [Export] public int MaxHealth;
-    [Export] public int Health;
+    [Export] public Vector2 Velocity { get; set; } = new Vector2();
+    [Export] public Vector2 InputVelocity { get; set; } = new Vector2();
+    [Export] public float InputRotation { get; set; } = 0;
 
-    public Area2D BackNode;
-    public Timer SafeTimer;
-    public Timer DashTimer;
-    public Timer DashResetTimer;
+    [Export] public bool IsSafe { get; set; } = true;
+    [Export] public bool IsDashing { get; set; } = false;
+    [Export] public bool WasDashing { get; set; } = false;
+    [Export] public bool CanDash { get; set; } = true;
+    
+    public Area2D BackNode { get; set; }
+    public Timer SafeTimer { get; set; }
+    public Timer DashTimer { get; set; }
+    public Timer DashResetTimer { get; set; }
 
     public override void _Ready()
     {

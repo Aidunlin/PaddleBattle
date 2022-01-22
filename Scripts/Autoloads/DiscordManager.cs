@@ -18,9 +18,8 @@ public class DiscordManager : Node
     private UserManager _userManager;
     private RelationshipManager _relationshipManager;
 
-    [Export] public long DiscordId = 862090452361674762;
-    [Export] public long CurrentLobbyId = 0;
-    [Export] public bool IsRunning = false;
+    [Export] public long CurrentLobbyId { get; set; } = 0;
+    [Export] public bool IsRunning { get; set; } = false;
 
     public override void _PhysicsProcess(float delta)
     {
@@ -34,7 +33,7 @@ public class DiscordManager : Node
     public void Start(string instance)
     {
         System.Environment.SetEnvironmentVariable("DISCORD_INSTANCE_ID", instance);
-        _discord = new Discord.Discord(DiscordId, (ulong)CreateFlags.Default);
+        _discord = new Discord.Discord(862090452361674762, (ulong)CreateFlags.Default);
         _userManager = _discord.GetUserManager();
         _activityManager = _discord.GetActivityManager();
         _lobbyManager = _discord.GetLobbyManager();

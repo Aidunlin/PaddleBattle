@@ -5,8 +5,8 @@ public class MenuDiscord : VBoxContainer
 {
     private DiscordManager _discordManager;
 
-    public Button Discord0Button;
-    public Button Discord1Button;
+    public Button Discord0Button { get; set; }
+    public Button Discord1Button { get; set; }
 
     public override void _Ready()
     {

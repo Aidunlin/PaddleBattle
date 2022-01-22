@@ -5,9 +5,9 @@ public class MenuSettings : VBoxContainer
 {
     private Game _game;
 
-    public CheckButton VsyncButton;
-    public CheckButton FullscreenButton;
-    public Button DoneButton;
+    public CheckButton VsyncButton { get; set; }
+    public CheckButton FullscreenButton { get; set; }
+    public Button DoneButton { get; set; }
 
     public override void _Ready()
     {
