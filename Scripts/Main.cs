@@ -32,13 +32,13 @@ public class Main : Node
         _discordManager.Connect("MemberConnected", this, "HandleDiscordConnect");
         _discordManager.Connect("MemberDisconnected", this, "HandleDiscordDisconnect");
         _discordManager.Connect("MessageReceived", this, "HandleDiscordMessage");
-        _discordManager.Connect("InviteReceived", _menuManager, "AddInvite");
-        _discordManager.Connect("RelationshipsRefreshed", _menuManager, "UpdateFriends");
+        _discordManager.Connect("InviteReceived", _menuManager.LeftSideMenu, "AddInvite");
+        _discordManager.Connect("RelationshipsRefreshed", _menuManager.RightSideMenu, "UpdateFriends");
 
         _inputManager.Connect("CreatePaddleRequested", _paddleManager, "CreatePaddleFromInput");
         _inputManager.Connect("OptionsRequested", _menuManager, "ShowOptions");
 
-        _paddleManager.Connect("PaddleDestroyed", _menuManager, "AddMessage");
+        _paddleManager.Connect("PaddleDestroyed", _menuManager.LeftSideMenu, "AddMessage");
         _paddleManager.Connect("PaddleCreated", _hudManager, "CreateHUD");
         _paddleManager.Connect("PaddleRemoved", _hudManager, "RemoveHUD");
 
@@ -49,8 +49,9 @@ public class Main : Node
 
         if (!OS.IsDebugBuild())
         {
-            _menuManager.StartDiscord("0");
+            _menuManager.DiscordMenu.StartDiscord("0");
         }
+
     }
 
     public override void _PhysicsProcess(float delta)
@@ -72,14 +73,14 @@ public class Main : Node
 
     public void HandleDiscordLobbyUpdate()
     {
-        _menuManager.UpdateMembers();
+        _menuManager.RightSideMenu.UpdateMembers();
         _menuManager.UpdateGameButtons();
     }
 
     public void HandleDiscordConnect(long id, string name)
     {
         HandleDiscordLobbyUpdate();
-        _menuManager.AddMessage(name + " connected");
+        _menuManager.LeftSideMenu.AddMessage(name + " connected");
 
         if (_discordManager.IsLobbyOwner() && _game.IsPlaying)
         {
@@ -94,7 +95,7 @@ public class Main : Node
     {
         HandleDiscordLobbyUpdate();
         _paddleManager.RemovePaddles(id);
-        _menuManager.AddMessage(name + " disconnected");
+        _menuManager.LeftSideMenu.AddMessage(name + " disconnected");
     }
 
     public void HandleDiscordMessage(byte[] message)
@@ -129,7 +130,7 @@ public class Main : Node
 
     public void SwitchMap()
     {
-        _menuManager.MatchMapButton.Text = _mapManager.Switch();
+        _menuManager.MatchMenu.MapButton.Text = _mapManager.Switch();
     }
 
     public void LoadGame(string mapName, Color mapColor)
@@ -139,7 +140,7 @@ public class Main : Node
         _paddleManager.Spawns = _mapManager.GetPaddleSpawns();
         _ballManager.Spawns = _mapManager.GetBallSpawns();
         _ballManager.CreateBalls();
-        _menuManager.AddMessage("Press A/Enter to join");
+        _menuManager.LeftSideMenu.AddMessage("Press A/Enter to join");
         _menuManager.MainMenu.Hide();
         _menuManager.MatchMenu.Hide();
         _menuManager.SettingsMenu.Hide();

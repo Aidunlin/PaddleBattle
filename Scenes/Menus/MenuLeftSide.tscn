@@ -1,0 +1,23 @@
+[gd_scene load_steps=3 format=2]
+
+[ext_resource path="res://Assets/Theme.tres" type="Theme" id=1]
+[ext_resource path="res://Scripts/Menus/MenuLeftSide.cs" type="Script" id=2]
+
+[node name="MenuLeftSide" type="VBoxContainer"]
+anchor_bottom = 1.0
+rect_min_size = Vector2( 400, 0 )
+theme = ExtResource( 1 )
+script = ExtResource( 2 )
+__meta__ = {
+"_edit_use_anchors_": false
+}
+
+[node name="MessagesScroll" type="ScrollContainer" parent="."]
+margin_right = 400.0
+margin_bottom = 720.0
+size_flags_vertical = 3
+
+[node name="Messages" type="VBoxContainer" parent="MessagesScroll"]
+margin_right = 400.0
+size_flags_horizontal = 3
+custom_constants/separation = 0

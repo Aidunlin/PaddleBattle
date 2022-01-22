@@ -202,7 +202,7 @@ public class DiscordManager : Node
 
     public void Send(long userId, Dictionary data, bool isReliable)
     {
-        if (CurrentLobbyId != 0)
+        if (CurrentLobbyId != 0 && userId != GetUserId())
         {
             _lobbyManager.SendNetworkMessage(CurrentLobbyId, userId, (byte)(isReliable ? 1 : 0), GD.Var2Bytes(data));
         }

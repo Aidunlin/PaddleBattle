@@ -21,7 +21,7 @@ public class MapManager : Node
     {
         Directory directory = new Directory();
 
-        if (directory.Open("res://Maps") == Error.Ok)
+        if (directory.Open("res://Scenes/Maps") == Error.Ok)
         {
             directory.ListDirBegin();
             string fileName = directory.GetNext();
@@ -33,7 +33,7 @@ public class MapManager : Node
                     string mapName = fileName.ReplaceN(".tscn", "");
                     Dictionary map = new Dictionary();
                     map.Add("Name", mapName);
-                    map.Add("Scene", GD.Load<PackedScene>("res://Maps/" + fileName));
+                    map.Add("Scene", GD.Load<PackedScene>("res://Scenes/Maps/" + fileName));
                     Maps.Add(map);
                 }
 
