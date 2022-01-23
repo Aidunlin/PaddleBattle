@@ -4,7 +4,6 @@ using Godot.Collections;
 public class InputManager : Node
 {
     private Game _game;
-    private DiscordManager _discordManager;
 
     [Signal] public delegate void CreatePaddleRequested();
     [Signal] public delegate void OptionsRequested();
@@ -15,7 +14,6 @@ public class InputManager : Node
     public override void _Ready()
     {
         _game = GetNode<Game>("/root/Game");
-        _discordManager = GetNode<DiscordManager>("/root/DiscordManager");
     }
 
     public override void _PhysicsProcess(float delta)

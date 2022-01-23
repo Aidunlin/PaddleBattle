@@ -40,6 +40,7 @@ public class PaddleManager : Node
             else
             {
                 var paddleData = new Dictionary();
+                paddleData.Add("NetworkMessage", "CreatePaddle");
                 paddleData.Add("PaddleData", newPaddle);
                 _discordManager.SendOwner(paddleData, true);
             }
@@ -119,6 +120,7 @@ public class PaddleManager : Node
             if (_discordManager.IsLobbyOwner())
             {
                 var paddleData = new Dictionary();
+                paddleData.Add("NetworkMessage", "CreatePaddle");
                 paddleData.Add("PaddleData", GetPaddleData(paddleNode));
                 _discordManager.SendAll(paddleData, true);
             }
@@ -181,6 +183,7 @@ public class PaddleManager : Node
                     if (paddleIsLocal)
                     {
                         var inputData = new Dictionary();
+                        inputData.Add("NetworkMessage", "SetPaddleInputs");
                         inputData.Add("Paddle", paddleName);
                         inputData.Add("Inputs", _inputManager.GetPaddleInputs(paddleNode));
                         _discordManager.SendOwner(inputData, false);
@@ -230,6 +233,7 @@ public class PaddleManager : Node
         if (_discordManager.IsLobbyOwner())
         {
             Dictionary paddleData = new Dictionary();
+            paddleData.Add("NetworkMessage", "DamagePaddle");
             paddleData.Add("Paddle", paddleName);
             _discordManager.SendAll(paddleData, true);
         }

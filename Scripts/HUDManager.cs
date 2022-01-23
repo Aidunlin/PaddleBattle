@@ -18,6 +18,7 @@ public class HUDManager : Control
         {
             var paddleName = (string)paddle["Name"];
             var label = GetNodeOrNull<Label>(paddleName);
+            
             if (label != null)
             {
                 var paddlePos = (Vector2)paddle["Position"];

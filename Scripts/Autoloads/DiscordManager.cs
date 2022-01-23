@@ -18,6 +18,8 @@ public class DiscordManager : Node
     private UserManager _userManager;
     private RelationshipManager _relationshipManager;
 
+    public const long AppId = 862090452361674762;
+
     [Export] public long CurrentLobbyId { get; set; } = 0;
     [Export] public bool IsRunning { get; set; } = false;
 
@@ -33,7 +35,7 @@ public class DiscordManager : Node
     public void Start(string instance)
     {
         System.Environment.SetEnvironmentVariable("DISCORD_INSTANCE_ID", instance);
-        _discord = new Discord.Discord(862090452361674762, (ulong)CreateFlags.Default);
+        _discord = new Discord.Discord(AppId, (ulong)CreateFlags.Default);
         _userManager = _discord.GetUserManager();
         _activityManager = _discord.GetActivityManager();
         _lobbyManager = _discord.GetLobbyManager();
@@ -290,9 +292,9 @@ public class DiscordManager : Node
 
     public void UpdateRelationships()
     {
-        _relationshipManager.Filter((ref Relationship rel) =>
+        _relationshipManager.Filter((ref Relationship relationship) =>
         {
-            return rel.Type == RelationshipType.Friend && rel.Presence.Status != Status.Offline;
+            return relationship.Type == RelationshipType.Friend && relationship.Presence.Status != Status.Offline;
         });
     }
 
@@ -307,10 +309,12 @@ public class DiscordManager : Node
 
         for (var i = 0; i < _relationshipManager.Count(); i++)
         {
-            var user = _relationshipManager.GetAt((uint)i).User;
+            var relationship = _relationshipManager.GetAt((uint)i);
+            var user = relationship.User;
             var friend = new Dictionary();
             friend.Add("Username", user.Username);
-            friend.Add("Id", user.Id.ToString());
+            friend.Add("UserId", user.Id.ToString());
+            friend.Add("IsPlaying", relationship.Presence.Activity.ApplicationId == AppId);
             friends.Add(friend);
         }
 
@@ -327,7 +331,7 @@ public class DiscordManager : Node
             {
                 var member = new Dictionary();
                 member.Add("Username", user.Username);
-                member.Add("Id", user.Id.ToString());
+                member.Add("UserId", user.Id.ToString());
                 members.Add(member);
             }
         }

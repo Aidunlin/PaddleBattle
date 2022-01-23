@@ -60,6 +60,7 @@ public class Main : Node
             if (_discordManager.IsLobbyOwner())
             {
                 var updateData = new Dictionary();
+                updateData.Add("NetworkMessage", "UpdateObjects");
                 updateData.Add("Paddles", _paddleManager.GetPaddles());
                 updateData.Add("Balls", _ballManager.GetBalls());
                 _discordManager.SendAll(updateData, false);
@@ -84,6 +85,7 @@ public class Main : Node
         if (_discordManager.IsLobbyOwner() && _game.IsPlaying)
         {
             var playData = new Dictionary();
+            playData.Add("NetworkMessage", "JoinGame");
             playData.Add("Paddles", _paddleManager.GetPaddles());
             playData.Add("Map", _mapManager.MapName);
             _discordManager.Send(id, playData, true);
@@ -100,30 +102,41 @@ public class Main : Node
     public void HandleDiscordMessage(byte[] message)
     {
         var data = (Dictionary)GD.Bytes2Var(message);
+        
+        if (!data.Contains("NetworkMessage"))
+        {
+            return;
+        }
 
-        if (data.Contains("Paddles") && data.Contains("Map"))
+        var messageType = (string)data["NetworkMessage"];
+
+        if (messageType == "JoinGame")
         {
             JoinGame((Array)data["Paddles"], (string)data["Map"]);
         }
-        else if (data.Contains("Paddles") && data.Contains("Balls"))
+        else if (messageType == "UpdateObjects")
         {
             UpdateObjects((Array)data["Paddles"], (Array)data["Balls"]);
         }
-        else if (data.Contains("PaddleData"))
+        else if (messageType == "CreatePaddle")
         {
             _paddleManager.CreatePaddle((Dictionary)data["PaddleData"]);
         }
-        else if (data.Contains("Paddle") && data.Contains("Inputs"))
+        else if (messageType == "SetPaddleInputs")
         {
             _paddleManager.SetPaddleInputs((string)data["Paddle"], (Dictionary)data["Inputs"]);
         }
-        else if (data.Contains("Paddle"))
+        else if (messageType == "DamagePaddle")
         {
             _paddleManager.DamagePaddle((string)data["Paddle"]);
         }
-        else if (data.Contains("GameEnded"))
+        else if (messageType == "UnloadGame")
         {
             UnloadGame("The game ended");
+        }
+        else
+        {
+            GD.PrintErr("Main: Unknown network message type: ", messageType);
         }
     }
 
@@ -156,6 +169,7 @@ public class Main : Node
         if (_discordManager.IsLobbyOwner())
         {
             var playData = new Dictionary();
+            playData.Add("NetworkMessage", "JoinGame");
             playData.Add("Paddles", _paddleManager.GetPaddles());
             playData.Add("Map", _mapManager.MapName);
             _discordManager.SendAll(playData, true);
@@ -188,7 +202,7 @@ public class Main : Node
         {
             UnloadGame("You ended the game");
             var endData = new Dictionary();
-            endData.Add("GameEnded", true);
+            endData.Add("NetworkMessage", "UnloadGame");
             _discordManager.SendAll(endData, true);
         }
     }

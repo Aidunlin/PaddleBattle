@@ -40,12 +40,18 @@ public class MenuRightSide : VBoxContainer
 
             var usernameLabel = new Label();
             usernameLabel.Text = (string)friend["Username"];
+
             usernameLabel.SizeFlagsHorizontal = (int)SizeFlags.ExpandFill;
             hBox.AddChild(usernameLabel);
 
+            if ((bool)friend["IsPlaying"])
+            {
+                usernameLabel.Text = "* " + usernameLabel.Text;
+            }
+            
             var inviteButton = new Button();
             inviteButton.Text = "Invite";
-            inviteButton.Connect("pressed", this, "SendInvite", new Array() { inviteButton, friend["Id"] });
+            inviteButton.Connect("pressed", this, "SendInvite", new Array() { inviteButton, friend["UserId"] });
             hBox.AddChild(inviteButton);
         }
     }
@@ -66,12 +72,12 @@ public class MenuRightSide : VBoxContainer
             memberLabel.Text = (string)member["Username"];
             MembersList.AddChild(memberLabel);
 
-            if ((string)member["Id"] == _discordManager.GetUserId().ToString())
+            if ((string)member["UserId"] == _discordManager.GetUserId().ToString())
             {
                 memberLabel.Text += " (you)";
             }
 
-            if ((string)member["Id"] == _discordManager.GetLobbyOwnerId().ToString())
+            if ((string)member["UserId"] == _discordManager.GetLobbyOwnerId().ToString())
             {
                 memberLabel.Text = "* " + memberLabel.Text;
             }
