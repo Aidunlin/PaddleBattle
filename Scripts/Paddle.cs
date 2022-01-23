@@ -48,13 +48,13 @@ public class Paddle : KinematicBody2D
         {
             Velocity = Velocity.LinearInterpolate(InputVelocity, (float)0.06);
             Rotation += InputRotation;
-            KinematicCollision2D collision = MoveAndCollide(Velocity * delta, false);
+            var collision = MoveAndCollide(Velocity * delta, false);
 
             if (collision != null)
             {
                 if (((Node2D)collision.Collider).IsInGroup("balls"))
                 {
-                    int modifier = IsDashing ? 200 : 100;
+                    var modifier = IsDashing ? 200 : 100;
                     ((RigidBody2D)collision.Collider).ApplyCentralImpulse(-collision.Normal * modifier);
                 }
                 else

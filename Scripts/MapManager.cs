@@ -31,19 +31,19 @@ public class MapManager : Node
 
     public void GetMapsFromFolder()
     {
-        Directory directory = new Directory();
+        var directory = new Directory();
 
         if (directory.Open("res://Scenes/Maps") == Error.Ok)
         {
             directory.ListDirBegin();
-            string fileName = directory.GetNext();
+            var fileName = directory.GetNext();
 
             while (fileName != "")
             {
                 if (!directory.CurrentIsDir() && fileName.EndsWith(".tscn"))
                 {
-                    string mapName = fileName.ReplaceN(".tscn", "");
-                    Dictionary map = new Dictionary();
+                    var mapName = fileName.ReplaceN(".tscn", "");
+                    var map = new Dictionary();
                     map.Add("Name", mapName);
                     map.Add("Scene", GD.Load<PackedScene>("res://Scenes/Maps/" + fileName));
                     Maps.Add(map);

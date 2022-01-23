@@ -26,24 +26,24 @@ public class MenuRightSide : VBoxContainer
 
     public void UpdateFriends()
     {
-        foreach (Control friend in FriendsList.GetChildren())
+        foreach (Node friend in FriendsList.GetChildren())
         {
             friend.QueueFree();
         }
 
-        Array<Dictionary> friends = _discordManager.GetFriends();
+        var friends = _discordManager.GetFriends();
 
-        foreach (Dictionary friend in friends)
+        foreach (var friend in friends)
         {
-            HBoxContainer hBox = new HBoxContainer();
+            var hBox = new HBoxContainer();
             FriendsList.AddChild(hBox);
 
-            Label usernameLabel = new Label();
+            var usernameLabel = new Label();
             usernameLabel.Text = (string)friend["Username"];
             usernameLabel.SizeFlagsHorizontal = (int)SizeFlags.ExpandFill;
             hBox.AddChild(usernameLabel);
 
-            Button inviteButton = new Button();
+            var inviteButton = new Button();
             inviteButton.Text = "Invite";
             inviteButton.Connect("pressed", this, "SendInvite", new Array() { inviteButton, friend["Id"] });
             hBox.AddChild(inviteButton);
@@ -57,12 +57,12 @@ public class MenuRightSide : VBoxContainer
             member.QueueFree();
         }
 
-        Array<Dictionary> members = _discordManager.GetMembers();
+        var members = _discordManager.GetMembers();
         MembersLabel.Text = "Lobby (" + members.Count + "/" + _discordManager.GetLobbyCapacity() + ")";
 
-        foreach (Dictionary member in members)
+        foreach (var member in members)
         {
-            Label memberLabel = new Label();
+            var memberLabel = new Label();
             memberLabel.Text = (string)member["Username"];
             MembersList.AddChild(memberLabel);
 

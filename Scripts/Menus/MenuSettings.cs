@@ -20,7 +20,7 @@ public class MenuSettings : VBoxContainer
         VsyncButton.Connect("pressed", this, "ToggleVsync");
         FullscreenButton.Connect("pressed", this, "ToggleFullscreen");
 
-        Dictionary<string, object> settings = _game.LoadSettingsFromFile();
+        var settings = _game.LoadSettingsFromFile();
         OS.VsyncEnabled = (bool)settings["Vsync"];
         VsyncButton.Pressed = OS.VsyncEnabled;
         OS.WindowFullscreen = (bool)settings["Fullscreen"];

@@ -72,7 +72,7 @@ public class InputManager : Node
 
     public Dictionary GetPaddleInputs(Paddle paddleNode)
     {
-        Dictionary inputs = new Dictionary();
+        var inputs = new Dictionary();
         inputs.Add("Velocity", new Vector2());
         inputs.Add("Rotation", (float)0.0);
         inputs.Add("Dash", false);
@@ -82,7 +82,7 @@ public class InputManager : Node
             return inputs;
         }
 
-        int pad = InputList[paddleNode.Name];
+        var pad = InputList[paddleNode.Name];
 
         if (pad == -1)
         {
@@ -99,12 +99,12 @@ public class InputManager : Node
         }
         else
         {
-            Vector2 leftStick = new Vector2(
+            var leftStick = new Vector2(
                 GetAxis(pad, JoystickList.AnalogLx),
                 GetAxis(pad, JoystickList.AnalogLy)
             );
 
-            Vector2 rightStick = new Vector2(
+            var rightStick = new Vector2(
                 GetAxis(pad, JoystickList.AnalogRx),
                 GetAxis(pad, JoystickList.AnalogRy)
             );

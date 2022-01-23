@@ -27,7 +27,7 @@ public class PaddleManager : Node
     {
         if (!_inputManager.UsedInputs.Contains(pad))
         {
-            Dictionary newPaddle = new Dictionary();
+            var newPaddle = new Dictionary();
             newPaddle.Add("Name", _discordManager.GetUsername());
             newPaddle.Add("Id", _discordManager.GetUserId().ToString());
             newPaddle.Add("Pad", pad);
@@ -39,7 +39,7 @@ public class PaddleManager : Node
             }
             else
             {
-                Dictionary paddleData = new Dictionary();
+                var paddleData = new Dictionary();
                 paddleData.Add("PaddleData", newPaddle);
                 _discordManager.SendOwner(paddleData, true);
             }
@@ -60,7 +60,7 @@ public class PaddleManager : Node
 
     public Color CalculateCrackOpacity(int paddleHealth, int maxHealth)
     {
-        double crackOpacity = 1;
+        var crackOpacity = 1.0;
 
         if (paddleHealth != 1)
         {
@@ -72,12 +72,12 @@ public class PaddleManager : Node
 
     public void CreatePaddle(Dictionary newPaddle)
     {
-        int paddleCount = GetChildCount();
+        var paddleCount = GetChildCount();
 
         if (paddleCount < Spawns.Count)
         {
-            Paddle paddleNode = PaddleScene.Instance<Paddle>();
-            int nameCount = 1;
+            var paddleNode = PaddleScene.Instance<Paddle>();
+            var nameCount = 1;
 
             foreach (Paddle paddle in GetChildren())
             {
@@ -87,7 +87,7 @@ public class PaddleManager : Node
                 }
             }
 
-            string newName = (string)newPaddle["Name"];
+            var newName = (string)newPaddle["Name"];
 
             if (nameCount > 1)
             {
@@ -118,7 +118,7 @@ public class PaddleManager : Node
 
             if (_discordManager.IsLobbyOwner())
             {
-                Dictionary paddleData = new Dictionary();
+                var paddleData = new Dictionary();
                 paddleData.Add("PaddleData", GetPaddleData(paddleNode));
                 _discordManager.SendAll(paddleData, true);
             }
@@ -129,7 +129,7 @@ public class PaddleManager : Node
 
     public Dictionary GetPaddleData(Paddle paddle)
     {
-        Dictionary paddleDict = new Dictionary();
+        var paddleDict = new Dictionary();
         paddleDict["Id"] = paddle.Id;
         paddleDict["Name"] = paddle.Name;
         paddleDict["Pad"] = paddle.Pad;
@@ -143,7 +143,7 @@ public class PaddleManager : Node
 
     public Array GetPaddles()
     {
-        Array paddles = new Array();
+        var paddles = new Array();
 
         foreach (Paddle paddle in GetChildren())
         {
@@ -159,12 +159,12 @@ public class PaddleManager : Node
 
         foreach (Dictionary paddle in newPaddles)
         {
-            string paddleName = (string)paddle["Name"];
-            Paddle paddleNode = GetNodeOrNull<Paddle>(paddleName);
+            var paddleName = (string)paddle["Name"];
+            var paddleNode = GetNodeOrNull<Paddle>(paddleName);
 
             if (paddleNode != null)
             {
-                bool paddleIsLocal = _discordManager.GetUserId() == long.Parse((string)paddle["Id"]);
+                var paddleIsLocal = _discordManager.GetUserId() == long.Parse((string)paddle["Id"]);
 
                 if (_discordManager.IsLobbyOwner())
                 {
@@ -180,7 +180,7 @@ public class PaddleManager : Node
 
                     if (paddleIsLocal)
                     {
-                        Dictionary inputData = new Dictionary();
+                        var inputData = new Dictionary();
                         inputData.Add("Paddle", paddleName);
                         inputData.Add("Inputs", _inputManager.GetPaddleInputs(paddleNode));
                         _discordManager.SendOwner(inputData, false);
@@ -209,7 +209,7 @@ public class PaddleManager : Node
 
     public void DamagePaddle(string paddleName)
     {
-        Paddle paddleNode = GetNode<Paddle>(paddleName);
+        var paddleNode = GetNode<Paddle>(paddleName);
         paddleNode.Health -= 1;
 
         if (paddleNode.Health < 1)

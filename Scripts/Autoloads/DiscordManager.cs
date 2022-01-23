@@ -137,7 +137,7 @@ public class DiscordManager : Node
 
     public void UpdateActivity()
     {
-        Activity activity = new Activity();
+        var activity = new Activity();
 
         if (CurrentLobbyId != 0)
         {
@@ -217,7 +217,7 @@ public class DiscordManager : Node
 
     public void SendAll(Dictionary data, bool isReliable)
     {
-        foreach (User user in _lobbyManager.GetMemberUsers(CurrentLobbyId))
+        foreach (var user in _lobbyManager.GetMemberUsers(CurrentLobbyId))
         {
             Send(user.Id, data, isReliable);
         }
@@ -225,9 +225,9 @@ public class DiscordManager : Node
 
     public void CreateLobby()
     {
-        LobbyTransaction txn = _lobbyManager.GetLobbyCreateTransaction();
+        var transaction = _lobbyManager.GetLobbyCreateTransaction();
 
-        _lobbyManager.CreateLobby(txn, (Result result, ref Lobby lobby) =>
+        _lobbyManager.CreateLobby(transaction, (Result result, ref Lobby lobby) =>
         {
             if (result == Result.Ok)
             {
@@ -303,12 +303,12 @@ public class DiscordManager : Node
 
     public Array<Dictionary> GetFriends()
     {
-        Array<Dictionary> friends = new Array<Dictionary>();
+        var friends = new Array<Dictionary>();
 
-        for (uint i = 0; i < _relationshipManager.Count(); i++)
+        for (var i = 0; i < _relationshipManager.Count(); i++)
         {
-            User user = _relationshipManager.GetAt(i).User;
-            Dictionary friend = new Dictionary();
+            var user = _relationshipManager.GetAt((uint)i).User;
+            var friend = new Dictionary();
             friend.Add("Username", user.Username);
             friend.Add("Id", user.Id.ToString());
             friends.Add(friend);
@@ -319,13 +319,13 @@ public class DiscordManager : Node
 
     public Array<Dictionary> GetMembers()
     {
-        Array<Dictionary> members = new Array<Dictionary>();
+        var members = new Array<Dictionary>();
 
         if (CurrentLobbyId != 0)
         {
-            foreach (User user in _lobbyManager.GetMemberUsers(CurrentLobbyId))
+            foreach (var user in _lobbyManager.GetMemberUsers(CurrentLobbyId))
             {
-                Dictionary member = new Dictionary();
+                var member = new Dictionary();
                 member.Add("Username", user.Username);
                 member.Add("Id", user.Id.ToString());
                 members.Add(member);

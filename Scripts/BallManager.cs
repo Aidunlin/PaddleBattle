@@ -18,7 +18,7 @@ public class BallManager : Node
     {
         foreach (Node2D spawn in Spawns)
         {
-            RigidBody2D ballNode = BallScene.Instance<RigidBody2D>();
+            var ballNode = BallScene.Instance<RigidBody2D>();
             ballNode.Position = spawn.Position;
             AddChild(ballNode);
         }
@@ -26,7 +26,7 @@ public class BallManager : Node
 
     public Array GetBalls()
     {
-        Array balls = new Array();
+        var balls = new Array();
 
         foreach (RigidBody2D ball in GetChildren())
         {
@@ -38,11 +38,11 @@ public class BallManager : Node
 
     public void UpdateBalls(Array newBalls)
     {
-        int ballCount = GetChildCount();
+        var ballCount = GetChildCount();
 
-        for (int i = 0; i < ballCount; i++)
+        for (var i = 0; i < ballCount; i++)
         {
-            RigidBody2D ballNode = GetChildOrNull<RigidBody2D>(i);
+            var ballNode = GetChildOrNull<RigidBody2D>(i);
 
             if (ballNode != null)
             {
@@ -53,7 +53,7 @@ public class BallManager : Node
                     if (ballNode.Position.Length() > 4096)
                     {
                         ballNode.QueueFree();
-                        RigidBody2D newBallNode = BallScene.Instance<RigidBody2D>();
+                        var newBallNode = BallScene.Instance<RigidBody2D>();
                         newBallNode.Position = ((Node2D)Spawns[i]).Position;
                         AddChild(newBallNode);
                     }
@@ -69,7 +69,7 @@ public class BallManager : Node
 
     public void Reset()
     {
-        foreach (RigidBody2D ball in GetChildren())
+        foreach (Node ball in GetChildren())
         {
             ball.QueueFree();
         }

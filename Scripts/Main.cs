@@ -59,7 +59,7 @@ public class Main : Node
         {
             if (_discordManager.IsLobbyOwner())
             {
-                Dictionary updateData = new Dictionary();
+                var updateData = new Dictionary();
                 updateData.Add("Paddles", _paddleManager.GetPaddles());
                 updateData.Add("Balls", _ballManager.GetBalls());
                 _discordManager.SendAll(updateData, false);
@@ -83,7 +83,7 @@ public class Main : Node
 
         if (_discordManager.IsLobbyOwner() && _game.IsPlaying)
         {
-            Dictionary playData = new Dictionary();
+            var playData = new Dictionary();
             playData.Add("Paddles", _paddleManager.GetPaddles());
             playData.Add("Map", _mapManager.MapName);
             _discordManager.Send(id, playData, true);
@@ -99,7 +99,7 @@ public class Main : Node
 
     public void HandleDiscordMessage(byte[] message)
     {
-        Dictionary data = (Dictionary)GD.Bytes2Var(message);
+        var data = (Dictionary)GD.Bytes2Var(message);
 
         if (data.Contains("Paddles") && data.Contains("Map"))
         {
@@ -155,7 +155,7 @@ public class Main : Node
 
         if (_discordManager.IsLobbyOwner())
         {
-            Dictionary playData = new Dictionary();
+            var playData = new Dictionary();
             playData.Add("Paddles", _paddleManager.GetPaddles());
             playData.Add("Map", _mapManager.MapName);
             _discordManager.SendAll(playData, true);
@@ -166,9 +166,9 @@ public class Main : Node
     {
         CreateGame(mapName);
 
-        foreach (Dictionary paddle in paddles)
+        foreach (var paddle in paddles)
         {
-            _paddleManager.CreatePaddle(paddle);
+            _paddleManager.CreatePaddle((Dictionary)paddle);
         }
     }
 
@@ -187,7 +187,7 @@ public class Main : Node
         if (_discordManager.IsLobbyOwner())
         {
             UnloadGame("You ended the game");
-            Dictionary endData = new Dictionary();
+            var endData = new Dictionary();
             endData.Add("GameEnded", true);
             _discordManager.SendAll(endData, true);
         }

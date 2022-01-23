@@ -11,18 +11,18 @@ public class Game : Node
 
     public Dictionary<string, object> LoadSettingsFromFile()
     {
-        Dictionary<string, object> settings = new Dictionary<string, object>();
+        var settings = new Dictionary<string, object>();
         settings.Add("Vsync", OS.VsyncEnabled);
         settings.Add("Fullscreen", OS.WindowFullscreen);
-        File settingsFile = new File();
+        var settingsFile = new File();
 
         if (settingsFile.Open("user://settings.txt", File.ModeFlags.Read) == Error.Ok)
         {
-            JSONParseResult result = JSON.Parse(settingsFile.GetLine());
+            var result = JSON.Parse(settingsFile.GetLine());
             
             if (result.Error == Error.Ok && result.Result.GetType() == typeof(Dictionary))
             {
-                Dictionary fileSettings = (Dictionary)result.Result;
+                var fileSettings = (Dictionary)result.Result;
 
                 foreach (var item in settings)
                 {
@@ -41,7 +41,7 @@ public class Game : Node
 
     public void SaveSettingsToFile(Dictionary<string, object> settings)
     {
-        File settingsFile = new File();
+        var settingsFile = new File();
 
         if (settingsFile.Open("user://settings.txt", File.ModeFlags.Write) == Error.Ok)
         {

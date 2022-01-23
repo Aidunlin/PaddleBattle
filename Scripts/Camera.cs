@@ -7,15 +7,15 @@ public class Camera : Camera2D
 
     public void MoveAndZoom(Array paddles)
     {
-        Vector2 newZoom = Vector2.One;
+        var newZoom = Vector2.One;
 
         if (paddles.Count > 0)
         {
-            Vector2 average = new Vector2();
-            float maxX = float.MinValue;
-            float MinX = float.MaxValue;
-            float maxY = float.MinValue;
-            float MinY = float.MaxValue;
+            var average = new Vector2();
+            var maxX = float.MinValue;
+            var MinX = float.MaxValue;
+            var maxY = float.MinValue;
+            var MinY = float.MaxValue;
 
             foreach (Node2D paddle in paddles)
             {
@@ -27,13 +27,13 @@ public class Camera : Camera2D
             }
 
             average /= paddles.Count;
-            float largestX = 2 * System.Math.Max(maxX - average.x, average.x - MinX);
-            float largestY = 2 * System.Math.Max(maxY - average.y, average.y - MinY);
-            float marginX = OS.WindowSize.x * 2 / 3;
-            float marginY = OS.WindowSize.y * 2 / 3;
+            var largestX = 2 * System.Math.Max(maxX - average.x, average.x - MinX);
+            var largestY = 2 * System.Math.Max(maxY - average.y, average.y - MinY);
+            var marginX = OS.WindowSize.x * 2 / 3;
+            var marginY = OS.WindowSize.y * 2 / 3;
             newZoom.x = (largestX + marginX) / OS.WindowSize.x;
             newZoom.y = (largestY + marginY) / OS.WindowSize.y;
-            float largestZoom = System.Math.Max(newZoom.x, newZoom.y);
+            var largestZoom = System.Math.Max(newZoom.x, newZoom.y);
             newZoom = new Vector2(largestZoom, largestZoom);
 
             if (newZoom < Vector2.One)

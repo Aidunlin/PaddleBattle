@@ -117,7 +117,7 @@ public class MenuManager : HBoxContainer
             MainMenu.Show();
             MainMenu.SettingsButton.GrabFocus();
 
-            Dictionary<string, object> settings = new Dictionary<string, object>();
+            var settings = new Dictionary<string, object>();
             settings.Add("Vsync", OS.VsyncEnabled);
             settings.Add("Fullscreen", OS.WindowFullscreen);
             _game.SaveSettingsToFile(settings);

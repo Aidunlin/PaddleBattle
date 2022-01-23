@@ -5,7 +5,7 @@ public class HUDManager : Control
 {
     public void CreateHUD(Dictionary data)
     {
-        Label label = new Label();
+        var label = new Label();
         label.Name = (string)data["Name"];
         label.Text = (string)data["Name"];
         label.Modulate = (Color)data["Modulate"];
@@ -16,12 +16,12 @@ public class HUDManager : Control
     {
         foreach (Dictionary paddle in paddles)
         {
-            string paddleName = (string)paddle["Name"];
-            Label label = GetNodeOrNull<Label>(paddleName);
+            var paddleName = (string)paddle["Name"];
+            var label = GetNodeOrNull<Label>(paddleName);
             if (label != null)
             {
-                Vector2 paddlePos = (Vector2)paddle["Position"];
-                Vector2 offset = new Vector2(label.RectSize.x / 2, 90);
+                var paddlePos = (Vector2)paddle["Position"];
+                var offset = new Vector2(label.RectSize.x / 2, 90);
                 label.RectPosition = paddlePos - offset;
             }
         }
@@ -34,7 +34,7 @@ public class HUDManager : Control
 
     public void Reset()
     {
-        foreach (Label label in GetChildren())
+        foreach (Node label in GetChildren())
         {
             label.QueueFree();
         }

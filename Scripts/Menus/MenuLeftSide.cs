@@ -16,13 +16,13 @@ public class MenuLeftSide : VBoxContainer
 
     public void AddMessage(string msg)
     {
-        Label messageLabel = new Label();
+        var messageLabel = new Label();
         messageLabel.Text = msg;
         messageLabel.Autowrap = true;
         MessagesList.AddChild(messageLabel);
         MessagesList.MoveChild(messageLabel, 0);
 
-        Timer messageTimer = new Timer();
+        var messageTimer = new Timer();
         messageLabel.AddChild(messageTimer);
         messageTimer.OneShot = true;
         messageTimer.Connect("timeout", messageLabel, "queue_free");
@@ -31,22 +31,22 @@ public class MenuLeftSide : VBoxContainer
 
     public void AddInvite(string userId, string username)
     {
-        HBoxContainer hBox = new HBoxContainer();
+        var hBox = new HBoxContainer();
         MessagesList.AddChild(hBox);
         MessagesList.MoveChild(hBox, 0);
         
-        Label messageLabel = new Label();
+        var messageLabel = new Label();
         messageLabel.Text = "Invited by " + username;
         messageLabel.Autowrap = true;
         messageLabel.SizeFlagsHorizontal = (int)SizeFlags.ExpandFill;
         hBox.AddChild(messageLabel);
 
-        Button acceptButton = new Button();
+        var acceptButton = new Button();
         acceptButton.Text = "Accept";
         acceptButton.Connect("pressed", this, "AcceptInvite", new Array { acceptButton, userId });
         hBox.AddChild(acceptButton);
 
-        Timer messageTimer = new Timer();
+        var messageTimer = new Timer();
         hBox.AddChild(messageTimer);
         messageTimer.OneShot = true;
         messageTimer.Connect("timeout", hBox, "queue_free");
