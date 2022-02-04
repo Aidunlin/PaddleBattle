@@ -1,4 +1,5 @@
 using Godot;
+using static System.Math;
 using Godot.Collections;
 
 public class Camera : Camera2D
@@ -20,20 +21,20 @@ public class Camera : Camera2D
             foreach (Node2D paddle in paddles)
             {
                 average += paddle.Position;
-                maxX = System.Math.Max(paddle.Position.x, maxX);
-                MinX = System.Math.Min(paddle.Position.x, MinX);
-                maxY = System.Math.Max(paddle.Position.y, maxY);
-                MinY = System.Math.Min(paddle.Position.y, MinY);
+                maxX = Max(paddle.Position.x, maxX);
+                MinX = Min(paddle.Position.x, MinX);
+                maxY = Max(paddle.Position.y, maxY);
+                MinY = Min(paddle.Position.y, MinY);
             }
 
             average /= paddles.Count;
-            var largestX = 2 * System.Math.Max(maxX - average.x, average.x - MinX);
-            var largestY = 2 * System.Math.Max(maxY - average.y, average.y - MinY);
+            var largestX = 2 * Max(maxX - average.x, average.x - MinX);
+            var largestY = 2 * Max(maxY - average.y, average.y - MinY);
             var marginX = OS.WindowSize.x * 2 / 3;
             var marginY = OS.WindowSize.y * 2 / 3;
             newZoom.x = (largestX + marginX) / OS.WindowSize.x;
             newZoom.y = (largestY + marginY) / OS.WindowSize.y;
-            var largestZoom = System.Math.Max(newZoom.x, newZoom.y);
+            var largestZoom = Max(newZoom.x, newZoom.y);
             newZoom = new Vector2(largestZoom, largestZoom);
 
             if (newZoom < Vector2.One)

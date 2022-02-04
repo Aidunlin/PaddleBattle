@@ -53,8 +53,6 @@ public class DiscordManager : Node
             }
         });
 
-        _activityManager.RegisterCommand(OS.GetExecutablePath());
-
         _userManager.OnCurrentUserUpdate += () =>
         {
             GD.Print("Discord: User updated");
@@ -145,6 +143,8 @@ public class DiscordManager : Node
         {
             activity.Secrets.Join = _lobbyManager.GetLobbyActivitySecret(CurrentLobbyId);
             activity.Party.Id = CurrentLobbyId.ToString();
+            activity.Party.Size.CurrentSize = _lobbyManager.MemberCount(CurrentLobbyId);
+            activity.Party.Size.MaxSize = (int)_lobbyManager.GetLobby(CurrentLobbyId).Capacity;
         }
 
         if (OS.IsDebugBuild())
@@ -228,6 +228,7 @@ public class DiscordManager : Node
     public void CreateLobby()
     {
         var transaction = _lobbyManager.GetLobbyCreateTransaction();
+        transaction.SetCapacity(8);
 
         _lobbyManager.CreateLobby(transaction, (Result result, ref Lobby lobby) =>
         {

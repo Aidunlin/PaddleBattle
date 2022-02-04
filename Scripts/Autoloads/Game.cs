@@ -9,45 +9,28 @@ public class Game : Node
 
     [Export] public bool IsPlaying { get; set; } = false;
 
-    public Dictionary<string, object> LoadSettingsFromFile()
+    public override void _Ready()
     {
-        var settings = new Dictionary<string, object>();
-        settings.Add("Vsync", OS.VsyncEnabled);
-        settings.Add("Fullscreen", OS.WindowFullscreen);
-        var settingsFile = new File();
-
-        if (settingsFile.Open("user://settings.txt", File.ModeFlags.Read) == Error.Ok)
-        {
-            var result = JSON.Parse(settingsFile.GetLine());
-            
-            if (result.Error == Error.Ok && result.Result.GetType() == typeof(Dictionary))
-            {
-                var fileSettings = (Dictionary)result.Result;
-
-                foreach (var item in settings)
-                {
-                    if (fileSettings.Contains(item.Key))
-                    {
-                        settings[item.Key] = fileSettings[item.Key];
-                    }
-                }
-            }
-
-            settingsFile.Close();
-        }
-
-        return settings;
+        LoadSettings();
     }
 
-    public void SaveSettingsToFile(Dictionary<string, object> settings)
+    public void LoadSettings()
     {
-        var settingsFile = new File();
+        var config = new ConfigFile();
 
-        if (settingsFile.Open("user://settings.txt", File.ModeFlags.Write) == Error.Ok)
+        if (config.Load("user://settings.cfg") == Error.Ok)
         {
-            settingsFile.StoreLine(JSON.Print(settings));
-            settingsFile.Close();
+            OS.VsyncEnabled = (bool)config.GetValue("Settings", "Vsync", OS.VsyncEnabled);
+            OS.WindowFullscreen = (bool)config.GetValue("Settings", "Fullscreen", OS.WindowFullscreen);
         }
+    }
+
+    public void SaveSettings()
+    {
+        var config = new ConfigFile();
+        config.SetValue("Settings", "Vsync", OS.VsyncEnabled);
+        config.SetValue("Settings", "Fullscreen", OS.WindowFullscreen);
+        config.Save("user://settings.cfg");
     }
 
     public void Reset()

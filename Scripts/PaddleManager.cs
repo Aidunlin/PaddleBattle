@@ -157,8 +157,6 @@ public class PaddleManager : Node
 
     public void UpdatePaddles(Array newPaddles)
     {
-        if (!_game.IsPlaying) return;
-
         foreach (Dictionary paddle in newPaddles)
         {
             var paddleName = (string)paddle["Name"];
