@@ -1,3 +1,5 @@
+Archive Note: Because Discord announced they will be deprecating and disabling their GameSDK, PaddleBattle in it's current state will eventually stop working. So, I am archiving this repo for now.
+
 # PaddleBattle
 A multiplayer action game with pong-like mechanics (in early development).
 
